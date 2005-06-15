@@ -1,0 +1,66 @@
+<project name="ftp4che" default="dist" basedir=".">
+
+  <property name="src" value="src"/>
+  <property name="build" value="build"/>
+  <property name="dist"  value="dist"/>
+  <property name="release" value="release"/>
+  <property name="docs"  value="docs"/>
+  <property name="version" value="0.1"/>
+  
+   <path id="build.path">
+   	  <pathelement location="thirdparty/log4j-1.2.9.jar"/>
+   </path>
+	
+  <target name="init">
+    <mkdir dir="${build}"/>
+    <mkdir dir="${dist}"/>
+</target>
+
+  <target name="compile" depends="init">
+    <javac srcdir="${src}"
+           destdir="${build}"
+	       deprecation="true"
+	       debug="true"
+	       optimize="true"
+	       nowarn="on" 
+    	   classpathref="build.path"
+    />
+  </target>
+
+  <target name="jar" depends="compile">
+    <jar jarfile="${dist}/ftp4che-${version}.jar"
+    	basedir="${build}"
+	/>
+    <chmod file="${dist}/ftp4che-${version}.jar" perm="ugo+x"/>
+  </target>
+  
+
+  <target name="tarsrc" depends="init">
+    <tar tarfile="${dist}/ftp4che-src-${version}.tar" basedir="src" excludes="*~"/>
+    <gzip zipfile="${dist}/ftp4che-src-${version}.tar.gz" src="${dist}/ftp4che-src-${version}.tar"/>
+    <delete file="${dist}/ftp4che-src-${version}.tar"/>
+  </target>
+
+  <target name="clean">
+    <delete dir="${build}"/>
+    <delete dir="${dist}"/>
+    <delete dir="${docs}"/>
+    <delete dir="logs"/>
+</target>
+<target name="doc">
+    <javadoc
+	packagenames="orfg.ftp4che.*"
+	sourcepath="src"
+	defaultexcludes="yes"
+	destdir="${docs}"
+	author="true"
+	version="true"
+	use="true"
+	windowtitle="ftp4che Library">
+	<doctitle><![CDATA[<h1>ftp4che Library</h1>]]></doctitle>
+	<bottom><![CDATA[<i>2005 Arnold Maderthaner and Kurt Taschl. GNU License</i>]]></bottom>
+    </javadoc>
+</target>
+ <target name="dist" depends="clean,init,compile,jar,tarsrc"> </target>
+
+</project>
