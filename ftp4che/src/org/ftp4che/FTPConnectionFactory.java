@@ -10,10 +10,10 @@ import java.net.InetSocketAddress;
 import java.util.Properties;
 
 import org.ftp4che.exception.ConfigurationException;
-import org.ftp4che.impl.AuthSSLConnection;
-import org.ftp4che.impl.AuthTLSConnection;
-import org.ftp4che.impl.FTPConnectionImpl;
-import org.ftp4che.impl.ImplicitSSLConnection;
+import org.ftp4che.impl.AuthSSLFTPConnection;
+import org.ftp4che.impl.AuthTLSFTPConnection;
+import org.ftp4che.impl.ImplicitSSLFTPConnection;
+import org.ftp4che.impl.NormalFTPConnection;
 
 /**
  * @author arnold
@@ -28,8 +28,8 @@ public class FTPConnectionFactory {
      * This factory should be called to get you a new FTPConnection
      * You can set the connection information with a properties object.
      * @param pt you have to set the connection informations:
-     * host = hostname to the server you want to connect (String)
-     * port = port you want to connect to (String)
+     * connection.host = hostname to the server you want to connect (String)
+     * connection.port = port you want to connect to (String)
      * user.login = login name (String) 
      * user.password = password (Sring). this parameter is optional
      * user.account = Account Information (String). This parameter is optional
@@ -42,42 +42,15 @@ public class FTPConnectionFactory {
      */
     public static FTPConnection getInstance(Properties pt) throws ConfigurationException
     {
-        int connectionType = ((Integer)pt.get("connection.type")).intValue();
-        FTPConnection connection = null;
-        if(connectionType == FTPConnection.FTP_CONNECTION)
-        {
-            connection = new FTPConnectionImpl();
-        }
-        else if(connectionType == FTPConnection.IMPLICIT_SSL_FTP_CONNECTION)
-        {
-            connection = new ImplicitSSLConnection();
-        }
-        else if(connectionType == FTPConnection.AUTH_SSL_FTP_CONNECTION)
-        {
-            connection = new AuthSSLConnection();
-        }
-        else if(connectionType == FTPConnection.AUTH_TLS_FTP_CONNECTION)
-        {
-            connection = new AuthTLSConnection();
-        }
-        else
-        {
-            throw new ConfigurationException("No or unknown connection.type in properties");
-        }
-        try
-        {
-            connection.setAddress(new InetSocketAddress(pt.getProperty("host"),Integer.parseInt(pt.getProperty("port"))));
-        }catch (IllegalArgumentException iae)
-        {
-            throw new ConfigurationException(iae.getMessage());
-        }
-        connection.setUser(pt.getProperty("user.login"));
-        connection.setPassword(pt.getProperty("user.password"));
-        connection.setAccount(pt.getProperty("user.account"));
-        connection.setTimeout(((Long)pt.get("connection.timeout")).longValue());
-        if(pt.get("connection.passive") != null)
-            connection.setPassiveMode(((Boolean)pt.get("connection.passive")).booleanValue());
-        return connection;
+        //TODO: to make this more 1.5 like we could use autoboxing (if we don't want a 1.4 compatible build)
+        return FTPConnectionFactory.getInstance(pt.getProperty("connection.host"),
+                                                Integer.parseInt("connection.port"),
+                                                pt.getProperty("user.login"),
+                                                pt.getProperty("user.password"),
+                                                pt.getProperty("user.account"),
+                                                Long.parseLong(pt.getProperty("connection.timeout")),
+                                                Integer.parseInt(pt.getProperty("connection.type")),
+                                                Boolean.parseBoolean(pt.getProperty("connection.passive")));
     }
 
     /**
@@ -99,19 +72,19 @@ public class FTPConnectionFactory {
         FTPConnection connection = null;
         if(connectionType == FTPConnection.FTP_CONNECTION)
         {
-            connection = new FTPConnectionImpl();
+            connection = new NormalFTPConnection();
         }
         else if(connectionType == FTPConnection.IMPLICIT_SSL_FTP_CONNECTION)
         {
-           	connection = new ImplicitSSLConnection();
+           	connection = new ImplicitSSLFTPConnection();
         }
         else if(connectionType == FTPConnection.AUTH_SSL_FTP_CONNECTION)
         {
-            connection = new AuthSSLConnection();
+            connection = new AuthSSLFTPConnection();
         }
         else if(connectionType == FTPConnection.AUTH_TLS_FTP_CONNECTION)
         {
-            connection = new AuthTLSConnection();
+            connection = new AuthTLSFTPConnection();
         }
         else
         {

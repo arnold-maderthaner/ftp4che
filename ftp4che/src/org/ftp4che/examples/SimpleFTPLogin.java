@@ -42,7 +42,7 @@ public class SimpleFTPLogin {
             FTPConnection connection = FTPConnectionFactory.getInstance(pt);
             try
             {
-                connection.connectAndLogin();
+                connection.connect();
                 connection.getWorkDirectory();
 
                 connection.makeDirectory("testdir");
@@ -74,6 +74,10 @@ public class SimpleFTPLogin {
             catch (IOException ioe)
             {
                 log.error(ioe);
+            }
+            catch (Exception e)
+            {
+                log.error(e);
             }
         }catch(ConfigurationException ce)
         {

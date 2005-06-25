@@ -9,21 +9,32 @@ package org.ftp4che;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
 import java.util.List;
 
 
 
+import org.apache.log4j.Logger;
+import org.ftp4che.commands.Command;
+import org.ftp4che.commands.Command;
+import org.ftp4che.commands.ListCommand;
 import org.ftp4che.exception.ConfigurationException;
 import org.ftp4che.exception.NotConnectedException;
+import org.ftp4che.exception.UnkownReplyStateException;
+import org.ftp4che.reply.Reply;
+import org.ftp4che.util.ReplyFormatter;
+import org.ftp4che.util.SocketProvider;
 
 
 /**
  * @author arnold,kurt
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
  */
-public interface FTPConnection {
+public abstract class FTPConnection {
     
     //TODO: support PRET command
     
@@ -44,45 +55,95 @@ public interface FTPConnection {
     public static final int FXP_FILE = 1006;
     public static final int UNKNOWN = 9999;
     
+    
+    /* Member variables 
+     */
+    Logger log = Logger.getLogger(FTPConnection.class.getName());
+    InetSocketAddress address = null;
+    String user = "";
+    String password = "";
+    String account = "";
+    boolean passiveMode = false;
+    long timeout = 10000;
+//  Charset and decoder
+    Charset charset = Charset.forName("ISO-8859-1");
+    CharsetDecoder decoder = charset.newDecoder();
+    CharsetEncoder encoder = charset.newEncoder();
+    // Direct byte buffer for reading
+    
+    //TODO: make configurable 
+    ByteBuffer downloadBuffer = ByteBuffer.allocateDirect(65536);
+    ByteBuffer uploadBuffer = ByteBuffer.allocateDirect(8192);
+    CharBuffer controlBuffer = CharBuffer.allocate(4096);
+    SocketProvider socketProvider = null;
+    
     /**
      * @author arnold,kurt
      * @param address Set method for the address the FTPConnection will connect to if connect() is called
      */
-    public void setAddress(InetSocketAddress address);
+     public InetSocketAddress getAddress() {
+        return address;
+    }
+    /**
+     * @param address The address to set.
+     */
+    public void setAddress(InetSocketAddress address)
+    {
+        this.address = address;
+    } 
+ 
+    /**
+     * @author arnold,kurt
+     * @param password Get method for the password the FTPConnection will use if connect() is called
+     */
+    public String getPassword() {
+        return password;
+    }
+    /**
+     * @author arnold,kurt
+     * @param password Set method for the password the FTPConnection will use if connect() is called
+     */
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    /**
+     * @author arnold,kurt
+     * @param user Get method for the user the FTPConnection will use if connect() is called
+     * @throws ConfigurationException will be thrown if a parameter is missing or invalid
+     */
+    public String getUser() {
+        return user;
+    }
     
     /**
      * @author arnold,kurt
      * @param user Set method for the user the FTPConnection will use if connect() is called
      * @throws ConfigurationException will be thrown if a parameter is missing or invalid
      */
-    public void setUser(String user) throws ConfigurationException;
+    public void setUser(String user) throws ConfigurationException {
+        if(user == null || user.length() == 0)
+            throw new ConfigurationException("user must no be null or has a length of 0");
+        this.user = user;
+    }
+ 
+ 
     
     /**
      * @author arnold,kurt
-     * @param password Set method for the password the FTPConnection will use if connect() is called
+     * @param account Get method for the account the FTPConnection will use if connect() is called
      */
-    public void setPassword(String password);
-    
+    public String getAccount() {
+        return account;
+    }
     /**
      * @author arnold,kurt
      * @param account Set method for the account the FTPConnection will use if connect() is called
      */
-    public void setAccount(String account);
+    public void setAccount(String account) {
+        this.account = account;
+    }
     
-    /**
-     * This method is used to connect to the specified server. it only connects to it. it doesn't login. if you want to login to 
-     * the server call login() after connect() or call connectAndLogin() instead of connect()
-     * @author arnold,kurt
-     * @exception NotConnectedException will be thrown if it was not possible to establish a connection to the specified server
-     */
-    public void connect() throws NotConnectedException;
-    
-    /**
-     * This method is used to login to the specified server.
-     * @author arnold,kurt
-     * @exception IOException will be thrown if it there was a problem sending the LoginCommand to the server
-     */
-    public void login() throws IOException;
     
     /**
      * This method is used to connect and login to the specified server.
@@ -90,24 +151,43 @@ public interface FTPConnection {
      * @exception NotConnectedException will be thrown if it was not possible to establish a connection to the specified server
      * @exception IOException will be thrown if it there was a problem sending the LoginCommand to the server
      */
-    public void connectAndLogin() throws NotConnectedException,IOException;
+    public abstract void connect() throws NotConnectedException,IOException;
     
     /**
      * This method is used to disconnect from the specified server.
      * @author arnold,kurt
     */
-    public void disconnect();
+    public void disconnect() {
+        try
+        {
+            Command command = new Command(Command.QUIT);
+            sendCommand(command);
+        }catch (IOException ioe)
+        {
+          log.warn("Error closing connection: " + getAddress().getHostName() + ":" + getAddress().getPort(),ioe);
+          socketProvider = null;
+        }
+         
+     }
     
     /**
      * This method is used to send commands (there is an implementation for each possible command).
      * You should call this method if you want to send a raw command and get the full results or if there is no implemented corresponding method.
-     * @return Result[] a field of results for the specific command. f.e. sending a CDUPCommand results in an array of CDUPResults.
-     * Some commands need more than one line to be send to the server. f.e. LoginCommand has USER -> PASS -> optionaly ACCT.
+     * @return Reply for the specific command.
      * You will get a result for each server reply. 
      * @author arnold,kurt
      * @exception IOException will be thrown if there was a communication problem with the server
     */
-    public Result[] sendCommand(Command cmd) throws IOException;
+    public Reply sendCommand(Command cmd) throws IOException{
+        controlBuffer.clear();
+        log.debug("Sending command: " + cmd.toString());
+        controlBuffer.put(cmd.toString());
+        controlBuffer.flip();
+        socketProvider.write(encoder.encode(controlBuffer));
+        controlBuffer.clear();
+        //TODO: get and return Reply
+     return null;
+     }
     
     /**
      * 
@@ -115,14 +195,30 @@ public interface FTPConnection {
      * @return status there are constants in FTPConnection (f.e. CONNECTED / DISCONNECTED / IDLE ...) where you can identify the status of your ftp connection
      * @author arnold,kurt
      */
-    public int getConnectionStatus();
+    public int getConnectionStatus()
+    {
+        //TODO: IMPLEMENT
+        return FTPConnection.CONNECTED;
+    }
     
     /**
      * This method is used initaly to set the connection timeout. normal you would set it to 10000 (10 sec.). if you have very slow servers try to set it higher.
      * @param millis the milliseconds before a timeout will close the connection
      * @author arnold,kurt
      */
-    public void setTimeout(long millis);
+    public void setTimeout(long millis) {
+        this.timeout = millis;
+    }
+    
+    /**
+     * This method is used initaly to get the connection timeout. normal you would set it to 10000 (10 sec.). if you have very slow servers try to set it higher.
+     * @param millis the milliseconds before a timeout will close the connection
+     * @author arnold,kurt
+     */
+    public long getTimeout()
+    {
+        return timeout;
+    }
     
     /**
      * This method is used to change the working directory. it implements the CWD ftp command
@@ -130,21 +226,34 @@ public interface FTPConnection {
      * @author arnold,kurt  
      * @throws IOException will be thrown if there was a communication problem with the server
      */
-    public void changeDirectory(String directory) throws IOException;
+    public void changeDirectory(String directory) throws IOException
+    {
+        Command command = new Command(Command.CWD,directory);
+        sendCommand(command);
+    }
     
     /**
      * This method is used to get the working directory. it implements the PWD ftp command
      * @author arnold,kurt
      * @throws IOException  will be thrown if there was a communication problem with the server
      */
-    public String getWorkDirectory() throws IOException;
+    public String getWorkDirectory() throws IOException,UnkownReplyStateException
+    {
+        Command command = new Command(Command.PWD);
+        Reply reply = sendCommand(command);
+        return ReplyFormatter.parsePWDReply(reply);
+    }
     
     /**
      * This method is used to change to the parent directory. it implements the CDUP ftp command
      * @author arnold,kurt
      * @throws IOException  will be thrown if there was a communication problem with the server
      */
-    public String changeToParentDirectory() throws IOException;
+    public void changeToParentDirectory() throws IOException
+    {
+        Command command = new Command(Command.CDUP);
+        sendCommand(command);
+    }
     
     /**
      * This method is used to create a new directory. it implements the MKD ftp command
@@ -152,7 +261,11 @@ public interface FTPConnection {
      * @author arnold,kurt
      * @throws IOException will be thrown if there was a communication problem with the server
      */
-    public boolean makeDirectory( String pathname ) throws IOException;
+    public void makeDirectory(String pathname) throws IOException
+    {
+        Command command = new Command(Command.MKD,pathname);
+        sendCommand(command);
+    }
 
     /**
      * This method is used to remove a specific directory. it implements the RMD ftp command
@@ -160,7 +273,11 @@ public interface FTPConnection {
      * @author arnold,kurt
      * @throws IOException will be thrown if there was a communication problem with the server
      */
-    public boolean removeDirectory( String pathname ) throws IOException;
+    public void removeDirectory( String pathname ) throws IOException
+    {
+        Command command = new Command(Command.RMD,pathname);
+        sendCommand(command);
+    }
     
     /**
      * This method is used to send a noop comand to the server i.g. for keep alive purpose. 
@@ -168,14 +285,21 @@ public interface FTPConnection {
      * @author arnold,kurt
      * @throws IOException will be thrown if there was a communication problem with the server
      */
-    public void noOperation() throws IOException;
+    public void noOperation() throws IOException
+    {
+        Command command = new Command(Command.NOOP);
+        sendCommand(command);
+    }
     
     /**
      * This method is used to go into passive mode. it implements the PASV ftp command
      * @author arnold,kurt
      * @throws IOException will be thrown if there was a communication problem with the server
      */
-    public boolean sendPassiveMode() throws IOException;
+    public void sendPassiveMode() throws IOException
+    {
+        
+    }
     
     /**
      * This method is used initaly to set if passive mode should be used. 
@@ -183,9 +307,37 @@ public interface FTPConnection {
      * @param passive if true it will use passive mode
      * @author arnold,kurt
      */
-    public void setPassiveMode(boolean mode);
+    public void setPassiveMode(boolean mode) {
+        this.passiveMode = mode;  
+      }
+      
+    /**
+     * This method is used initaly to set if passive mode should be used. 
+     * Default it is false
+     * @param passive if true it will use passive mode
+     * @author arnold,kurt
+     */
+    public boolean isPassiveMode() {
+          return passiveMode;
+    }
     
-    public List getDirectoryListing() throws IOException;
-    public List getDirectoryListing(String directory) throws IOException;
-    public void sendPortCommand(InetAddress inetaddress, int localport) throws IOException;
+    
+    
+    public List getDirectoryListing() throws IOException
+    {
+       return getDirectoryListing(".");
+    }
+    
+    public List getDirectoryListing(String directory) throws IOException
+    {
+        ListCommand command = new ListCommand(directory);
+        //INFO response from ControllConnection is ignored
+        sendCommand(command);
+        return ReplyFormatter.parseListReply(command.fetchDataConnectionReply());
+    }
+    
+    public void sendPortCommand(InetAddress inetaddress, int localport) throws IOException
+    {
+        
+    }
 }
