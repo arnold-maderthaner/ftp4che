@@ -10,9 +10,6 @@ import java.io.IOException;
 import org.apache.log4j.Logger;
 import org.ftp4che.FTPConnection;
 import org.ftp4che.exception.NotConnectedException;
-import org.ftp4che.util.ReplyListener;
-
-
 
 /**
  * @author arnold
@@ -23,7 +20,6 @@ import org.ftp4che.util.ReplyListener;
 public class NormalFTPConnection extends FTPConnection {
     
     Logger log = Logger.getLogger(NormalFTPConnection.class.getName());
-    ReplyListener listener = null;
     
     public NormalFTPConnection()
     {

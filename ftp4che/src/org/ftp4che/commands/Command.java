@@ -15,6 +15,9 @@ package org.ftp4che.commands;
 public class Command {
     //Constants
     
+    public final static String TYPE_A = "TYPE A";
+    public final static String TYPE_I = "TYPE I";
+    
     public final static String ACCT = "ACCT ";
     public final static String APPE = "APPE ";
     public final static String CWD = "CWD ";

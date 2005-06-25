@@ -8,6 +8,8 @@ package org.ftp4che.util;
 
 import java.util.StringTokenizer;
 
+import org.ftp4che.commands.Command;
+
 
 
 /**
@@ -23,7 +25,7 @@ public class FTPFile {
 	String date = "";
 	String parent = "";
 	String user, group;
-
+    String type = Command.TYPE_I;
 
 	/**
 	 *  Constructor for the FtpFile object
@@ -143,5 +145,19 @@ public class FTPFile {
      */
     public void setUser(String user) {
         this.user = user;
+    }
+
+    /**
+     * @return Returns the type.
+     */
+    public String getType() {
+        return type;
+    }
+
+    /**
+     * @param type The type to set.
+     */
+    public void setType(String type) {
+        this.type = type;
     }
 }
