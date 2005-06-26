@@ -30,8 +30,8 @@ public class SimpleFTPLogin {
         Logger log = Logger.getLogger("MAIN");
         
         Properties pt = new Properties();
-        pt.setProperty("host","192.168.0.1");
-        pt.setProperty("port","21");
+        pt.setProperty("connection.host","192.168.0.1");
+        pt.setProperty("connection.port","21");
         pt.setProperty("user.login","ftpuser");
         pt.setProperty("user.password","ftp4che");
         pt.put("connection.type", new Integer(FTPConnection.FTP_CONNECTION));
@@ -40,6 +40,7 @@ public class SimpleFTPLogin {
         try
         {
             FTPConnection connection = FTPConnectionFactory.getInstance(pt);
+            log.debug("user:" + connection.getUser());
             try
             {
                 connection.connect();

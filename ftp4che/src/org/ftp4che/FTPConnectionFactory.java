@@ -44,13 +44,13 @@ public class FTPConnectionFactory {
     {
         //TODO: to make this more 1.5 like we could use autoboxing (if we don't want a 1.4 compatible build)
         return FTPConnectionFactory.getInstance(pt.getProperty("connection.host"),
-                                                Integer.parseInt("connection.port"),
+                                                Integer.parseInt(pt.getProperty("connection.port")),
                                                 pt.getProperty("user.login"),
                                                 pt.getProperty("user.password"),
                                                 pt.getProperty("user.account"),
-                                                Long.parseLong(pt.getProperty("connection.timeout")),
-                                                Integer.parseInt(pt.getProperty("connection.type")),
-                                                Boolean.parseBoolean(pt.getProperty("connection.passive")));
+                                                ((Long)pt.get("connection.timeout")).longValue(),
+                                                ((Integer)pt.get("connection.type")).intValue(),
+                                                ((Boolean)pt.get("connection.passive")).booleanValue());
     }
 
     /**

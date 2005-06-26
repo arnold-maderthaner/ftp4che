@@ -27,6 +27,7 @@ import org.ftp4che.exception.NotConnectedException;
 import org.ftp4che.exception.UnkownReplyStateException;
 import org.ftp4che.reply.Reply;
 import org.ftp4che.util.ReplyFormatter;
+import org.ftp4che.util.ReplyWorker;
 import org.ftp4che.util.SocketProvider;
 
 
@@ -75,7 +76,7 @@ public abstract class FTPConnection {
     ByteBuffer downloadBuffer = ByteBuffer.allocateDirect(65536);
     ByteBuffer uploadBuffer = ByteBuffer.allocateDirect(8192);
     CharBuffer controlBuffer = CharBuffer.allocate(4096);
-    SocketProvider socketProvider = null;
+    protected SocketProvider socketProvider = null;
     
     /**
      * @author arnold,kurt
@@ -185,8 +186,7 @@ public abstract class FTPConnection {
         controlBuffer.flip();
         socketProvider.write(encoder.encode(controlBuffer));
         controlBuffer.clear();
-        //TODO: get and return Reply
-     return null;
+        return ReplyWorker.readReply(socketProvider);
      }
     
     /**

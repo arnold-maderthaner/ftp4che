@@ -1,5 +1,7 @@
 package org.ftp4che.reply;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 
 public class ControlReply extends Reply {
@@ -14,5 +16,6 @@ public class ControlReply extends Reply {
         // @todo Auto-generated method stub
 
     }
-
+    
+  
 }
