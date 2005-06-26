@@ -48,7 +48,7 @@ public class FTPConnectionFactory {
                                                 pt.getProperty("user.login"),
                                                 pt.getProperty("user.password"),
                                                 pt.getProperty("user.account"),
-                                                ((Long)pt.get("connection.timeout")).longValue(),
+                                                ((Integer)pt.get("connection.timeout")).intValue(),
                                                 ((Integer)pt.get("connection.type")).intValue(),
                                                 ((Boolean)pt.get("connection.passive")).booleanValue());
     }
@@ -67,7 +67,7 @@ public class FTPConnectionFactory {
      * @throws ConfigurationException will be thrown if a parameter is missing or invalid
      * @author arnold,kurt
      */
-    public static FTPConnection getInstance(String host,int port,String user,String password,String account,long timeout,int connectionType,boolean passiveMode) throws ConfigurationException
+    public static FTPConnection getInstance(String host,int port,String user,String password,String account,int timeout,int connectionType,boolean passiveMode) throws ConfigurationException
     {
         FTPConnection connection = null;
         if(connectionType == FTPConnection.FTP_CONNECTION)

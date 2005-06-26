@@ -65,7 +65,7 @@ public abstract class FTPConnection {
     String password = "";
     String account = "";
     boolean passiveMode = false;
-    long timeout = 10000;
+    int timeout = 10000;
 //  Charset and decoder
     Charset charset = Charset.forName("ISO-8859-1");
     CharsetDecoder decoder = charset.newDecoder();
@@ -206,7 +206,7 @@ public abstract class FTPConnection {
      * @param millis the milliseconds before a timeout will close the connection
      * @author arnold,kurt
      */
-    public void setTimeout(long millis) {
+    public void setTimeout(int millis) {
         this.timeout = millis;
     }
     
@@ -215,7 +215,7 @@ public abstract class FTPConnection {
      * @param millis the milliseconds before a timeout will close the connection
      * @author arnold,kurt
      */
-    public long getTimeout()
+    public int getTimeout()
     {
         return timeout;
     }

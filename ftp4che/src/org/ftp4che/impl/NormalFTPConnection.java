@@ -48,6 +48,8 @@ public class NormalFTPConnection extends FTPConnection {
             if(socketProvider.connect(getAddress()))
             {   
                 log.debug("connected to:" + hostAndPort);
+                socketProvider.socket().setSoTimeout(getTimeout());
+                socketProvider.socket().setKeepAlive(true);
             }
             else
             {
