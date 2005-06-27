@@ -10,7 +10,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -18,7 +17,6 @@ import org.ftp4che.commands.Command;
 import org.ftp4che.commands.ListCommand;
 import org.ftp4che.commands.RetrieveCommand;
 import org.ftp4che.commands.StoreCommand;
-import org.ftp4che.reply.ControlReply;
 import org.ftp4che.reply.Reply;
 
 
@@ -96,7 +94,7 @@ public class ReplyWorker extends Thread {
           e.printStackTrace(System.err);
         }
         
-        return new ControlReply( lines );
+        return new Reply( lines );
     }
     
     public void run () {

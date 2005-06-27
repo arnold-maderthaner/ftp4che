@@ -7,11 +7,11 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-public abstract class Reply {
+public class Reply {
     List<String> lines = new ArrayList<String>();
     Logger log = Logger.getLogger(Reply.class.getName());
     
-    public Reply(List lines)
+    public Reply(List<String> lines)
     {
         setLines(lines);
     }
@@ -26,12 +26,9 @@ public abstract class Reply {
     /**
      * @param lines The lines to set.
      */
-    public void setLines(List lines) {
-        this.lines = new ArrayList(lines);
+    public void setLines(List<String> lines) {
+        this.lines = new ArrayList<String>(lines);
     }
-    
-    public abstract void process();
-
     
     public void dumpReply(OutputStream out)
     {

@@ -58,6 +58,7 @@ public class SimpleFTPLogin {
                 
                 connection.noOperation();
                 connection.changeDirectory("/home/ftpuser/download");
+                connection.sendPassiveMode();
                 List<FTPFile> fileList = connection.getDirectoryListing();
                 for(int i = 0; i < fileList.size(); i++)
                 {

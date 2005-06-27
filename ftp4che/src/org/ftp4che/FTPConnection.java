@@ -24,7 +24,6 @@ import org.ftp4che.commands.ListCommand;
 import org.ftp4che.exception.ConfigurationException;
 import org.ftp4che.exception.NotConnectedException;
 import org.ftp4che.exception.UnkownReplyStateException;
-import org.ftp4che.reply.ControlReply;
 import org.ftp4che.reply.Reply;
 import org.ftp4che.util.FTPFile;
 import org.ftp4che.util.ReplyFormatter;
@@ -300,7 +299,14 @@ public abstract class FTPConnection {
      */
     public void sendPassiveMode() throws IOException
     {
-        
+    	Command command = new Command(Command.PASV);
+    	try
+    	{
+    		ReplyFormatter.parsePASVCommand(sendCommand(command));
+    	}catch (UnkownReplyStateException urse)
+    	{
+    		log.error(urse);
+    	}
     }
     
     /**
