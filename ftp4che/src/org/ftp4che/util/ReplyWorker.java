@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
 import org.ftp4che.commands.Command;
 import org.ftp4che.commands.ListCommand;
 import org.ftp4che.commands.RetrieveCommand;
@@ -21,7 +22,7 @@ import org.ftp4che.reply.Reply;
 
 
 public class ReplyWorker extends Thread {
-
+	public Logger log = Logger.getLogger(ReplyWorker.class.getName());
     public static final int FINISHED = 1;
     public static final int ERROR_FILE_NOT_FOUND = 2;
     public static final int ERROR_IO_EXCEPTION = 3;
@@ -36,7 +37,7 @@ public class ReplyWorker extends Thread {
     ByteBuffer buffer = ByteBuffer.allocate(16384);
     
     private int status = ReplyWorker.UNKNOWN;
-    
+    Reply reply;
     
     
     public ReplyWorker ( SocketProvider sc, Command command ) {
@@ -93,7 +94,6 @@ public class ReplyWorker extends Thread {
         } catch (Exception e) {
           e.printStackTrace(System.err);
         }
-        
         return new Reply( lines );
     }
     
@@ -106,7 +106,7 @@ public class ReplyWorker extends Thread {
         if ( getCommand() instanceof ListCommand ) {
 //       TODO: think about a own solution for reading LIST
 //       instead of using control connection message read
-            ReplyWorker.readReply( getSocketProvider() );
+            this.setReply(ReplyWorker.readReply(getSocketProvider()));
             setStatus( ReplyWorker.FINISHED );
         }else if ( getCommand() instanceof RetrieveCommand ) {
             RetrieveCommand retrieveCommand = (RetrieveCommand) getCommand();
@@ -258,4 +258,12 @@ public class ReplyWorker extends Thread {
     public void setCaughtException(Exception caughtException) {
         this.caughtException = caughtException;
     }
+
+	public Reply getReply() {
+		return reply;
+	}
+
+	public void setReply(Reply reply) {
+		this.reply = reply;
+	}
 }

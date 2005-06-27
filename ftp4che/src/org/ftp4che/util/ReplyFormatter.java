@@ -6,10 +6,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.ftp4che.exception.UnkownReplyStateException;
 import org.ftp4che.reply.Reply;
 
 public class ReplyFormatter {
+	public static Logger log = Logger.getLogger(ReplyFormatter.class.getName());
+	
     public static String parsePWDReply(Reply pwdReply) throws UnkownReplyStateException
     {
         List<String> lines = pwdReply.getLines();
@@ -39,6 +42,7 @@ public class ReplyFormatter {
         String line = lines.get(0);
         line = line.substring(line.indexOf('(')+1,line.lastIndexOf(')'));
         String[] host = line.split(",");
-        return new InetSocketAddress(host[0] + "." + host[1] + "." + host[2] + "." + host[3],(Integer.parseInt(host[5]) << 8) + Integer.parseInt(host[4]));
+        log.debug("Parsed host:" + host[0] + "." + host[1] + "." + host[2] + "." + host[3] + " port: " + ((Integer.parseInt(host[4]) << 8) + Integer.parseInt(host[5])));
+        return new InetSocketAddress(host[0] + "." + host[1] + "." + host[2] + "." + host[3],(Integer.parseInt(host[4]) << 8) + Integer.parseInt(host[5]));
     }
 }

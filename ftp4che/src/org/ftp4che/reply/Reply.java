@@ -15,7 +15,7 @@ public class Reply {
     {
         setLines(lines);
     }
-
+   
     /**
      * @return Returns the lines.
      */

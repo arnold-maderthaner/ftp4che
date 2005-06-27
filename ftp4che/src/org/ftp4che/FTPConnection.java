@@ -11,6 +11,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
@@ -297,16 +298,17 @@ public abstract class FTPConnection {
      * @author arnold,kurt
      * @throws IOException will be thrown if there was a communication problem with the server
      */
-    public void sendPassiveMode() throws IOException
+    public InetSocketAddress sendPassiveMode() throws IOException
     {
     	Command command = new Command(Command.PASV);
     	try
     	{
-    		ReplyFormatter.parsePASVCommand(sendCommand(command));
+    		return ReplyFormatter.parsePASVCommand(sendCommand(command));
     	}catch (UnkownReplyStateException urse)
     	{
     		log.error(urse);
     	}
+    	return null;
     }
     
     /**
@@ -338,10 +340,18 @@ public abstract class FTPConnection {
     
     public List<FTPFile> getDirectoryListing(String directory) throws IOException
     {
-        ListCommand command = new ListCommand(directory);
+    	InetSocketAddress dataSocket = null;
+    	ListCommand command = new ListCommand(directory);
+    	
+        if(isPassiveMode())
+         	dataSocket = sendPassiveMode();
+          	//TODO: if not passive then get a active socket
+        SocketProvider provider = new SocketProvider();
+        provider.connect(dataSocket);
+        command.setDataSocket(provider);
         //INFO response from ControllConnection is ignored
         (sendCommand(command)).dumpReply(System.out);
-        return ReplyFormatter.parseListReply(command.fetchDataConnectionReply());
+          return ReplyFormatter.parseListReply(command.fetchDataConnectionReply());
     }
     
     public void sendPortCommand(InetAddress inetaddress, int localport) throws IOException
