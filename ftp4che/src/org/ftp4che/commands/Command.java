@@ -14,6 +14,7 @@ package org.ftp4che.commands;
  */
 public class Command {
     //Constants
+    public final static String delimiter = "\r\n";
     
     public final static String TYPE_A = "TYPE A";
     public final static String TYPE_I = "TYPE I";
@@ -88,9 +89,10 @@ public class Command {
         String returnValue = getCommand();
         for(String s: getParameter())
         {
-            returnValue += " " + s;
+            returnValue += " " + (s);
         }
-        return returnValue;
+        
+        return returnValue + delimiter;
     }
     
 }

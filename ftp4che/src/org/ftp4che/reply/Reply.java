@@ -19,7 +19,7 @@ public abstract class Reply {
     /**
      * @return Returns the lines.
      */
-    public List getLines() {
+    public List<String> getLines() {
         return lines;
     }
 

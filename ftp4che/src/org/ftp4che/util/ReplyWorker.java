@@ -58,7 +58,8 @@ public class ReplyWorker extends Thread {
             int amount;
             buf.clear();
             socketProvider.socket().setKeepAlive(true);
-            while ((amount = socketProvider.read(buf)) >= 0) 
+            boolean read = true;
+            while (read && (amount = socketProvider.read(buf)) >= 0) 
             {
                 if (amount == 0) {
                     try {
@@ -83,7 +84,7 @@ public class ReplyWorker extends Thread {
                     
                     for ( String line : stringLines )
                         lines.add(line);
-
+                    read = false;
                     output = "";
                     buf.clear();
                 }

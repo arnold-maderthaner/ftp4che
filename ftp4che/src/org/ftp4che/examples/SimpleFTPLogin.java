@@ -30,7 +30,7 @@ public class SimpleFTPLogin {
         Logger log = Logger.getLogger("MAIN");
         
         Properties pt = new Properties();
-        pt.setProperty("connection.host","192.168.0.1");
+        pt.setProperty("connection.host","127.0.0.1");
         pt.setProperty("connection.port","21");
         pt.setProperty("user.login","ftpuser");
         pt.setProperty("user.password","ftp4che");
@@ -48,23 +48,23 @@ public class SimpleFTPLogin {
 
                 connection.makeDirectory("testdir");
                 connection.changeDirectory("testdir");
-                connection.getWorkDirectory();    
+                log.debug("Working Directory: " + connection.getWorkDirectory());    
                 
                 connection.changeToParentDirectory();
                 
                 connection.removeDirectory("testdir");
                 
-                connection.getWorkDirectory();
+                log.debug("Working Directory: " + connection.getWorkDirectory());
                 
                 connection.noOperation();
                 connection.changeDirectory("/home/ftpuser/download");
-                List fileList = connection.getDirectoryListing();
+                List<FTPFile> fileList = connection.getDirectoryListing();
                 for(int i = 0; i < fileList.size(); i++)
                 {
-                    log.info("Name:" + ((FTPFile)fileList.get(i)).getName());
-                    log.info("Mode:" + ((FTPFile)fileList.get(i)).getMode());
-                    log.info("Date:" + ((FTPFile)fileList.get(i)).getDate());
-                    log.info("Size:" + ((FTPFile)fileList.get(i)).getSize());
+                    log.info("Name:" + fileList.get(i).getName());
+                    log.info("Mode:" + fileList.get(i).getMode());
+                    log.info("Date:" + fileList.get(i).getDate());
+                    log.info("Size:" + fileList.get(i).getSize());
                 }
                 
                 connection.disconnect();

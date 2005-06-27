@@ -20,12 +20,13 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.ftp4che.commands.Command;
-import org.ftp4che.commands.Command;
 import org.ftp4che.commands.ListCommand;
 import org.ftp4che.exception.ConfigurationException;
 import org.ftp4che.exception.NotConnectedException;
 import org.ftp4che.exception.UnkownReplyStateException;
+import org.ftp4che.reply.ControlReply;
 import org.ftp4che.reply.Reply;
+import org.ftp4che.util.FTPFile;
 import org.ftp4che.util.ReplyFormatter;
 import org.ftp4che.util.ReplyWorker;
 import org.ftp4che.util.SocketProvider;
@@ -229,7 +230,7 @@ public abstract class FTPConnection {
     public void changeDirectory(String directory) throws IOException
     {
         Command command = new Command(Command.CWD,directory);
-        sendCommand(command);
+        (sendCommand(command)).dumpReply(System.out);
     }
     
     /**
@@ -241,6 +242,7 @@ public abstract class FTPConnection {
     {
         Command command = new Command(Command.PWD);
         Reply reply = sendCommand(command);
+        reply.dumpReply(System.out);
         return ReplyFormatter.parsePWDReply(reply);
     }
     
@@ -252,7 +254,7 @@ public abstract class FTPConnection {
     public void changeToParentDirectory() throws IOException
     {
         Command command = new Command(Command.CDUP);
-        sendCommand(command);
+        (sendCommand(command)).dumpReply(System.out);
     }
     
     /**
@@ -264,7 +266,7 @@ public abstract class FTPConnection {
     public void makeDirectory(String pathname) throws IOException
     {
         Command command = new Command(Command.MKD,pathname);
-        sendCommand(command);
+        (sendCommand(command)).dumpReply(System.out);
     }
 
     /**
@@ -276,7 +278,7 @@ public abstract class FTPConnection {
     public void removeDirectory( String pathname ) throws IOException
     {
         Command command = new Command(Command.RMD,pathname);
-        sendCommand(command);
+        (sendCommand(command)).dumpReply(System.out);
     }
     
     /**
@@ -288,7 +290,7 @@ public abstract class FTPConnection {
     public void noOperation() throws IOException
     {
         Command command = new Command(Command.NOOP);
-        sendCommand(command);
+        (sendCommand(command)).dumpReply(System.out);
     }
     
     /**
@@ -323,16 +325,16 @@ public abstract class FTPConnection {
     
     
     
-    public List getDirectoryListing() throws IOException
+    public List<FTPFile> getDirectoryListing() throws IOException
     {
        return getDirectoryListing(".");
     }
     
-    public List getDirectoryListing(String directory) throws IOException
+    public List<FTPFile> getDirectoryListing(String directory) throws IOException
     {
         ListCommand command = new ListCommand(directory);
         //INFO response from ControllConnection is ignored
-        sendCommand(command);
+        (sendCommand(command)).dumpReply(System.out);
         return ReplyFormatter.parseListReply(command.fetchDataConnectionReply());
     }
     

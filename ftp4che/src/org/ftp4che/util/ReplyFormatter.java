@@ -10,21 +10,21 @@ import org.ftp4che.reply.Reply;
 public class ReplyFormatter {
     public static String parsePWDReply(Reply pwdReply) throws UnkownReplyStateException
     {
-        List lines = pwdReply.getLines();
+        List<String> lines = pwdReply.getLines();
         if(lines.size() != 1)
             throw new UnkownReplyStateException("PWD Reply has to have a size of 1 entry but it has: " + lines.size());
-        String line = (String)lines.get(0);
+        String line = lines.get(0);
         //LINE: 257 "/" is current directory.
-        return line.substring(line.indexOf('"'),line.lastIndexOf('"'));     
+        return line.substring(line.indexOf('"') + 1,line.lastIndexOf('"'));     
     }
 
-    public static List parseListReply(Reply listReply) 
+    public static List<FTPFile> parseListReply(Reply listReply) 
     {
-        List lines = listReply.getLines();
-        List parsedLines = new ArrayList(lines.size());
-        for(Iterator it=lines.iterator();it.hasNext();)
+        List<String> lines = listReply.getLines();
+        List<FTPFile> parsedLines = new ArrayList<FTPFile>(lines.size());
+        for(Iterator<String> it=lines.iterator();it.hasNext();)
         {
-            parsedLines.add(FTPFile.parseLine((String)it.next()));
+            parsedLines.add(FTPFile.parseLine(it.next()));
         }
         return parsedLines;
     }

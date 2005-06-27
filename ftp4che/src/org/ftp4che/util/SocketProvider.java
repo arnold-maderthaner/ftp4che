@@ -137,7 +137,6 @@ public class SocketProvider {
 	}
 	
 	public int read( ByteBuffer dst ) throws IOException {
-		log.debug("read ...");
 		int amount = 0, limit;
 		if (sslType == 4) {
 			// test if there was a buffer overflow in dst
@@ -187,8 +186,6 @@ public class SocketProvider {
 			log.debug("bytes remaining: " + dst.remaining());
 			return amount;
 		}
-		log.debug("Last Line before i read from server");
-
 		return socketChan.read(dst);
 	}
 	
