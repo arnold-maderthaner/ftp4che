@@ -4,9 +4,11 @@ import java.io.File;
 
 import org.ftp4che.reply.Reply;
 import org.ftp4che.util.FTPFile;
+import org.ftp4che.util.ReplyWorker;
+import org.ftp4che.util.SocketProvider;
 
 public class RetrieveCommand extends Command implements DataConnectionCommand {
-
+	SocketProvider dataSocket;
     private FTPFile fromFile;
     private File toFile;
     
@@ -24,8 +26,21 @@ public class RetrieveCommand extends Command implements DataConnectionCommand {
     }
     
     public Reply fetchDataConnectionReply() {
-        // TODO Auto-generated method stub
-        return null;
+       ReplyWorker worker = new ReplyWorker(getDataSocket(),this);
+       worker.start();
+       while(worker.getStatus() == ReplyWorker.UNKNOWN)
+       {
+       	try
+       	{
+       		Thread.sleep(20);
+       	}catch (InterruptedException ie) {}
+       }
+       if(worker.getStatus() == ReplyWorker.FINISHED)
+       {
+       	return worker.getReply();
+       }
+       else
+       	return null;
     }
     
     /**
@@ -53,5 +68,18 @@ public class RetrieveCommand extends Command implements DataConnectionCommand {
     public void setToFile(File toFile) {
         this.toFile = toFile;
     }
+    
+	/**
+	 * @return Returns the dataSocket.
+	 */
+	public SocketProvider getDataSocket() {
+		return dataSocket;
+	}
 
+	/**
+	 * @param dataSocket The dataSocket to set.
+	 */
+	public void setDataSocket(SocketProvider dataSocket) {
+		this.dataSocket = dataSocket;
+	}
 }

@@ -36,7 +36,7 @@ public class SimpleFTPLogin {
         pt.setProperty("user.password","ftp4che");
         pt.put("connection.type", new Integer(FTPConnection.FTP_CONNECTION));
         pt.put("connection.timeout",new Integer(10000));
-        pt.put("connection.passive",new Boolean(true));
+        pt.put("connection.passive",new Boolean(false));
         try
         {
             FTPConnection connection = FTPConnectionFactory.getInstance(pt);

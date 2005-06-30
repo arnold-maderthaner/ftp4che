@@ -11,7 +11,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.channels.SocketChannel;
+import java.nio.channels.ServerSocketChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
@@ -342,20 +342,45 @@ public abstract class FTPConnection {
     {
     	InetSocketAddress dataSocket = null;
     	ListCommand command = new ListCommand(directory);
-    	
+    	SocketProvider provider = null;
         if(isPassiveMode())
-         	dataSocket = sendPassiveMode();
-          	//TODO: if not passive then get a active socket
-        SocketProvider provider = new SocketProvider();
-        provider.connect(dataSocket);
+        {
+        	dataSocket = sendPassiveMode();
+            provider = new SocketProvider();
+            provider.connect(dataSocket);
+        }
+        else
+        {
+        	provider = sendPortCommand();
+        }
         command.setDataSocket(provider);
         //INFO response from ControllConnection is ignored
         (sendCommand(command)).dumpReply(System.out);
           return ReplyFormatter.parseListReply(command.fetchDataConnectionReply());
     }
     
-    public void sendPortCommand(InetAddress inetaddress, int localport) throws IOException
+    public SocketProvider sendPortCommand() throws IOException
     {
-        
+    	ServerSocketChannel server = ServerSocketChannel.open();
+    	InetSocketAddress isa = new InetSocketAddress(socketProvider.socket().getLocalAddress(), 0);
+    	server.socket().bind(isa);
+    	int port = server.socket().getLocalPort();
+
+    	String modifiedHost = isa.getAddress().getHostAddress().replace('.',',');
+    	log.debug(modifiedHost + "," + ((port & 0xff00) >> 8) + "," + (port & 0x00ff));	
+    	Command command = new Command(Command.PORT,modifiedHost + "," + ((port & 0xff00) >> 8) + "," + (port & 0x00ff));
+        ((sendCommand(command))).dumpReply(System.out);
+        SocketProvider provider = new SocketProvider(server.accept());
+        try
+        {
+        	while(!provider.finishConnect())
+        	{
+        		Thread.sleep(20);
+        	}
+        } catch (InterruptedException e) {}
+        provider.socket().setReceiveBufferSize(65536);
+        provider.socket().setSendBufferSize(65536);
+
+        return provider;
     }
 }
