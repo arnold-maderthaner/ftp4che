@@ -15,6 +15,7 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -366,9 +367,14 @@ public abstract class FTPConnection {
     	server.socket().bind(isa);
     	int port = server.socket().getLocalPort();
 
-    	String modifiedHost = isa.getAddress().getHostAddress().replace('.',',');
-    	log.debug(modifiedHost + "," + ((port & 0xff00) >> 8) + "," + (port & 0x00ff));	
-    	Command command = new Command(Command.PORT,modifiedHost + "," + ((port & 0xff00) >> 8) + "," + (port & 0x00ff));
+    	StringBuffer modifiedHost = new StringBuffer();
+    	modifiedHost.append(server.socket().getInetAddress().getHostAddress().replace('.',','));
+    	modifiedHost.append(",");
+    	modifiedHost.append((port & 0xff00) >> 8);
+    	modifiedHost.append(",");
+    	modifiedHost.append(port & 0x00ff);
+    	log.debug(modifiedHost.toString());	
+    	Command command = new Command(Command.PORT,modifiedHost.toString());
         ((sendCommand(command))).dumpReply(System.out);
         SocketProvider provider = new SocketProvider(server.accept());
         try
