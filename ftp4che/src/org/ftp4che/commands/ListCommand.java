@@ -2,10 +2,8 @@ package org.ftp4che.commands;
 
 import org.ftp4che.reply.Reply;
 import org.ftp4che.util.ReplyWorker;
-import org.ftp4che.util.SocketProvider;
 
-public class ListCommand extends Command implements DataConnectionCommand {
-	SocketProvider dataSocket;
+public class ListCommand extends DataConnectionCommand {
 	
     public ListCommand(String parameter)
     {
@@ -36,19 +34,5 @@ public class ListCommand extends Command implements DataConnectionCommand {
         	return null;
         	
     }
-
-	/**
-	 * @return Returns the dataSocket.
-	 */
-	public SocketProvider getDataSocket() {
-		return dataSocket;
-	}
-
-	/**
-	 * @param dataSocket The dataSocket to set.
-	 */
-	public void setDataSocket(SocketProvider dataSocket) {
-		this.dataSocket = dataSocket;
-	}
 
 }

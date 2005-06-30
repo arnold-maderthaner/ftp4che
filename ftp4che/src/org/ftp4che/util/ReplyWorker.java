@@ -1,5 +1,7 @@
 package org.ftp4che.util;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -136,10 +138,14 @@ public class ReplyWorker extends Thread {
                         buffer.flip();
                         channel.write(buffer);
                         buffer.clear();
+                        setStatus(ReplyWorker.FINISHED);
+                        channel.close();
+                        getSocketProvider().close();
                     } catch (IOException ioe) {
                         setCaughtException(ioe);
                         setStatus(ReplyWorker.ERROR_IO_EXCEPTION);
                     }
+                   
                 }catch (FileNotFoundException fnfe)
                 {
                     setCaughtException(fnfe);
@@ -157,8 +163,9 @@ public class ReplyWorker extends Thread {
             {
                 try
                 {
-                    FileOutputStream out = new FileOutputStream(storeCommand.getFromFile());
-                    FileChannel channel = out.getChannel();
+                	log.debug("Upload file: " + storeCommand.getFromFile().toString());
+                    FileInputStream in = new FileInputStream(storeCommand.getFromFile());
+                    FileChannel channel = in.getChannel();
                     int amount;
                     int socketWrite;
                     int socketAmount = 0;
@@ -184,6 +191,9 @@ public class ReplyWorker extends Thread {
                             }
                             socketAmount = 0;
                             buffer.clear();
+                            setStatus(ReplyWorker.FINISHED);
+                            channel.close();
+                            getSocketProvider().close();
                         }
                     } catch (IOException ioe) {
                         setCaughtException(ioe);

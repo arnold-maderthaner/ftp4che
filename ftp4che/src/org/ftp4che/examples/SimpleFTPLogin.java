@@ -6,6 +6,7 @@
  */
 package org.ftp4che.examples;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
@@ -36,7 +37,7 @@ public class SimpleFTPLogin {
         pt.setProperty("user.password","ftp4che");
         pt.put("connection.type", new Integer(FTPConnection.FTP_CONNECTION));
         pt.put("connection.timeout",new Integer(10000));
-        pt.put("connection.passive",new Boolean(false));
+        pt.put("connection.passive",new Boolean(true));
         try
         {
             FTPConnection connection = FTPConnectionFactory.getInstance(pt);
@@ -57,16 +58,21 @@ public class SimpleFTPLogin {
                 log.debug("Working Directory: " + connection.getWorkDirectory());
                 
                 connection.noOperation();
-                connection.changeDirectory("/home/ftpuser/download");
-                List<FTPFile> fileList = connection.getDirectoryListing();
-                for(int i = 0; i < fileList.size(); i++)
-                {
-                    log.info("Name:" + fileList.get(i).getName());
-                    log.info("Mode:" + fileList.get(i).getMode());
-                    log.info("Date:" + fileList.get(i).getDate());
-                    log.info("Size:" + fileList.get(i).getSize());
-                }
-                
+                connection.changeDirectory("/home/ftpuser/kurt");
+                FTPFile fromFile = new FTPFile();
+                fromFile.setName("x.x");
+                connection.downloadFile(fromFile,new File("/home/arnold/downloadTest1.txt"));
+                connection.changeDirectory("/home/ftpuser/upload");
+                connection.uploadFile(new File("/home/arnold" + File.separator + "downloadTest1.txt"),new FTPFile("uploadTest1.txt"));
+//                List<FTPFile> fileList = connection.getDirectoryListing();
+//                for(int i = 0; i < fileList.size(); i++)
+//                {
+//                    log.info("Name:" + fileList.get(i).getName());
+//                    log.info("Mode:" + fileList.get(i).getMode());
+//                    log.info("Date:" + fileList.get(i).getDate());
+//                    log.info("Size:" + fileList.get(i).getSize());
+//                }
+//                
                 connection.disconnect();
             }catch (NotConnectedException nce)
             {

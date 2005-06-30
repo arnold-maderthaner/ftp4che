@@ -5,12 +5,12 @@ import java.io.File;
 import org.ftp4che.reply.Reply;
 import org.ftp4che.util.FTPFile;
 import org.ftp4che.util.ReplyWorker;
-import org.ftp4che.util.SocketProvider;
 
-public class RetrieveCommand extends Command implements DataConnectionCommand {
-	SocketProvider dataSocket;
+public class RetrieveCommand extends DataConnectionCommand {
+
     private FTPFile fromFile;
     private File toFile;
+    //TODO: throw Exception if fromFile not Exists
     
     public RetrieveCommand( String command, FTPFile fromFile )
     {
@@ -68,18 +68,5 @@ public class RetrieveCommand extends Command implements DataConnectionCommand {
     public void setToFile(File toFile) {
         this.toFile = toFile;
     }
-    
-	/**
-	 * @return Returns the dataSocket.
-	 */
-	public SocketProvider getDataSocket() {
-		return dataSocket;
-	}
-
-	/**
-	 * @param dataSocket The dataSocket to set.
-	 */
-	public void setDataSocket(SocketProvider dataSocket) {
-		this.dataSocket = dataSocket;
-	}
+  
 }

@@ -6,6 +6,7 @@
  */
 package org.ftp4che;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -23,6 +24,8 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.ftp4che.commands.Command;
 import org.ftp4che.commands.ListCommand;
+import org.ftp4che.commands.RetrieveCommand;
+import org.ftp4che.commands.StoreCommand;
 import org.ftp4che.exception.ConfigurationException;
 import org.ftp4che.exception.NotConnectedException;
 import org.ftp4che.exception.UnkownReplyStateException;
@@ -370,7 +373,7 @@ public abstract class FTPConnection {
     	StringBuffer modifiedHost = new StringBuffer();
     	modifiedHost.append(server.socket().getInetAddress().getHostAddress().replace('.',','));
     	modifiedHost.append(",");
-    	modifiedHost.append((port & 0xff00) >> 8);
+    	modifiedHost.append(port >> 8);
     	modifiedHost.append(",");
     	modifiedHost.append(port & 0x00ff);
     	log.debug(modifiedHost.toString());	
@@ -388,5 +391,48 @@ public abstract class FTPConnection {
         provider.socket().setSendBufferSize(65536);
 
         return provider;
+    }
+    
+    
+    public void downloadFile(FTPFile fromFile,File toFile) throws IOException
+    {
+    	InetSocketAddress dataSocket = null;
+    	RetrieveCommand command = new RetrieveCommand(Command.RETR,fromFile,toFile);
+    	SocketProvider provider = null;
+        if(isPassiveMode())
+        {
+        	dataSocket = sendPassiveMode();
+            provider = new SocketProvider();
+            provider.connect(dataSocket);
+        }
+        else
+        {
+        	provider = sendPortCommand();
+        }
+        command.setDataSocket(provider);
+        //INFO response from ControllConnection is ignored
+         (sendCommand(command)).dumpReply(System.out);
+         command.fetchDataConnectionReply();
+    }
+    
+ public void uploadFile(File fromFile,FTPFile toFile) throws IOException
+    {
+    	InetSocketAddress dataSocket = null;
+    	StoreCommand command = new StoreCommand(Command.STOR,fromFile,toFile);
+    	SocketProvider provider = null;
+        if(isPassiveMode())
+        {
+        	dataSocket = sendPassiveMode();
+            provider = new SocketProvider();
+            provider.connect(dataSocket);
+        }
+        else
+        {
+        	provider = sendPortCommand();
+        }
+        command.setDataSocket(provider);
+        //INFO response from ControllConnection is ignored
+        (sendCommand(command)).dumpReply(System.out);
+        command.fetchDataConnectionReply();
     }
 }

@@ -4,11 +4,14 @@ import java.io.File;
 
 import org.ftp4che.reply.Reply;
 import org.ftp4che.util.FTPFile;
+import org.ftp4che.util.ReplyWorker;
 
-public class StoreCommand extends Command implements DataConnectionCommand {
+public class StoreCommand extends DataConnectionCommand {
     
     FTPFile toFile;
     File fromFile;
+    //TODO: throw Exception if fromFile not Exists
+    
     
     public StoreCommand(String command, FTPFile toFile)
     {
@@ -25,8 +28,21 @@ public class StoreCommand extends Command implements DataConnectionCommand {
     }
     
     public Reply fetchDataConnectionReply() {
-        // TODO Auto-generated method stub
-        return null;
+    	  ReplyWorker worker = new ReplyWorker(getDataSocket(),this);
+          worker.start();
+          while(worker.getStatus() == ReplyWorker.UNKNOWN)
+          {
+          	try
+          	{
+          		Thread.sleep(20);
+          	}catch (InterruptedException ie) {}
+          }
+          if(worker.getStatus() == ReplyWorker.FINISHED)
+          {
+          	return worker.getReply();
+          }
+          else
+          	return null;
     }
     
     /**
