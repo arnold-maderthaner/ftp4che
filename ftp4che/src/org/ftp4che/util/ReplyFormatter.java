@@ -29,6 +29,7 @@ public class ReplyFormatter {
         List<FTPFile> parsedLines = new ArrayList<FTPFile>(lines.size());
         for(Iterator<String> it=lines.iterator();it.hasNext();)
         {
+         
             parsedLines.add(FTPFile.parseLine(it.next()));
         }
         return parsedLines;

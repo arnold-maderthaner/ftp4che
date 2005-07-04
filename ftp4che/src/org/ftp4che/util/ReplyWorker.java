@@ -92,21 +92,18 @@ public class ReplyWorker extends Thread {
                     output = "";
                     buf.clear();
                 }
-                else
-                {
-                    String[] stringLines = output.split("\n");
-                    
-                    for ( String line : stringLines )
-                        lines.add(line);
-                    output = "";
-                    buf.clear();
-                }
                 try {
                     sleep(50);
                 } catch (InterruptedException ie) {}
             }
             if(isListReply)
             {
+                String[] stringLines = output.split("\r\n");
+                
+                for ( String line : stringLines )
+                    lines.add(line);
+                output = "";
+                buf.clear();
                 socketProvider.close();
             }
         } catch (Exception e) {
@@ -120,13 +117,15 @@ public class ReplyWorker extends Thread {
         if ( getCommand() == null )
             throw new IllegalArgumentException("Given command is null!");
         if ( getSocketProvider() == null )
-            throw new IllegalArgumentException("Given connection is closed already!");
+            throw new IllegalArgumentException("Given connection is not open!");
         
         if ( getCommand() instanceof ListCommand ) 
         {
-            setReply(ReplyWorker.readReply(getSocketProvider(),true));
-            setStatus(ReplyWorker.FINISHED);
-        }else if ( getCommand() instanceof RetrieveCommand ) 
+          setReply(ReplyWorker.readReply(getSocketProvider(),true));
+          setStatus(ReplyWorker.FINISHED);
+          return;
+        }
+        else if ( getCommand() instanceof RetrieveCommand ) 
         {
             RetrieveCommand retrieveCommand = (RetrieveCommand) getCommand();
             if ( retrieveCommand.getFromFile().getType().intern() == Command.TYPE_I ) 
@@ -170,6 +169,7 @@ public class ReplyWorker extends Thread {
                 }
             }else
                 throw new IllegalArgumentException("Unknown file transfer type for download!"); 
+            return;
         }
         else if ( getCommand() instanceof StoreCommand ) 
         {

@@ -67,13 +67,8 @@ public class SimpleFTPLogin {
                 connection.changeDirectory("/home/ftpuser/download");
                 List<FTPFile> fileList = connection.getDirectoryListing();
                 for(int i = 0; i < fileList.size(); i++)
-                {
-                    log.info("Name:" + fileList.get(i).getName());
-                    log.info("Mode:" + fileList.get(i).getMode());
-                    log.info("Date:" + fileList.get(i).getDate());
-                    log.info("Size:" + fileList.get(i).getSize());
-                }
-                
+                    log.info("Name:" + fileList.get(i).getName() + " Mode:" + fileList.get(i).getMode() + " Date:" + fileList.get(i).getDate() + " Size:" + fileList.get(i).getSize());
+                log.debug("List Size:" + fileList.size());
                 connection.disconnect();
             }catch (NotConnectedException nce)
             {
