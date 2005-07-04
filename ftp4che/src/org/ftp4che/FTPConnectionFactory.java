@@ -98,5 +98,67 @@ public class FTPConnectionFactory {
         connection.setPassiveMode(passiveMode);
         return connection;
     }
+    
+    
+    /**
+     * This factory should be called to get you a new FTPConnection
+     * @param host = hostname to the server you want to connect 
+     * @param port = port you want to connect to
+     * @param user = login name 
+     * @param password = password. this parameter is optional
+     * @return FTPConnection the ftpconnection. you can than do a connect() and login() to connect and login to the server
+     * @throws ConfigurationException will be thrown if a parameter is missing or invalid
+     * @author arnold,kurt
+     */
+    public static FTPConnection getInstance(String host,int port,String user,String password) throws ConfigurationException
+    {
+        return FTPConnectionFactory.getInstance(host,port,user,password,null,10000,FTPConnection.FTP_CONNECTION,false);
+    }
 
+    /**
+     * This factory should be called to get you a new FTPConnection
+     * @param host = hostname to the server you want to connect 
+     * @param port = port you want to connect to
+     * @param user = login name 
+     * @param password = password. this parameter is optional
+     * @param account = Account Information. This parameter is optional
+     * @param passiveMode = Should the DataConnection be established in passive mode (Boolean Object)
+     * @return FTPConnection the ftpconnection. you can than do a connect() and login() to connect and login to the server
+     * @throws ConfigurationException will be thrown if a parameter is missing or invalid
+     * @author arnold,kurt
+     */
+    public static FTPConnection getInstance(String host,int port,String user,String password,boolean passive) throws ConfigurationException
+    {
+        return FTPConnectionFactory.getInstance(host,port,user,password,null,10000,FTPConnection.FTP_CONNECTION,passive);
+    }
+    
+    /**
+     * This factory should be called to get you a new FTPConnection
+     * @param host = hostname to the server you want to connect 
+     * @param port = port you want to connect to
+     * @param user = login name 
+     * @param password = password. this parameter is optional
+     * @param connectionType = The connection you want to have (normal,auth ssl,auth tls,...). There are constants (int primitiv type) in FTPConnection.
+     * @param passiveMode = Should the DataConnection be established in passive mode (Boolean Object)
+     * @return FTPConnection the ftpconnection. you can than do a connect() and login() to connect and login to the server
+     * @throws ConfigurationException will be thrown if a parameter is missing or invalid
+     * @author arnold,kurt
+     */
+    public static FTPConnection getInstance(String host,int port,String user,String password,int connectionType, boolean passive) throws ConfigurationException
+    {
+        return FTPConnectionFactory.getInstance(host,port,user,password,null,10000,connectionType,passive);
+    }
+    
+    /**
+     * This factory should be called to get you a new FTPConnection
+     * @param host = hostname to the server you want to connect 
+     * @param user = login name 
+     * @return FTPConnection the ftpconnection. you can than do a connect() and login() to connect and login to the server
+     * @throws ConfigurationException will be thrown if a parameter is missing or invalid
+     * @author arnold,kurt
+     */
+    public static FTPConnection getInstance(String host,String user) throws ConfigurationException
+    {
+        return FTPConnectionFactory.getInstance(host,21,user,"",null,10000,FTPConnection.FTP_CONNECTION,false);
+    }
 }
