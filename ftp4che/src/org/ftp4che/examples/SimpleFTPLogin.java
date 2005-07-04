@@ -37,7 +37,7 @@ public class SimpleFTPLogin {
         pt.setProperty("user.password","ftp4che");
         pt.put("connection.type", new Integer(FTPConnection.FTP_CONNECTION));
         pt.put("connection.timeout",new Integer(10000));
-        pt.put("connection.passive",new Boolean(true));
+        pt.put("connection.passive",new Boolean(false));
         try
         {
             FTPConnection connection = FTPConnectionFactory.getInstance(pt);
@@ -59,9 +59,9 @@ public class SimpleFTPLogin {
                 
                 connection.noOperation();
                 connection.changeDirectory("/home/ftpuser/download");
-                FTPFile fromFile = new FTPFile();
-                fromFile.setName("x.x");
-                connection.downloadFile(fromFile,new File("/home/arnold/downloadTest1.txt"));
+//                FTPFile fromFile = new FTPFile();
+//                fromFile.setName("x.x");
+               // connection.downloadFile(fromFile,new File("/home/arnold/downloadTest1.txt"));
                 connection.changeDirectory("/home/ftpuser/upload");
                 connection.downloadFile(new FTPFile("eclipse-SDK-3.1RC3-linux-gtk.tar.gz"),new File("/tmp" + File.separator + "eclipse-SDK-3.1RC3-linux-gtk.tar.gz"));
                 connection.changeDirectory("/home/ftpuser/download");

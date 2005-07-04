@@ -8,7 +8,6 @@ package org.ftp4che;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -16,7 +15,6 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -352,18 +350,18 @@ public abstract class FTPConnection {
         	dataSocket = sendPassiveMode();
             provider = new SocketProvider();
             provider.connect(dataSocket);
+            (sendCommand(command)).dumpReply(System.out);
         }
         else
         {
-        	provider = sendPortCommand();
+        	provider = sendPortCommand(command);
         }
         command.setDataSocket(provider);
         //INFO response from ControllConnection is ignored
-        (sendCommand(command)).dumpReply(System.out);
-          return ReplyFormatter.parseListReply(command.fetchDataConnectionReply());
+        return ReplyFormatter.parseListReply(command.fetchDataConnectionReply());
     }
     
-    public SocketProvider sendPortCommand() throws IOException
+    public SocketProvider sendPortCommand(Command command) throws IOException
     {
     	ServerSocketChannel server = ServerSocketChannel.open();
     	InetSocketAddress isa = new InetSocketAddress(socketProvider.socket().getLocalAddress(), 0);
@@ -376,21 +374,25 @@ public abstract class FTPConnection {
     	modifiedHost.append(port >> 8);
     	modifiedHost.append(",");
     	modifiedHost.append(port & 0x00ff);
-    	log.debug(modifiedHost.toString());	
-    	Command command = new Command(Command.PORT,modifiedHost.toString());
+       
+    	log.debug("PORT " + modifiedHost.toString());
+        
+    	Command portCommand = new Command(Command.PORT,modifiedHost.toString());
+        ((sendCommand(portCommand))).dumpReply(System.out);
         ((sendCommand(command))).dumpReply(System.out);
         SocketProvider provider = new SocketProvider(server.accept());
         try
         {
-        	while(!provider.finishConnect())
-        	{
-        		Thread.sleep(20);
-        	}
+            while(!provider.finishConnect())
+            {
+                Thread.sleep(20);
+            }
         } catch (InterruptedException e) {}
         provider.socket().setReceiveBufferSize(65536);
         provider.socket().setSendBufferSize(65536);
 
         return provider;
+
     }
     
     
@@ -404,15 +406,15 @@ public abstract class FTPConnection {
         	dataSocket = sendPassiveMode();
             provider = new SocketProvider();
             provider.connect(dataSocket);
+            (sendCommand(command)).dumpReply(System.out);
         }
         else
         {
-        	provider = sendPortCommand();
+        	provider = sendPortCommand(command);
         }
         command.setDataSocket(provider);
         //INFO response from ControllConnection is ignored
-         (sendCommand(command)).dumpReply(System.out);
-         command.fetchDataConnectionReply();
+        command.fetchDataConnectionReply();
     }
     
  public void uploadFile(File fromFile,FTPFile toFile) throws IOException
@@ -425,14 +427,14 @@ public abstract class FTPConnection {
         	dataSocket = sendPassiveMode();
             provider = new SocketProvider();
             provider.connect(dataSocket);
+            (sendCommand(command)).dumpReply(System.out);
         }
         else
         {
-        	provider = sendPortCommand();
+        	provider = sendPortCommand(command);
         }
         command.setDataSocket(provider);
         //INFO response from ControllConnection is ignored
-        (sendCommand(command)).dumpReply(System.out);
         command.fetchDataConnectionReply();
     }
 }
