@@ -58,7 +58,7 @@
 	use="true"
 	windowtitle="ftp4che Library">
 	<doctitle><![CDATA[<h1>ftp4che Library</h1>]]></doctitle>
-	<bottom><![CDATA[<i>2005 Arnold Maderthaner and Kurt Taschl. GNU License</i>]]></bottom>
+	<bottom><![CDATA[<i>2005 Arnold Maderthaner,Kurt Taschl, Thomas Feyrer. GNU General Public License</i>]]></bottom>
     </javadoc>
 </target>
  <target name="dist" depends="clean,init,compile,jar,tarsrc"> </target>
