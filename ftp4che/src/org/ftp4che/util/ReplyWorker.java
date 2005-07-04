@@ -190,11 +190,11 @@ public class ReplyWorker extends Thread {
                                 break;
                             }
                             socketAmount = 0;
-                            buffer.clear();
-                            setStatus(ReplyWorker.FINISHED);
-                            channel.close();
-                            getSocketProvider().close();
+                            buffer.clear();        
                         }
+                        setStatus(ReplyWorker.FINISHED);
+                        channel.close();
+                        getSocketProvider().close();
                     } catch (IOException ioe) {
                         setCaughtException(ioe);
                         setStatus(ReplyWorker.ERROR_IO_EXCEPTION);
