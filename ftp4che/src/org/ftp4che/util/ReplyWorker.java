@@ -13,6 +13,7 @@ import java.nio.charset.CharsetDecoder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
@@ -46,8 +47,10 @@ public class ReplyWorker extends Thread {
         setSocketProvider( sc );
         setCommand ( command );
     }
-    
-    public static Reply readReply ( SocketProvider socketProvider ) {
+    public static Reply readReply ( SocketProvider socketProvider) {
+        return ReplyWorker.readReply(socketProvider,false);
+    }
+    public static Reply readReply ( SocketProvider socketProvider, boolean isListReply ) {
         List<String> lines = new ArrayList<String>();
         Charset charset = Charset.forName( "ISO8859-1" );
         CharsetDecoder charDecoder = charset.newDecoder();
@@ -76,7 +79,7 @@ public class ReplyWorker extends Thread {
                 
                 String[] tmp = output.split("\n");
 
-                if (tmp.length > 0 && tmp[tmp.length - 1].length() > 3 
+                if (!isListReply && tmp.length > 0 && tmp[tmp.length - 1].length() > 3 
                         && tmp[tmp.length - 1].endsWith("\r")
                          && tmp[tmp.length - 1].charAt(3) == ' '
                          && Pattern.matches("[0-9]+", tmp[tmp.length - 1].substring(0, 3))) 
@@ -89,13 +92,27 @@ public class ReplyWorker extends Thread {
                     output = "";
                     buf.clear();
                 }
+                else
+                {
+                    String[] stringLines = output.split("\n");
+                    
+                    for ( String line : stringLines )
+                        lines.add(line);
+                    output = "";
+                    buf.clear();
+                }
                 try {
                     sleep(50);
                 } catch (InterruptedException ie) {}
             }
+            if(isListReply)
+            {
+                socketProvider.close();
+            }
         } catch (Exception e) {
           e.printStackTrace(System.err);
         }
+        
         return new Reply( lines );
     }
     
@@ -105,15 +122,15 @@ public class ReplyWorker extends Thread {
         if ( getSocketProvider() == null )
             throw new IllegalArgumentException("Given connection is closed already!");
         
-        if ( getCommand() instanceof ListCommand ) {
-//       TODO: think about a own solution for reading LIST
-//       instead of using control connection message read
-            this.setReply(ReplyWorker.readReply(getSocketProvider()));
-            setStatus( ReplyWorker.FINISHED );
-        }else if ( getCommand() instanceof RetrieveCommand ) {
+        if ( getCommand() instanceof ListCommand ) 
+        {
+            setReply(ReplyWorker.readReply(getSocketProvider(),true));
+            setStatus(ReplyWorker.FINISHED);
+        }else if ( getCommand() instanceof RetrieveCommand ) 
+        {
             RetrieveCommand retrieveCommand = (RetrieveCommand) getCommand();
-            
-            if ( retrieveCommand.getFromFile().getType().intern() == Command.TYPE_I ) {
+            if ( retrieveCommand.getFromFile().getType().intern() == Command.TYPE_I ) 
+            {
                 try
                 {
                     FileOutputStream out = new FileOutputStream(retrieveCommand.getToFile());
@@ -152,11 +169,10 @@ public class ReplyWorker extends Thread {
                     setStatus(ReplyWorker.ERROR_FILE_NOT_FOUND);
                 }
             }else
-                throw new IllegalArgumentException("Unknown file transfer type for download!");
-            
-            
-            
-        }else if ( getCommand() instanceof StoreCommand ) {
+                throw new IllegalArgumentException("Unknown file transfer type for download!"); 
+        }
+        else if ( getCommand() instanceof StoreCommand ) 
+        {
             StoreCommand storeCommand = (StoreCommand) getCommand();
             
             if ( storeCommand.getToFile().getType().intern() == Command.TYPE_I )
