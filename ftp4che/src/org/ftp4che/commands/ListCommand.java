@@ -16,7 +16,7 @@ public class ListCommand extends DataConnectionCommand {
     }
     
     //TODO: what todo if you get exception from replyworker ?
-    public Reply fetchDataConnectionReply() {
+    public Reply fetchDataConnectionReply() throws Exception{
         ReplyWorker worker = new ReplyWorker(getDataSocket(),this);
         worker.start();
         while(worker.getStatus() == ReplyWorker.UNKNOWN)
@@ -31,7 +31,9 @@ public class ListCommand extends DataConnectionCommand {
         	return worker.getReply();
         }
         else
-        	return null;
+        {
+        	throw worker.getCaughtException();
+        }
         	
     }
 

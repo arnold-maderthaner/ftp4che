@@ -16,7 +16,7 @@ public abstract class DataConnectionCommand extends Command{
 		super(command,parameter);
 	}
 	
-	public abstract Reply fetchDataConnectionReply();
+	public abstract Reply fetchDataConnectionReply() throws Exception;
     
 	/**
 	 * @return Returns the dataSocket.

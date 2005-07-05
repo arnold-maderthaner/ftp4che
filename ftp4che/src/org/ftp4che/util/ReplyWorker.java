@@ -1,6 +1,5 @@
 package org.ftp4che.util;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -13,7 +12,6 @@ import java.nio.charset.CharsetDecoder;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
@@ -54,7 +52,7 @@ public class ReplyWorker extends Thread {
         List<String> lines = new ArrayList<String>();
         Charset charset = Charset.forName( "ISO8859-1" );
         CharsetDecoder charDecoder = charset.newDecoder();
-        
+        Logger log = Logger.getLogger(ReplyWorker.class.getName());
         try {
             String output = "";
             String out = "";
@@ -107,7 +105,7 @@ public class ReplyWorker extends Thread {
                 socketProvider.close();
             }
         } catch (Exception e) {
-          e.printStackTrace(System.err);
+          log.error("Exception in reading Reply! Exception was: " + e.getMessage());
         }
         
         return new Reply( lines );

@@ -27,7 +27,7 @@ public class StoreCommand extends DataConnectionCommand {
        
     }
     
-    public Reply fetchDataConnectionReply() {
+    public Reply fetchDataConnectionReply() throws Exception {
     	  ReplyWorker worker = new ReplyWorker(getDataSocket(),this);
           worker.start();
           while(worker.getStatus() == ReplyWorker.UNKNOWN)
@@ -42,7 +42,9 @@ public class StoreCommand extends DataConnectionCommand {
           	return worker.getReply();
           }
           else
-          	return null;
+          {
+        	  throw worker.getCaughtException();
+          }
     }
     
     /**

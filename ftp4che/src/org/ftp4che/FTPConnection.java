@@ -308,7 +308,7 @@ public abstract class FTPConnection {
     		return ReplyFormatter.parsePASVCommand(sendCommand(command));
     	}catch (UnkownReplyStateException urse)
     	{
-    		log.error(urse);
+    		log.error("The state of the reply from pasv command is unknown!",urse);
     	}
     	return null;
     }
@@ -358,7 +358,14 @@ public abstract class FTPConnection {
         }
         command.setDataSocket(provider);
         //INFO response from ControllConnection is ignored
-        return ReplyFormatter.parseListReply(command.fetchDataConnectionReply());
+        try
+        {
+        	List<FTPFile> parsedList = ReplyFormatter.parseListReply(command.fetchDataConnectionReply());
+        	return parsedList;
+        }catch (Exception e)
+        {
+        	throw new IOException("Error getting List from server! Exception was: " + e.getMessage());
+        }
     }
     
     public SocketProvider sendPortCommand(Command command) throws IOException
@@ -374,8 +381,6 @@ public abstract class FTPConnection {
     	modifiedHost.append(port >> 8);
     	modifiedHost.append(",");
     	modifiedHost.append(port & 0x00ff);
-       
-    	log.debug("PORT " + modifiedHost.toString());
         
     	Command portCommand = new Command(Command.PORT,modifiedHost.toString());
         ((sendCommand(portCommand))).dumpReply(System.out);
@@ -414,7 +419,13 @@ public abstract class FTPConnection {
         }
         command.setDataSocket(provider);
         //INFO response from ControllConnection is ignored
-        command.fetchDataConnectionReply();
+        try
+        {
+        	command.fetchDataConnectionReply();
+        }catch (Exception e)
+        {
+        	throw new IOException("Error downloading File! Exception was: " + e.getMessage());
+        }
     }
     
  public void uploadFile(File fromFile,FTPFile toFile) throws IOException
@@ -435,6 +446,12 @@ public abstract class FTPConnection {
         }
         command.setDataSocket(provider);
         //INFO response from ControllConnection is ignored
-        command.fetchDataConnectionReply();
+        try
+        {
+        	command.fetchDataConnectionReply();
+        }catch (Exception e)
+        {
+        	throw new IOException("Error uploading File! Exception was: " + e.getMessage());
+        }
     }
 }

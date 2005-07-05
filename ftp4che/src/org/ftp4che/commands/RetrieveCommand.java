@@ -25,7 +25,7 @@ public class RetrieveCommand extends DataConnectionCommand {
        setToFile ( toFile );
     }
     
-    public Reply fetchDataConnectionReply() {
+    public Reply fetchDataConnectionReply() throws Exception {
        ReplyWorker worker = new ReplyWorker(getDataSocket(),this);
        worker.start();
        while(worker.getStatus() == ReplyWorker.UNKNOWN)
@@ -40,7 +40,9 @@ public class RetrieveCommand extends DataConnectionCommand {
        	return worker.getReply();
        }
        else
-       	return null;
+       {
+    	   throw worker.getCaughtException();
+       }
     }
     
     /**
