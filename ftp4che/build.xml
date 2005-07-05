@@ -3,6 +3,7 @@
   <property name="build" value="build"/>
   <property name="dist"  value="dist"/>
   <property name="release" value="release"/>
+  <property name="doc"  value="src/doc"/>
   <property name="docs"  value="docs"/>
   <property name="version" value="0.1"/>
   <property name="thirdparty" value="thirdparty"/>
@@ -84,6 +85,11 @@
 	<doctitle><![CDATA[<h1>ftp4che Library</h1>]]></doctitle>
 	<bottom><![CDATA[<i>2005 Arnold Maderthaner,Kurt Taschl, Thomas Feyrer. GNU General Public License</i>]]></bottom>
     </javadoc>
+	<copy todir="${dist}">
+		<fileset dir="${doc}">	
+			<include name="COPYING"/>
+		</fileset>
+	</copy>
 </target>
 <target name="release">
 	<zip zipfile="${release}/ftp4che-all-${version}.zip" basedir="${dist}"/>
