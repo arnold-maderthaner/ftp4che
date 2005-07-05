@@ -58,16 +58,16 @@ public class SimpleFTPLogin {
                 log.debug("Working Directory: " + connection.getWorkDirectory());
                 
                 connection.noOperation();
+                connection.changeDirectory("/home/ftpuser/source");
                 List<FTPFile> fileList = connection.getDirectoryListing();
                 for(int i = 0; i < fileList.size(); i++)
                     log.info("Name:" + fileList.get(i).getName() + " Mode:" + fileList.get(i).getMode() + " Date:" + fileList.get(i).getDate() + " Size:" + fileList.get(i).getSize());
                 log.debug("List Size:" + fileList.size());
-                connection.changeDirectory("/home/ftpuser/download");
                 FTPFile fromFile = new FTPFile();
-                fromFile.setName("eclipse-SDK-3.1RC3-linux-gtk.tar.gz");
-                connection.downloadFile(fromFile,new File("/home/ftpuser/eclipse-SDK-3.1RC3-linux-gtk.tar.gz"));
+                fromFile.setName("testfile1.doc");
+                connection.downloadFile(fromFile,new File("/home/ftpuser/download/testfile1.doc"));
                 connection.changeDirectory("/home/ftpuser/upload");
-                connection.downloadFile(new FTPFile("eclipse-SDK-3.1RC3-linux-gtk.tar.gz"),new File("/tmp" + File.separator + "eclipse-SDK-3.1RC3-linux-gtk.tar.gz"));
+                connection.uploadFile(new File("/home/ftpuser/download" + File.separator + "testfile1.doc"),new FTPFile("testfile1.doc"));
                 connection.changeDirectory("/home/ftpuser/download");
                 
                 connection.disconnect();
