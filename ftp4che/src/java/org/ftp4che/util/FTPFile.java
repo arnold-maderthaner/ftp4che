@@ -19,7 +19,7 @@ import org.ftp4che.commands.Command;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class FTPFile {
-    String name = "", mode ="";
+    String path = "", name = "", mode ="";
     long size = 0;
 	boolean visible = true;
 	String date = "";
@@ -160,4 +160,12 @@ public class FTPFile {
     public void setType(String type) {
         this.type = type;
     }
+
+	public String getPath() {
+		return path;
+	}
+
+	public void setPath(String path) {
+		this.path = path;
+	}
 }
