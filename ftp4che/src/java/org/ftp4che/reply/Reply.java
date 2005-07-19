@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.ftp4che.exception.FtpIOException;
+import org.ftp4che.exception.FtpWorkflowException;
+import org.ftp4che.exception.NotConnectedException;
 
 public class Reply {
     List<String> lines = new ArrayList<String>();
@@ -51,4 +54,20 @@ public class Reply {
     public String getReplyMessage() {
     	return getLines().get( getLines().size() - 1 ).substring(3);
     }
+    
+    public void validate() throws FtpWorkflowException,FtpIOException
+    {
+        if(ReplyCode.isPermanentNegativeCompletionReply(this))
+        {
+            if(getReplyCode().intern() == ReplyCode.REPLY_530.intern())
+                throw new NotConnectedException("Not logged in");
+            throw new FtpWorkflowException(this.getReplyCode(),this.getReplyMessage());
+        }
+        else if(ReplyCode.isTransientNegativeCompletionReply(this))
+        {
+            throw new FtpIOException(this.getReplyCode(),this.getReplyMessage());
+        }
+    }
+    
+   
 }
