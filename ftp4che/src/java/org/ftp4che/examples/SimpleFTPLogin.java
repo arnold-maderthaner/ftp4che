@@ -32,7 +32,7 @@ public class SimpleFTPLogin {
         
         Properties pt = new Properties();
         pt.setProperty("connection.host","127.0.0.1");
-        pt.setProperty("connection.port","21");
+        pt.setProperty("connection.port","54322");
         pt.setProperty("user.login","ftpuser");
         pt.setProperty("user.password","ftp4che");
         pt.put("connection.type", new Integer(FTPConnection.FTP_CONNECTION));
@@ -58,7 +58,7 @@ public class SimpleFTPLogin {
                 log.debug("Working Directory: " + connection.getWorkDirectory());
                 
                 connection.noOperation();
-                connection.changeDirectory("/home/ftpuser/source");
+                connection.changeDirectory("/home/ftpuser/download");
                 List<FTPFile> fileList = connection.getDirectoryListing();
                 for(int i = 0; i < fileList.size(); i++)
                     log.info("Name:" + fileList.get(i).getName() + " Mode:" + fileList.get(i).getMode() + " Date:" + fileList.get(i).getDate() + " Size:" + fileList.get(i).getSize());

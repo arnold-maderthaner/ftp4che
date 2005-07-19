@@ -6,16 +6,18 @@
  */
 package org.ftp4che.exception;
 
+import org.ftp4che.reply.ReplyCode;
+
 /**
  * @author arnold
  *
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class NotConnectedException extends Exception {
+public class NotConnectedException extends FtpIOException {
     public NotConnectedException(String description)
     {
-        super(description);
+        super(ReplyCode.REPLY_530,description);
     }
 
 }

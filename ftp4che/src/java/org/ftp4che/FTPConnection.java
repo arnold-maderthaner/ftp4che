@@ -25,9 +25,12 @@ import org.ftp4che.commands.ListCommand;
 import org.ftp4che.commands.RetrieveCommand;
 import org.ftp4che.commands.StoreCommand;
 import org.ftp4che.exception.ConfigurationException;
+import org.ftp4che.exception.FtpIOException;
+import org.ftp4che.exception.FtpWorkflowException;
 import org.ftp4che.exception.NotConnectedException;
 import org.ftp4che.exception.UnkownReplyStateException;
 import org.ftp4che.reply.Reply;
+import org.ftp4che.reply.ReplyCode;
 import org.ftp4che.util.FTPFile;
 import org.ftp4che.util.ReplyFormatter;
 import org.ftp4che.util.ReplyWorker;
@@ -229,10 +232,12 @@ public abstract class FTPConnection {
      * @author arnold,kurt  
      * @throws IOException will be thrown if there was a communication problem with the server
      */
-    public void changeDirectory(String directory) throws IOException
+    public void changeDirectory(String directory) throws IOException,FtpWorkflowException,FtpIOException
     {
         Command command = new Command(Command.CWD,directory);
-        (sendCommand(command)).dumpReply(System.out);
+        Reply reply = sendCommand(command);
+        reply.dumpReply(System.out);
+        reply.validate();
     }
     
     /**
@@ -240,11 +245,12 @@ public abstract class FTPConnection {
      * @author arnold,kurt
      * @throws IOException  will be thrown if there was a communication problem with the server
      */
-    public String getWorkDirectory() throws IOException,UnkownReplyStateException
+    public String getWorkDirectory() throws IOException,UnkownReplyStateException,FtpWorkflowException,FtpIOException
     {
         Command command = new Command(Command.PWD);
         Reply reply = sendCommand(command);
         reply.dumpReply(System.out);
+        reply.validate();
         return ReplyFormatter.parsePWDReply(reply);
     }
     
@@ -253,10 +259,12 @@ public abstract class FTPConnection {
      * @author arnold,kurt
      * @throws IOException  will be thrown if there was a communication problem with the server
      */
-    public void changeToParentDirectory() throws IOException
+    public void changeToParentDirectory() throws IOException,FtpWorkflowException,FtpIOException
     {
         Command command = new Command(Command.CDUP);
-        (sendCommand(command)).dumpReply(System.out);
+        Reply reply = sendCommand(command);
+        reply.dumpReply(System.out);
+        reply.validate();
     }
     
     /**
@@ -265,10 +273,12 @@ public abstract class FTPConnection {
      * @author arnold,kurt
      * @throws IOException will be thrown if there was a communication problem with the server
      */
-    public void makeDirectory(String pathname) throws IOException
+    public void makeDirectory(String pathname) throws IOException,FtpWorkflowException,FtpIOException
     {
         Command command = new Command(Command.MKD,pathname);
-        (sendCommand(command)).dumpReply(System.out);
+        Reply reply = sendCommand(command);
+        reply.dumpReply(System.out);
+        reply.validate();
     }
 
     /**
@@ -277,10 +287,12 @@ public abstract class FTPConnection {
      * @author arnold,kurt
      * @throws IOException will be thrown if there was a communication problem with the server
      */
-    public void removeDirectory( String pathname ) throws IOException
+    public void removeDirectory( String pathname ) throws IOException,FtpWorkflowException,FtpIOException
     {
         Command command = new Command(Command.RMD,pathname);
-        (sendCommand(command)).dumpReply(System.out);
+        Reply reply = sendCommand(command);
+        reply.dumpReply(System.out);
+        reply.validate();
     }
     
     /**
@@ -289,10 +301,12 @@ public abstract class FTPConnection {
      * @author arnold,kurt
      * @throws IOException will be thrown if there was a communication problem with the server
      */
-    public void noOperation() throws IOException
+    public void noOperation() throws IOException,FtpWorkflowException,FtpIOException
     {
         Command command = new Command(Command.NOOP);
-        (sendCommand(command)).dumpReply(System.out);
+        Reply reply = sendCommand(command);
+        reply.dumpReply(System.out);
+        reply.validate();
     }
     
     /**
@@ -300,12 +314,15 @@ public abstract class FTPConnection {
      * @author arnold,kurt
      * @throws IOException will be thrown if there was a communication problem with the server
      */
-    public InetSocketAddress sendPassiveMode() throws IOException
+    public InetSocketAddress sendPassiveMode() throws IOException,FtpWorkflowException,FtpIOException
     {
     	Command command = new Command(Command.PASV);
     	try
     	{
-    		return ReplyFormatter.parsePASVCommand(sendCommand(command));
+            Reply reply = sendCommand(command);
+            reply.dumpReply(System.out);
+            reply.validate();
+    		return ReplyFormatter.parsePASVCommand(reply);
     	}catch (UnkownReplyStateException urse)
     	{
     		log.error("The state of the reply from pasv command is unknown!",urse);
@@ -335,12 +352,12 @@ public abstract class FTPConnection {
     
     
     
-    public List<FTPFile> getDirectoryListing() throws IOException
+    public List<FTPFile> getDirectoryListing() throws IOException,FtpWorkflowException,FtpIOException
     {
        return getDirectoryListing(".");
     }
     
-    public List<FTPFile> getDirectoryListing(String directory) throws IOException
+    public List<FTPFile> getDirectoryListing(String directory) throws IOException,FtpWorkflowException,FtpIOException
     {
     	InetSocketAddress dataSocket = null;
     	ListCommand command = new ListCommand(directory);
@@ -368,7 +385,7 @@ public abstract class FTPConnection {
         }
     }
     
-    public SocketProvider sendPortCommand(Command command) throws IOException
+    public SocketProvider sendPortCommand(Command command) throws IOException,FtpWorkflowException,FtpIOException
     {
     	ServerSocketChannel server = ServerSocketChannel.open();
     	InetSocketAddress isa = new InetSocketAddress(socketProvider.socket().getLocalAddress(), 0);
@@ -383,8 +400,12 @@ public abstract class FTPConnection {
     	modifiedHost.append(port & 0x00ff);
         
     	Command portCommand = new Command(Command.PORT,modifiedHost.toString());
-        ((sendCommand(portCommand))).dumpReply(System.out);
-        ((sendCommand(command))).dumpReply(System.out);
+        Reply portReply = sendCommand(portCommand);
+        portReply.dumpReply(System.out);
+        portReply.validate();
+        Reply commandReply = sendCommand(command);
+        commandReply.dumpReply(System.out);
+        commandReply.validate();
         SocketProvider provider = new SocketProvider(server.accept());
         try
         {
@@ -401,7 +422,7 @@ public abstract class FTPConnection {
     }
     
     
-    public void downloadFile(FTPFile fromFile,File toFile) throws IOException
+    public void downloadFile(FTPFile fromFile,File toFile) throws IOException,FtpWorkflowException,FtpIOException
     {
     	InetSocketAddress dataSocket = null;
     	RetrieveCommand command = new RetrieveCommand(Command.RETR,fromFile,toFile);
@@ -428,7 +449,7 @@ public abstract class FTPConnection {
         }
     }
     
- public void uploadFile(File fromFile,FTPFile toFile) throws IOException
+ public void uploadFile(File fromFile,FTPFile toFile) throws IOException,FtpWorkflowException,FtpIOException
     {
     	InetSocketAddress dataSocket = null;
     	StoreCommand command = new StoreCommand(Command.STOR,fromFile,toFile);
