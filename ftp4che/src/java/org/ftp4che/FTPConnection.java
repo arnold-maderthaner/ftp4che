@@ -367,7 +367,9 @@ public abstract class FTPConnection {
         	dataSocket = sendPassiveMode();
             provider = new SocketProvider();
             provider.connect(dataSocket);
-            (sendCommand(command)).dumpReply(System.out);
+            Reply reply = sendCommand(command);
+            reply.dumpReply(System.out);
+            reply.validate();
         }
         else
         {
@@ -375,14 +377,8 @@ public abstract class FTPConnection {
         }
         command.setDataSocket(provider);
         //INFO response from ControllConnection is ignored
-        try
-        {
-        	List<FTPFile> parsedList = ReplyFormatter.parseListReply(command.fetchDataConnectionReply());
-        	return parsedList;
-        }catch (Exception e)
-        {
-        	throw new IOException("Error getting List from server! Exception was: " + e.getMessage());
-        }
+        List<FTPFile> parsedList = ReplyFormatter.parseListReply(command.fetchDataConnectionReply());
+        return parsedList;
     }
     
     public SocketProvider sendPortCommand(Command command) throws IOException,FtpWorkflowException,FtpIOException
@@ -432,7 +428,9 @@ public abstract class FTPConnection {
         	dataSocket = sendPassiveMode();
             provider = new SocketProvider();
             provider.connect(dataSocket);
-            (sendCommand(command)).dumpReply(System.out);
+            Reply reply = sendCommand(command);
+            reply.dumpReply(System.out);
+            reply.validate();
         }
         else
         {
@@ -440,13 +438,7 @@ public abstract class FTPConnection {
         }
         command.setDataSocket(provider);
         //INFO response from ControllConnection is ignored
-        try
-        {
-        	command.fetchDataConnectionReply();
-        }catch (Exception e)
-        {
-        	throw new IOException("Error downloading File! Exception was: " + e.getMessage());
-        }
+        command.fetchDataConnectionReply();
     }
     
  public void uploadFile(File fromFile,FTPFile toFile) throws IOException,FtpWorkflowException,FtpIOException
@@ -459,7 +451,9 @@ public abstract class FTPConnection {
         	dataSocket = sendPassiveMode();
             provider = new SocketProvider();
             provider.connect(dataSocket);
-            (sendCommand(command)).dumpReply(System.out);
+            Reply reply = sendCommand(command);
+            reply.dumpReply(System.out);
+            reply.validate();
         }
         else
         {
@@ -467,12 +461,6 @@ public abstract class FTPConnection {
         }
         command.setDataSocket(provider);
         //INFO response from ControllConnection is ignored
-        try
-        {
-        	command.fetchDataConnectionReply();
-        }catch (Exception e)
-        {
-        	throw new IOException("Error uploading File! Exception was: " + e.getMessage());
-        }
+      	command.fetchDataConnectionReply();
     }
 }

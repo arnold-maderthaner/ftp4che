@@ -1,6 +1,8 @@
 package org.ftp4che.commands;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import org.ftp4che.reply.Reply;
 import org.ftp4che.util.FTPFile;
@@ -25,7 +27,7 @@ public class RetrieveCommand extends DataConnectionCommand {
        setToFile ( toFile );
     }
     
-    public Reply fetchDataConnectionReply() throws Exception {
+    public Reply fetchDataConnectionReply() throws FileNotFoundException,IOException{
        ReplyWorker worker = new ReplyWorker(getDataSocket(),this);
        worker.start();
        while(worker.getStatus() == ReplyWorker.UNKNOWN)
@@ -41,7 +43,10 @@ public class RetrieveCommand extends DataConnectionCommand {
        }
        else
        {
-    	   throw worker.getCaughtException();
+           if(worker.getCaughtException() instanceof FileNotFoundException)
+               throw (FileNotFoundException)worker.getCaughtException();
+           else
+               throw (IOException)worker.getCaughtException();        
        }
     }
     
