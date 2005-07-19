@@ -9,7 +9,8 @@ public class ReplyCode {
     public static final String POSITIVE_INTERMIDIATE_REPLY = "3";
     public static final String TRANSIENT_NEGATIVE_COMPLETION_REPLY = "4";
     public static final String PERMANENT_NEGATIVE_COMPLETION_REPLY = "5";
-     
+
+// reply information
     // meaning of second digit
     public static final String SYNTAX = "0"; 
     public static final String INFORMATION = "1";
@@ -80,4 +81,13 @@ public class ReplyCode {
         // Exceeded storage allocation (for current directory or dataset).
     public static final String REPLY_553 = "553"; // Requested action not taken.
         //File name not allowed.
+    
+    
+    public static String getReplyGroup( String line ) {
+        return line.substring(0,0);
+    }
+    
+    public static String getReplyInformation( String line )  {
+        return line.substring(1,1);
+    }
 }
