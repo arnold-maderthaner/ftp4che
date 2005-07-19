@@ -43,4 +43,12 @@ public class Reply {
             log.error("Couldn't dump reply",ioe);
         }
     }
+    
+    public String getReplyCode() {
+    	return getLines().get( getLines().size() - 1 ).substring(0,2);
+    }
+    
+    public String getReplyMessage() {
+    	return getLines().get( getLines().size() - 1 ).substring(3);
+    }
 }
