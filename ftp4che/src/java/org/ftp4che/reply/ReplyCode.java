@@ -83,11 +83,23 @@ public class ReplyCode {
         //File name not allowed.
     
     
-    public static String getReplyGroup( String line ) {
-        return line.substring(0,0);
+    public static boolean isPositivePreliminaryReply( Reply reply ) {
+    	return ( reply.getLines().get(reply.getLines().size() - 1).startsWith( POSITIVE_PRELIMINARY_REPLY ) ? true : false );
     }
-    
-    public static String getReplyInformation( String line )  {
-        return line.substring(1,1);
+
+    public static boolean isPositiveCompletionReply( Reply reply ) {
+    	return ( reply.getLines().get(reply.getLines().size() - 1).startsWith( POSITIVE_COMPLETION_REPLY ) ? true : false );
+    }
+
+    public static boolean isPositiveIntermidiateReply( Reply reply ) {
+    	return ( reply.getLines().get(reply.getLines().size() - 1).startsWith( POSITIVE_INTERMIDIATE_REPLY ) ? true : false );
+    }
+
+    public static boolean isTransientNegativeCompletionReply( Reply reply ) {
+    	return ( reply.getLines().get(reply.getLines().size() - 1).startsWith( TRANSIENT_NEGATIVE_COMPLETION_REPLY ) ? true : false );
+    }
+
+    public static boolean isPermanentNegativeCompletionReply( Reply reply ) {
+    	return ( reply.getLines().get(reply.getLines().size() - 1).startsWith( PERMANENT_NEGATIVE_COMPLETION_REPLY ) ? true : false );
     }
 }
