@@ -48,7 +48,7 @@ public class Reply {
     }
     
     public String getReplyCode() {
-    	return getLines().get( getLines().size() - 1 ).substring(0,2);
+    	return getLines().get( getLines().size() - 1 ).substring(0,3);
     }
     
     public String getReplyMessage() {
