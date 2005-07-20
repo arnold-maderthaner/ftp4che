@@ -203,7 +203,7 @@ public abstract class FTPConnection {
      */
     public int getConnectionStatus()
     {
-        //TODO: IMPLEMENT
+        //TODO: IMPLEMENT / DO WE NEED THIS ???
         return FTPConnection.CONNECTED;
     }
     
@@ -231,6 +231,8 @@ public abstract class FTPConnection {
      * @param directory a string represanting the new working directory
      * @author arnold,kurt  
      * @throws IOException will be thrown if there was a communication problem with the server
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 5xx. in most cases wrong commands where send
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 4xx. this should indicate some secific problems on the server
      */
     public void changeDirectory(String directory) throws IOException,FtpWorkflowException,FtpIOException
     {
@@ -244,6 +246,9 @@ public abstract class FTPConnection {
      * This method is used to get the working directory. it implements the PWD ftp command
      * @author arnold,kurt
      * @throws IOException  will be thrown if there was a communication problem with the server
+     * @throws UnkownReplyStateException this indicates if the response from the server for the specific commando is not right (f.e. more than one reply line but only one expected)
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 5xx. in most cases wrong commands where send
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 4xx. this should indicate some secific problems on the server
      */
     public String getWorkDirectory() throws IOException,UnkownReplyStateException,FtpWorkflowException,FtpIOException
     {
@@ -258,6 +263,8 @@ public abstract class FTPConnection {
      * This method is used to change to the parent directory. it implements the CDUP ftp command
      * @author arnold,kurt
      * @throws IOException  will be thrown if there was a communication problem with the server
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 5xx. in most cases wrong commands where send
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 4xx. this should indicate some secific problems on the server
      */
     public void changeToParentDirectory() throws IOException,FtpWorkflowException,FtpIOException
     {
@@ -272,6 +279,8 @@ public abstract class FTPConnection {
      * @param pathname a string represanting the directory to create
      * @author arnold,kurt
      * @throws IOException will be thrown if there was a communication problem with the server
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 5xx. in most cases wrong commands where send
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 4xx. this should indicate some secific problems on the server
      */
     public void makeDirectory(String pathname) throws IOException,FtpWorkflowException,FtpIOException
     {
@@ -286,6 +295,8 @@ public abstract class FTPConnection {
      * @param pathname a string represanting the directory to remove
      * @author arnold,kurt
      * @throws IOException will be thrown if there was a communication problem with the server
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 5xx. in most cases wrong commands where send
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 4xx. this should indicate some secific problems on the server
      */
     public void removeDirectory( String pathname ) throws IOException,FtpWorkflowException,FtpIOException
     {
@@ -300,6 +311,8 @@ public abstract class FTPConnection {
      * it implements the NOOP ftp command
      * @author arnold,kurt
      * @throws IOException will be thrown if there was a communication problem with the server
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 5xx. in most cases wrong commands where send
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 4xx. this should indicate some secific problems on the server
      */
     public void noOperation() throws IOException,FtpWorkflowException,FtpIOException
     {
@@ -313,6 +326,8 @@ public abstract class FTPConnection {
      * This method is used to go into passive mode. it implements the PASV ftp command
      * @author arnold,kurt
      * @throws IOException will be thrown if there was a communication problem with the server
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 5xx. in most cases wrong commands where send
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 4xx. this should indicate some secific problems on the server
      */
     public InetSocketAddress sendPassiveMode() throws IOException,FtpWorkflowException,FtpIOException
     {
@@ -350,12 +365,27 @@ public abstract class FTPConnection {
           return passiveMode;
     }
     
-    
+    /**
+     * This method is used to get a directory listing from the current working directory
+     * @return List of FTPFiles
+     * @throws IOException will be thrown if there was a communication problem with the server
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 5xx. in most cases wrong commands where send
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 4xx. this should indicate some secific problems on the server
+     */
     
     public List<FTPFile> getDirectoryListing() throws IOException,FtpWorkflowException,FtpIOException
     {
        return getDirectoryListing(".");
     }
+
+    /**
+     * This method is used to get a directory listing from the specified directory
+     * @return List of FTPFiles
+     * @param The directory where a LIST should be done
+     * @throws IOException will be thrown if there was a communication problem with the server
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 5xx. in most cases wrong commands where send
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 4xx. this should indicate some secific problems on the server
+     */
     
     public List<FTPFile> getDirectoryListing(String directory) throws IOException,FtpWorkflowException,FtpIOException
     {
@@ -381,6 +411,14 @@ public abstract class FTPConnection {
         return parsedList;
     }
     
+    /**
+     * This method is used to tell the server that we want to go in PORT mode (means that we tell the server he should open a connection to a port)
+     * @return SocketProvider with the established connection
+     * @param The command that will follow after establishing the connection
+     * @throws IOException will be thrown if there was a communication problem with the server
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 5xx. in most cases wrong commands where send
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 4xx. this should indicate some secific problems on the server
+     */
     public SocketProvider sendPortCommand(Command command) throws IOException,FtpWorkflowException,FtpIOException
     {
     	ServerSocketChannel server = ServerSocketChannel.open();
@@ -418,6 +456,16 @@ public abstract class FTPConnection {
     }
     
     
+    /**
+     * This method is used to download a file from the server to a specifed File object
+     * @param fromFile the file on the server
+     * @param toFile the file object where the file should be stored (on the local computer)
+     * @throws IOException will be thrown if there was a communication problem with the server
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 5xx. in most cases wrong commands where send
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 4xx. this should indicate some secific problems on the server
+     * @throws FtpFileNotFountException will be thrown if the specified fromFile is not found on the server
+     */
+    
     public void downloadFile(FTPFile fromFile,File toFile) throws IOException,FtpWorkflowException,FtpIOException
     {
     	InetSocketAddress dataSocket = null;
@@ -441,7 +489,16 @@ public abstract class FTPConnection {
         command.fetchDataConnectionReply();
     }
     
- public void uploadFile(File fromFile,FTPFile toFile) throws IOException,FtpWorkflowException,FtpIOException
+    /**
+     * This method is used to upload a file to the server to a specifed FtpFile
+     * @param fromFile the file on the local computer
+     * @param toFile the FtpFile object where the file should be stored (on the server)
+     * @throws IOException will be thrown if there was a communication problem with the server
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 5xx. in most cases wrong commands where send
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 4xx. this should indicate some secific problems on the server
+     * @throws FileNotFountException will be thrown if the specified fromFile is not found on the local computer
+     */
+    public void uploadFile(File fromFile,FTPFile toFile) throws IOException,FtpWorkflowException,FtpIOException
     {
     	InetSocketAddress dataSocket = null;
     	StoreCommand command = new StoreCommand(Command.STOR,fromFile,toFile);
