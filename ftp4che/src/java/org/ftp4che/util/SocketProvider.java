@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
 
 public class SocketProvider {
 
-	private int sslMode = 0; // 0 = no ssl ; 1 = implicit ssl ; 2 = auth tls ; 3 = auth ssl
+	private boolean sslMode = false; // default: ssl = off
     SocketChannel socketChan = null;
     SSLEngineResult res;
     SSLEngine sslEngine;
@@ -33,20 +33,10 @@ public class SocketProvider {
 		socketChan = SocketChannel.open();
 	}
     
-    public SocketProvider( int sslMode ) throws IOException {
-        socketChan = SocketChannel.open();
-        setSSLMode( sslMode );
-    }
-	
 	public SocketProvider( SocketChannel socketChan ) {
 		this.socketChan = socketChan;
 	}
     
-    public SocketProvider( SocketChannel socketChan, int sslMode ) {
-        this.socketChan = socketChan;
-        setSSLMode( sslMode );
-    }
-	
 	public boolean connect( SocketAddress remote ) throws IOException {
 		return socketChan.connect(remote);
 	}
@@ -65,13 +55,7 @@ public class SocketProvider {
 	}
 	
 	public void close() throws IOException {
-        if ( this.sslMode > 0 ) {
-            sslEngine.closeOutbound();
-            clientOut.clear();
-            socketChan.write(wrap(clientOut));
-            socketChan.close();
-        } else        
-            socketChan.close();
+	    socketChan.close();
 	}
 	
 	public SelectableChannel configureBlocking( boolean blockingState ) throws IOException {
@@ -80,8 +64,6 @@ public class SocketProvider {
 	
 
 	public int write(ByteBuffer src) throws IOException {
-        if ( this.sslMode > 0 )
-            return socketChan.write(wrap(src));
 		return socketChan.write(src);
 	}
 	
@@ -92,45 +74,5 @@ public class SocketProvider {
 	
 	public String toString() {
 		return socketChan.socket().getInetAddress().getHostAddress() + ":" + socketChan.socket().getPort();
-	}
-
-    /**
-     * @return Returns the sslMode.
-     */
-    public int getSSLMode() {
-        return sslMode;
-    }
-
-    /**
-     * @param sslMode The sslMode to set.
-     */
-    public void setSSLMode(int sslMode) {
-        this.sslMode = sslMode;
-    }
-    
-    private void createBuffers(SSLSession session) {
-        
-        int appBufferMax = session.getApplicationBufferSize();
-        int netBufferMax = session.getPacketBufferSize();
-    
-        clientIn = ByteBuffer.allocate(65536);
-        clientOut = ByteBuffer.allocate(appBufferMax);
-        wbuf = ByteBuffer.allocate(65536);
-    
-        cTOs = ByteBuffer.allocate(netBufferMax);
-        sTOc = ByteBuffer.allocate(netBufferMax);
-    
-    }
-    
-    private synchronized ByteBuffer wrap(ByteBuffer b) throws SSLException {
-        return null;
-    }
-    
-    private synchronized ByteBuffer unwrap(ByteBuffer b) throws SSLException {
-        return null;
-    }
-    
-    public boolean isInboundDone() {
-        return sslEngine.isInboundDone();
-    }
+	}    
 }
