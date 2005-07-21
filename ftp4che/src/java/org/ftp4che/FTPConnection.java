@@ -24,6 +24,7 @@ import org.ftp4che.commands.Command;
 import org.ftp4che.commands.ListCommand;
 import org.ftp4che.commands.RetrieveCommand;
 import org.ftp4che.commands.StoreCommand;
+import org.ftp4che.exception.AuthenticationNotSupportedException;
 import org.ftp4che.exception.ConfigurationException;
 import org.ftp4che.exception.FtpIOException;
 import org.ftp4che.exception.FtpWorkflowException;
@@ -158,7 +159,7 @@ public abstract class FTPConnection {
      * @exception NotConnectedException will be thrown if it was not possible to establish a connection to the specified server
      * @exception IOException will be thrown if it there was a problem sending the LoginCommand to the server
      */
-    public abstract void connect() throws NotConnectedException,IOException;
+    public abstract void connect() throws NotConnectedException,IOException,AuthenticationNotSupportedException;
     
     /**
      * This method is used to disconnect from the specified server.

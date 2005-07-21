@@ -24,6 +24,7 @@ public class Command {
     public final static String CWD = "CWD";
     public final static String CDUP = "CDUP";
     public final static String DELE = "DELE";
+    public final static String FEAT = "FEAT";
     public final static String MKD = "MKD";
     public final static String PASV = "PASV";
     public final static String PASS = "PASS";

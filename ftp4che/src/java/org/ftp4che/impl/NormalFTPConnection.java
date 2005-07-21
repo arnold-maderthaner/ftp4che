@@ -10,6 +10,7 @@ import java.io.IOException;
 import org.apache.log4j.Logger;
 import org.ftp4che.FTPConnection;
 import org.ftp4che.commands.Command;
+import org.ftp4che.exception.AuthenticationNotSupportedException;
 import org.ftp4che.exception.NotConnectedException;
 import org.ftp4che.reply.Reply;
 import org.ftp4che.util.ReplyWorker;
@@ -31,7 +32,7 @@ public class NormalFTPConnection extends FTPConnection {
     }
     
     @Override
-    public void connect() throws NotConnectedException, IOException {
+    public void connect() throws NotConnectedException, IOException,AuthenticationNotSupportedException {
         try
         {
             socketProvider = new SocketProvider();
