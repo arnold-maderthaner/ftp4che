@@ -390,17 +390,11 @@ public abstract class FTPConnection {
     
     public List<FTPFile> getDirectoryListing(String directory) throws IOException,FtpWorkflowException,FtpIOException
     {
-    	InetSocketAddress dataSocket = null;
     	ListCommand command = new ListCommand(directory);
     	SocketProvider provider = null;
         if(isPassiveMode())
         {
-        	dataSocket = sendPassiveMode();
-            provider = new SocketProvider();
-            provider.connect(dataSocket);
-            Reply reply = sendCommand(command);
-            reply.dumpReply(System.out);
-            reply.validate();
+        	provider = initDataSocket(command);
         }
         else
         {
@@ -469,17 +463,12 @@ public abstract class FTPConnection {
     
     public void downloadFile(FTPFile fromFile,File toFile) throws IOException,FtpWorkflowException,FtpIOException
     {
-    	InetSocketAddress dataSocket = null;
+    	
     	RetrieveCommand command = new RetrieveCommand(Command.RETR,fromFile,toFile);
     	SocketProvider provider = null;
         if(isPassiveMode())
         {
-        	dataSocket = sendPassiveMode();
-            provider = new SocketProvider();
-            provider.connect(dataSocket);
-            Reply reply = sendCommand(command);
-            reply.dumpReply(System.out);
-            reply.validate();
+            provider = initDataSocket(command);
         }
         else
         {
@@ -501,17 +490,12 @@ public abstract class FTPConnection {
      */
     public void uploadFile(File fromFile,FTPFile toFile) throws IOException,FtpWorkflowException,FtpIOException
     {
-    	InetSocketAddress dataSocket = null;
+    	
     	StoreCommand command = new StoreCommand(Command.STOR,fromFile,toFile);
     	SocketProvider provider = null;
         if(isPassiveMode())
         {
-        	dataSocket = sendPassiveMode();
-            provider = new SocketProvider();
-            provider.connect(dataSocket);
-            Reply reply = sendCommand(command);
-            reply.dumpReply(System.out);
-            reply.validate();
+            provider = initDataSocket(command);
         }
         else
         {
@@ -520,5 +504,16 @@ public abstract class FTPConnection {
         command.setDataSocket(provider);
         //INFO response from ControllConnection is ignored
       	command.fetchDataConnectionReply();
+    }
+    
+    private SocketProvider initDataSocket(Command command) throws IOException,FtpIOException,FtpWorkflowException
+    {
+        InetSocketAddress dataSocket = sendPassiveMode();
+        SocketProvider provider = new SocketProvider();
+        provider.connect(dataSocket);
+        Reply reply = sendCommand(command);
+        reply.dumpReply(System.out);
+        reply.validate();
+        return provider;
     }
 }

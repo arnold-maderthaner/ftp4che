@@ -35,7 +35,7 @@ public class SimpleFTPLogin {
         pt.setProperty("connection.port","54322");
         pt.setProperty("user.login","ftpuser");
         pt.setProperty("user.password","ftp4che");
-        pt.put("connection.type", new Integer(FTPConnection.FTP_CONNECTION));
+        pt.put("connection.type", new Integer(FTPConnection.AUTH_TLS_FTP_CONNECTION));
         pt.put("connection.timeout",new Integer(10000));
         pt.put("connection.passive",new Boolean(false));
         try

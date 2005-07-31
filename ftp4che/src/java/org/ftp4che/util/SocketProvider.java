@@ -4,6 +4,7 @@
  */
 package org.ftp4che.util;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketAddress;
@@ -15,15 +16,16 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 
 
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLEngineResult;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSession;
-
-
-
+import javax.net.ssl.TrustManager;
 import org.apache.log4j.Logger;
 import org.ftp4che.FTPConnection;
+
+
 
 
 public class SocketProvider {
@@ -32,23 +34,37 @@ public class SocketProvider {
 	private int sslMode = FTPConnection.FTP_CONNECTION; 
 
     SocketChannel socketChan = null;
-    SSLEngineResult res;
-    SSLEngine sslEngine;
 	Logger log = Logger.getLogger(SocketProvider.class.getName());
-	
-	ByteBuffer clientIn, clientOut, cTOs, sTOc, wbuf;
-	
+    
+	ByteBuffer applicationIn, applicationOut,networkIn,networkOut;
+    SSLEngine engine;
+    SSLEngineResult result;
+    boolean isControllConnection = true;
+    
 	public SocketProvider() throws IOException {
 		socketChan = SocketChannel.open();
 	}
+    
+    public SocketProvider(boolean isControllConnection) throws IOException {
+        this();
+        setControllConnection(isControllConnection);
+    }
     
 	public SocketProvider( SocketChannel socketChan ) {
 		this.socketChan = socketChan;
 	}
     
+    public SocketProvider(SocketChannel socketChan, boolean isControllConnection )
+    {
+        this(socketChan);
+        setControllConnection(isControllConnection);
+    }
+    
 	public boolean connect( SocketAddress remote ) throws IOException {
 		return socketChan.connect(remote);
 	}
+    
+    
 	
 	public boolean finishConnect() throws IOException {
 		return socketChan.finishConnect();
@@ -62,16 +78,23 @@ public class SocketProvider {
 	public boolean isConnected() {
 		return socketChan.isConnected();
 	}
+    
+    public boolean needsCrypt()
+    {
+        return   ((this.sslMode == FTPConnection.AUTH_SSL_FTP_CONNECTION || 
+                this.sslMode == FTPConnection.AUTH_TLS_FTP_CONNECTION) && !isControllConnection()) ||
+                this.sslMode != FTPConnection.FTP_CONNECTION && isControllConnection();
+    }
 	
 	public void close() throws IOException {
 
-        if ( this.sslMode != FTPConnection.FTP_CONNECTION ) {
-            sslEngine.closeOutbound();
-            clientOut.clear();
-            socketChan.write(wrap(clientOut));
-            socketChan.close();
-        } else        
-            socketChan.close();
+        if (needsCrypt())
+        {
+            engine.closeOutbound();   
+            applicationOut.clear();
+            socketChan.write(wrap(applicationOut));
+        }        
+        socketChan.close();
 	}
 	
 	public SelectableChannel configureBlocking( boolean blockingState ) throws IOException {
@@ -81,12 +104,21 @@ public class SocketProvider {
 
 	public int write(ByteBuffer src) throws IOException 
 	{
-        if ( this.sslMode != FTPConnection.FTP_CONNECTION )
+        if (needsCrypt())
+        {
         	return socketChan.write(wrap(src));
+        }
 		return socketChan.write(src);
 	}
 	
 	public int read( ByteBuffer dst ) throws IOException {
+        if (needsCrypt())
+        {
+            networkIn.clear();
+            socketChan.read(networkIn);
+            networkIn.flip();
+            return unwrap(networkIn).capacity();
+        }
 		return socketChan.read(dst);
 	}
 	
@@ -109,38 +141,99 @@ public class SocketProvider {
         this.sslMode = sslMode;
     }
     
-    private void createBuffers(SSLSession session) {
+    private void createBuffers(int applicationBufferSize,int networkBufferSize) {        
+        applicationIn = ByteBuffer.allocate(applicationBufferSize);
+        applicationOut = ByteBuffer.allocate(applicationBufferSize);
+        networkIn = ByteBuffer.allocate(networkBufferSize);
+        networkOut = ByteBuffer.allocate(networkBufferSize);
+    }
         
-        int appBufferMax = session.getApplicationBufferSize();
-        int netBufferMax = session.getPacketBufferSize();
-    
-        clientIn = ByteBuffer.allocate(65536);
-        clientOut = ByteBuffer.allocate(appBufferMax);
-        wbuf = ByteBuffer.allocate(65536);
-    
-        cTOs = ByteBuffer.allocate(netBufferMax);
-        sTOc = ByteBuffer.allocate(netBufferMax);
-    
-    }
-    
-	private synchronized ByteBuffer wrap(ByteBuffer b) throws SSLException {
-//		TODO: implement
-		return cTOs;
-	}
-	
-	private synchronized ByteBuffer unwrap(ByteBuffer b) throws SSLException {
-//		TODO: implement
-		return null;
-	}
-    
     public boolean isInboundDone() {
-        return sslEngine.isInboundDone();
+        return engine.isInboundDone();
     }
     
-    public void negotiate() throws SSLException,NoSuchAlgorithmException,KeyManagementException,KeyStoreException,IOException,InterruptedException
+    public void negotiate() throws NoSuchAlgorithmException,KeyStoreException,KeyManagementException,IOException,InterruptedException
     {
-    	//TODO: implement
-    	
+        SSLContext context = SSLContext.getInstance("TLS");
+        TrustManager[] trustManagers = new TrustManager[]
+        {
+                new EasyX509TrustManager(null)
+        };
+        context.init(null, trustManagers , null);
+        engine = context.createSSLEngine();
+        engine.setUseClientMode(true);
+        engine.setEnableSessionCreation(true);
+        SSLSession session = engine.getSession();
+        createBuffers(session.getApplicationBufferSize(),session.getPacketBufferSize());
+        applicationOut.clear();
+        socketChan.write(wrap(applicationOut));
+        
+        while (result.getHandshakeStatus() != SSLEngineResult.HandshakeStatus.FINISHED) {
+            if (result.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_UNWRAP) {
+                networkIn.clear();
+                while (socketChan.read(networkIn) < 1)
+                    Thread.sleep(20);
+                networkIn.flip();
+                unwrap(networkIn);
+            } else if (result.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_WRAP) {
+                applicationOut.clear();
+                socketChan.write(wrap(applicationOut));
+                if (result.getHandshakeStatus() != SSLEngineResult.HandshakeStatus.FINISHED) {
+                    applicationOut.clear();
+                    socketChan.write(wrap(applicationOut));
+                }
+            }
+            else 
+            {
+                Thread.sleep(100);
+            }
+        }
+    
+        applicationIn.clear();
+        applicationIn.flip();
+    }
+    
+    private synchronized ByteBuffer wrap(ByteBuffer appOut) throws SSLException {
+        networkOut.clear();
+        result = engine.wrap(appOut, networkOut);
+        networkOut.flip();
+        return networkOut;
     }
 
+    private synchronized ByteBuffer unwrap(ByteBuffer netIn) throws SSLException {
+        applicationIn.clear();
+    
+        //TODO: unklar!!
+        while (netIn.hasRemaining()) {
+            result = engine.unwrap(netIn, applicationIn);
+            if (result.getHandshakeStatus() == 
+                SSLEngineResult.HandshakeStatus.NEED_TASK) {
+                // Task
+                Runnable task;
+                while ((task=engine.getDelegatedTask()) != null)
+                {
+                    task.run();
+                }
+            } else if (result.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.FINISHED) {
+                return applicationIn;
+            } else if (result.getStatus() == SSLEngineResult.Status.BUFFER_UNDERFLOW) {
+                return applicationIn;
+            }
+        }
+       return applicationIn;
+    }
+
+    /**
+     * @return Returns the isControllConnection.
+     */
+    public boolean isControllConnection() {
+        return isControllConnection;
+    }
+
+    /**
+     * @param isControllConnection The isControllConnection to set.
+     */
+    public void setControllConnection(boolean isControllConnection) {
+        this.isControllConnection = isControllConnection;
+    }
 }

@@ -93,7 +93,7 @@ public class Command {
             returnValue += " " + (s);
         }
         
-        return returnValue + delimiter;
+        return returnValue.trim() + delimiter;
     }
     
 }
