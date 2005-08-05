@@ -51,8 +51,6 @@ public class SSLChannel {
 	    engine.setEnableSessionCreation(true);
 	    SSLSession session = engine.getSession();
 		application = ByteBuffer.allocate(session.getApplicationBufferSize());
-	    application = ByteBuffer.allocate(session.getApplicationBufferSize());
-	    network = ByteBuffer.allocate(session.getPacketBufferSize());
 	    network = ByteBuffer.allocate(session.getPacketBufferSize());
 		log.debug("Starting handshake");		
 		engine.beginHandshake();
@@ -128,7 +126,7 @@ public class SSLChannel {
         while (network.hasRemaining()) {
             log.debug("remaining: " + network.remaining());
             res = engine.unwrap(network, application);
-            log.debug(res.getHandshakeStatus());
+            log.debug(res);
             if (res.getHandshakeStatus() == 
                 SSLEngineResult.HandshakeStatus.NEED_TASK) {
                     openTask();
@@ -240,35 +238,21 @@ public class SSLChannel {
 
         network.flip();
         sendData();
-
+        network.clear();
         return res.bytesConsumed();
     }
 
     /**
      * @return Returns the application.
      */
-    public ByteBuffer getApplicationIn() {
+    public ByteBuffer getApplication() {
         return application;
-    }
+    }   
 
     /**
      * @param application The application to set.
      */
-    public void setApplicationIn(ByteBuffer application) {
-        this.application = application;
-    }
-
-    /**
-     * @return Returns the application.
-     */
-    public ByteBuffer getApplicationOut() {
-        return application;
-    }
-
-    /**
-     * @param application The application to set.
-     */
-    public void setApplicationOut(ByteBuffer application) {
+    public void setApplication(ByteBuffer application) {
         this.application = application;
     }
     
@@ -292,19 +276,11 @@ public class SSLChannel {
         return application.remaining();
     }
 
-	public ByteBuffer getNetworkIn() {
+	public ByteBuffer getNetwork() {
 		return network;
 	}
 
-	public void setNetworkIn(ByteBuffer network) {
-		this.network = network;
-	}
-
-	public ByteBuffer getNetworkOut() {
-		return network;
-	}
-
-	public void setNetworkOut(ByteBuffer network) {
+	public void setNetwork(ByteBuffer network) {
 		this.network = network;
 	}
 }

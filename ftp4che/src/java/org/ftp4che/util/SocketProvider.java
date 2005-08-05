@@ -97,7 +97,7 @@ public class SocketProvider {
 	{
         if (needsCrypt())
         {
-            supporter.setApplicationOut(src);
+            supporter.setApplication(src);
         	return supporter.write();
         }
 		return socketChan.write(src);
@@ -106,7 +106,7 @@ public class SocketProvider {
 	public int read( ByteBuffer dst ) throws IOException {
         if (needsCrypt())
         {
-            supporter.setApplicationIn(dst);
+            supporter.setApplication(dst);
             return supporter.read();
         }
 		return socketChan.read(dst);
