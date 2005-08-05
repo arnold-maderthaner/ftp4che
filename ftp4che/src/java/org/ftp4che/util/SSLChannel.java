@@ -23,7 +23,7 @@ public class SSLChannel {
 	private int mode;
 	private Logger log = Logger.getLogger(SSLChannel.class.getName());
 	private SSLEngineResult.HandshakeStatus handshakeStatus;
-	private ByteBuffer applicationIn, applicationOut,networkIn,networkOut;
+	private ByteBuffer application,network;
 	private SSLEngine engine;
 	private SSLContext context;
     private boolean initialHandshake = false;
@@ -50,10 +50,10 @@ public class SSLChannel {
 	    engine.setUseClientMode(true);
 	    engine.setEnableSessionCreation(true);
 	    SSLSession session = engine.getSession();
-		applicationIn = ByteBuffer.allocate(session.getApplicationBufferSize());
-	    applicationOut = ByteBuffer.allocate(session.getApplicationBufferSize());
-	    networkIn = ByteBuffer.allocate(session.getPacketBufferSize());
-	    networkOut = ByteBuffer.allocate(session.getPacketBufferSize());
+		application = ByteBuffer.allocate(session.getApplicationBufferSize());
+	    application = ByteBuffer.allocate(session.getApplicationBufferSize());
+	    network = ByteBuffer.allocate(session.getPacketBufferSize());
+	    network = ByteBuffer.allocate(session.getPacketBufferSize());
 		log.debug("Starting handshake");		
 		engine.beginHandshake();
 		handshakeStatus = engine.getHandshakeStatus();
@@ -76,11 +76,11 @@ public class SSLChannel {
 			log.debug("Handshake status:" + handshakeStatus.toString());
 			switch (handshakeStatus) {
 			case NEED_WRAP:
-					networkOut.clear();
-					result = engine.wrap(applicationOut, networkOut);
+					network.clear();
+					result = engine.wrap(application, network);
 					log.info("Wrap:" + result);
 					handshakeStatus = result.getHandshakeStatus();
-					networkOut.flip();
+					network.flip();
 					if (!sendData())
 						return;
 					break;
@@ -88,7 +88,7 @@ public class SSLChannel {
 					initialHandshake = false;
 				return;
 			case NEED_UNWRAP:
-                networkIn.clear();
+                network.clear();
 				unwrapData();	
 			break;
 			case NEED_TASK:
@@ -103,11 +103,11 @@ public class SSLChannel {
 	}
 	
 	private int unwrapData() throws IOException {
-        applicationIn.clear();
+        application.clear();
         
         int bytesRead = 0;
         
-        while ((bytesRead = channel.read(networkIn)) < 1) {
+        while ((bytesRead = channel.read(network)) < 1) {
             try {
                 Thread.sleep(20);
             }catch (Exception e) { e.printStackTrace(); }
@@ -116,18 +116,18 @@ public class SSLChannel {
 		log.debug("Read from socket: " + bytesRead);			
 		if (bytesRead == -1) {
 			engine.closeInbound();			
-			if (networkIn.position() == 0 ||
+			if (network.position() == 0 ||
 					status == SSLEngineResult.Status.BUFFER_UNDERFLOW) {
 				return -1;
 			}
 		}
 		
-		networkIn.flip();
+		network.flip();
 		SSLEngineResult res = null;
         
-        while (networkIn.hasRemaining()) {
-            log.debug("remaining: " + networkIn.remaining());
-            res = engine.unwrap(networkIn, applicationIn);
+        while (network.hasRemaining()) {
+            log.debug("remaining: " + network.remaining());
+            res = engine.unwrap(network, application);
             log.debug(res.getHandshakeStatus());
             if (res.getHandshakeStatus() == 
                 SSLEngineResult.HandshakeStatus.NEED_TASK) {
@@ -139,7 +139,7 @@ public class SSLChannel {
         } else if (res.getStatus() == 
             SSLEngineResult.Status.BUFFER_UNDERFLOW) {
             log.debug("underflow");
-            log.debug("remaining: "+networkIn.remaining());
+            log.debug("remaining: "+network.remaining());
         }
         }
    
@@ -147,10 +147,10 @@ public class SSLChannel {
 			initialHandshake = false;
 		}
 		
-		if (applicationIn.position() == 0 && 
+		if (application.position() == 0 && 
 				res.getStatus() == SSLEngineResult.Status.OK &&
-				networkIn.hasRemaining()) {
-			res = engine.unwrap(networkIn, applicationIn);
+				network.hasRemaining()) {
+			res = engine.unwrap(network, application);
 			log.info("Unwrapping:\n" + res);			
 		}
 		status = res.getStatus();
@@ -160,9 +160,9 @@ public class SSLChannel {
 			try
 			{
 				log.debug("Connection is being closed by peer.");
-				networkOut.clear();
-				applicationOut.clear();
-				res = engine.wrap(applicationOut, networkOut);
+				network.clear();
+				application.clear();
+				res = engine.wrap(application, network);
 			} catch (SSLException e1) {
 				log.warn("Error during shutdown.\n" + e1.toString());
 				try {
@@ -171,13 +171,13 @@ public class SSLChannel {
 					//DO NOTHING 
 				}
 			}
-			networkOut.flip();
+			network.flip();
 			sendData();
 			return -1;
 		}	
 		
-		networkOut.compact();
-		applicationOut.flip();
+		network.compact();
+		application.flip();
 		
 		if (handshakeStatus == SSLEngineResult.HandshakeStatus.NEED_TASK ||
 				handshakeStatus == SSLEngineResult.HandshakeStatus.NEED_WRAP ||
@@ -187,19 +187,19 @@ public class SSLChannel {
 			handshake();
 		}
 		
-		return applicationOut.remaining();
+		return application.remaining();
 	}
 	
 	private boolean sendData() throws IOException {		
 		int written;
 		try {
-			written = channel.write(networkOut);
+			written = channel.write(network);
 		} catch (IOException ioe) {
-			networkOut.position(networkOut.limit());
+			network.position(network.limit());
 			throw ioe;
 		}
 		log.debug("Written to socket: " + written);	
-		if (networkOut.hasRemaining()) {
+		if (network.hasRemaining()) {
 			return false;
 		}  else {
 			return true;
@@ -229,47 +229,47 @@ public class SSLChannel {
         }
         log.debug("Trying to write");
         
-//        if (networkOut.hasRemaining()) {
+//        if (network.hasRemaining()) {
 //            return 0;
 //        }
 
-        networkOut.clear();
-        SSLEngineResult res = engine.wrap(applicationOut, networkOut);
+        network.clear();
+        SSLEngineResult res = engine.wrap(application, network);
         
         log.info("Wrap: " + res);
 
-        networkOut.flip();
+        network.flip();
         sendData();
 
         return res.bytesConsumed();
     }
 
     /**
-     * @return Returns the applicationIn.
+     * @return Returns the application.
      */
     public ByteBuffer getApplicationIn() {
-        return applicationIn;
+        return application;
     }
 
     /**
-     * @param applicationIn The applicationIn to set.
+     * @param application The application to set.
      */
-    public void setApplicationIn(ByteBuffer applicationIn) {
-        this.applicationIn = applicationIn;
+    public void setApplicationIn(ByteBuffer application) {
+        this.application = application;
     }
 
     /**
-     * @return Returns the applicationOut.
+     * @return Returns the application.
      */
     public ByteBuffer getApplicationOut() {
-        return applicationOut;
+        return application;
     }
 
     /**
-     * @param applicationOut The applicationOut to set.
+     * @param application The application to set.
      */
-    public void setApplicationOut(ByteBuffer applicationOut) {
-        this.applicationOut = applicationOut;
+    public void setApplicationOut(ByteBuffer application) {
+        this.application = application;
     }
     
     public int read() throws IOException {     
@@ -281,7 +281,7 @@ public class SSLChannel {
             return -1;
         }
 
-        if (applicationIn.hasRemaining()) {
+        if (application.hasRemaining()) {
             int byteCount = unwrapData(); 
             
             if (byteCount <= 0) {
@@ -289,22 +289,22 @@ public class SSLChannel {
             } 
         }
         
-        return applicationIn.remaining();
+        return application.remaining();
     }
 
 	public ByteBuffer getNetworkIn() {
-		return networkIn;
+		return network;
 	}
 
-	public void setNetworkIn(ByteBuffer networkIn) {
-		this.networkIn = networkIn;
+	public void setNetworkIn(ByteBuffer network) {
+		this.network = network;
 	}
 
 	public ByteBuffer getNetworkOut() {
-		return networkOut;
+		return network;
 	}
 
-	public void setNetworkOut(ByteBuffer networkOut) {
-		this.networkOut = networkOut;
+	public void setNetworkOut(ByteBuffer network) {
+		this.network = network;
 	}
 }

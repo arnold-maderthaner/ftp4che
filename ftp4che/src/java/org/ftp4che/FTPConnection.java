@@ -31,7 +31,6 @@ import org.ftp4che.exception.FtpWorkflowException;
 import org.ftp4che.exception.NotConnectedException;
 import org.ftp4che.exception.UnkownReplyStateException;
 import org.ftp4che.reply.Reply;
-import org.ftp4che.reply.ReplyCode;
 import org.ftp4che.util.FTPFile;
 import org.ftp4che.util.ReplyFormatter;
 import org.ftp4che.util.ReplyWorker;
