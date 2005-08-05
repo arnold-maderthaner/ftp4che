@@ -434,7 +434,7 @@ public abstract class FTPConnection {
         Reply commandReply = sendCommand(command);
         commandReply.dumpReply(System.out);
         commandReply.validate();
-        SocketProvider provider = new SocketProvider(server.accept());
+        SocketProvider provider = new SocketProvider(server.accept(),false);
         try
         {
             while(!provider.finishConnect())
@@ -508,7 +508,7 @@ public abstract class FTPConnection {
     private SocketProvider initDataSocket(Command command) throws IOException,FtpIOException,FtpWorkflowException
     {
         InetSocketAddress dataSocket = sendPassiveMode();
-        SocketProvider provider = new SocketProvider();
+        SocketProvider provider = new SocketProvider(false);
         provider.connect(dataSocket);
         Reply reply = sendCommand(command);
         reply.dumpReply(System.out);
