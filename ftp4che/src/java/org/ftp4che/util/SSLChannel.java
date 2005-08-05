@@ -124,17 +124,24 @@ public class SSLChannel {
 		SSLEngineResult res = null;
         
         while (network.hasRemaining()) {
-            log.debug("remaining: " + network.remaining());
+            log.debug("remaining network: " + network.remaining());
+            log.debug("remaining application: " + application.remaining());
             res = engine.unwrap(network, application);
             log.debug(res);
             if (res.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_TASK) {
-                    openTask();
+                openTask();
             } else if (res.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.FINISHED) {
-                    initialHandshake = false;
-                    log.debug("Handshake finished");
+                initialHandshake = false;
+                log.debug("Handshake finished");
             } else if (res.getStatus() == SSLEngineResult.Status.BUFFER_UNDERFLOW) {
-                    log.debug("underflow");
-                    log.debug("remaining: "+network.remaining());
+                log.debug("underflow");
+                log.debug("remaining: "+network.remaining());
+            } else if (res.getStatus() == SSLEngineResult.Status.BUFFER_OVERFLOW)
+            {
+                log.debug("overflow");
+                log.debug("remaining network: " + network.remaining());
+                log.debug("remaining application: " + application.remaining());
+                break;
             }
         }
   	
@@ -213,7 +220,7 @@ public class SSLChannel {
 		this.mode = mode;
 	}
 
-    public int write() throws IOException {
+    public int write(ByteBuffer src) throws IOException {
         if (initialHandshake) {
             log.debug("Don't call write till handshake is done");
             return 0;
@@ -225,7 +232,7 @@ public class SSLChannel {
 //        }
 
         network.clear();
-        SSLEngineResult res = engine.wrap(application, network);
+        SSLEngineResult res = engine.wrap(src, network);
         
         log.info("Wrap: " + res);
 
@@ -249,7 +256,7 @@ public class SSLChannel {
         this.application = application;
     }
     
-    public int read() throws IOException {     
+    public int read(ByteBuffer dst) throws IOException {     
         if (initialHandshake) {
             return 0;
         }
@@ -258,15 +265,19 @@ public class SSLChannel {
             return -1;
         }
 
-        if (application.hasRemaining()) {
+        if (!application.hasRemaining()) {
             int byteCount = unwrapData(); 
             
             if (byteCount <= 0) {
                 return byteCount;
             } 
         }
-        
-        return application.remaining();
+        int limit = Math.min(application.remaining(), dst.remaining());
+        for (int i = 0; i < limit; i++) {
+                dst.put(application.get());
+        }
+
+        return limit;
     }
 
 	public ByteBuffer getNetwork() {
