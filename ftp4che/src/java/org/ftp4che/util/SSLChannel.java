@@ -127,24 +127,17 @@ public class SSLChannel {
             log.debug("remaining: " + network.remaining());
             res = engine.unwrap(network, application);
             log.debug(res);
-            if (res.getHandshakeStatus() == 
-                SSLEngineResult.HandshakeStatus.NEED_TASK) {
+            if (res.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_TASK) {
                     openTask();
-                }
-         else if (res.getHandshakeStatus() == 
-            SSLEngineResult.HandshakeStatus.FINISHED) {
-             log.debug("Handshake finished");
-        } else if (res.getStatus() == 
-            SSLEngineResult.Status.BUFFER_UNDERFLOW) {
-            log.debug("underflow");
-            log.debug("remaining: "+network.remaining());
+            } else if (res.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.FINISHED) {
+                    initialHandshake = false;
+                    log.debug("Handshake finished");
+            } else if (res.getStatus() == SSLEngineResult.Status.BUFFER_UNDERFLOW) {
+                    log.debug("underflow");
+                    log.debug("remaining: "+network.remaining());
+            }
         }
-        }
-   
-		if (res.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.FINISHED) {
-			initialHandshake = false;
-		}
-		
+  	
 		if (application.position() == 0 && 
 				res.getStatus() == SSLEngineResult.Status.OK &&
 				network.hasRemaining()) {
