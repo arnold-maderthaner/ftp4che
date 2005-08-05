@@ -21,7 +21,7 @@ import org.ftp4che.FTPConnection;
 
 public class SocketProvider {
 
-    private SSLChannel supporter;
+    private SSLSupport supporter;
 	private int sslMode = FTPConnection.FTP_CONNECTION; 
 
     SocketChannel socketChan = null;
@@ -149,7 +149,7 @@ public class SocketProvider {
     
     public void negotiate() {
         try {
-            supporter = new SSLChannel(socketChan, getSSLMode());
+            supporter = new SSLSupport(socketChan, getSSLMode());
             supporter.initEngineAndBuffers();
             supporter.handshake();
         }catch (Exception e) {
