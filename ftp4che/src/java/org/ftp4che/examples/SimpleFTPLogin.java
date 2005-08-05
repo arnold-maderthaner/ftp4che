@@ -28,16 +28,16 @@ import org.ftp4che.util.FTPFile;
 public class SimpleFTPLogin {
     public static void main(String args[])
     {
-        Logger log = Logger.getLogger("MAIN");
+        Logger log = Logger.getLogger(SimpleFTPLogin.class.getName());
         
         Properties pt = new Properties();
         pt.setProperty("connection.host","127.0.0.1");
-        pt.setProperty("connection.port","54322");
+        pt.setProperty("connection.port","21");
         pt.setProperty("user.login","ftpuser");
         pt.setProperty("user.password","ftp4che");
-        pt.put("connection.type", new Integer(FTPConnection.AUTH_TLS_FTP_CONNECTION));
+        pt.put("connection.type", new Integer(FTPConnection.AUTH_SSL_FTP_CONNECTION));
         pt.put("connection.timeout",new Integer(10000));
-        pt.put("connection.passive",new Boolean(false));
+        pt.put("connection.passive",new Boolean(true));
         try
         {
             FTPConnection connection = FTPConnectionFactory.getInstance(pt);

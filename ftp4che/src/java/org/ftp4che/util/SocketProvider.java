@@ -4,33 +4,24 @@
  */
 package org.ftp4che.util;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SocketChannel;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-
-
-import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLEngineResult;
-import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
 import org.apache.log4j.Logger;
 import org.ftp4che.FTPConnection;
 
 
 
 
+
 public class SocketProvider {
 
-
+    private SSLChannel supporter;
 	private int sslMode = FTPConnection.FTP_CONNECTION; 
 
     SocketChannel socketChan = null;
@@ -90,9 +81,9 @@ public class SocketProvider {
 
         if (needsCrypt())
         {
-            engine.closeOutbound();   
-            applicationOut.clear();
-            socketChan.write(wrap(applicationOut));
+            if ( supporter != null )
+               ;
+            	//supporter;
         }        
         socketChan.close();
 	}
@@ -106,7 +97,8 @@ public class SocketProvider {
 	{
         if (needsCrypt())
         {
-        	return socketChan.write(wrap(src));
+            supporter.setApplicationOut(src);
+        	return supporter.write();
         }
 		return socketChan.write(src);
 	}
@@ -114,10 +106,8 @@ public class SocketProvider {
 	public int read( ByteBuffer dst ) throws IOException {
         if (needsCrypt())
         {
-            networkIn.clear();
-            socketChan.read(networkIn);
-            networkIn.flip();
-            return unwrap(networkIn).capacity();
+            supporter.setApplicationIn(dst);
+            return supporter.read();
         }
 		return socketChan.read(dst);
 	}
@@ -140,89 +130,11 @@ public class SocketProvider {
     public void setSSLMode(int sslMode) {
         this.sslMode = sslMode;
     }
-    
-    private void createBuffers(int applicationBufferSize,int networkBufferSize) {        
-        applicationIn = ByteBuffer.allocate(applicationBufferSize);
-        applicationOut = ByteBuffer.allocate(applicationBufferSize);
-        networkIn = ByteBuffer.allocate(networkBufferSize);
-        networkOut = ByteBuffer.allocate(networkBufferSize);
-    }
         
     public boolean isInboundDone() {
         return engine.isInboundDone();
     }
     
-    public void negotiate() throws NoSuchAlgorithmException,KeyStoreException,KeyManagementException,IOException,InterruptedException
-    {
-        SSLContext context = SSLContext.getInstance("TLS");
-        TrustManager[] trustManagers = new TrustManager[]
-        {
-                new EasyX509TrustManager(null)
-        };
-        context.init(null, trustManagers , null);
-        engine = context.createSSLEngine();
-        engine.setUseClientMode(true);
-        engine.setEnableSessionCreation(true);
-        SSLSession session = engine.getSession();
-        createBuffers(session.getApplicationBufferSize(),session.getPacketBufferSize());
-        applicationOut.clear();
-        socketChan.write(wrap(applicationOut));
-        
-        while (result.getHandshakeStatus() != SSLEngineResult.HandshakeStatus.FINISHED) {
-            if (result.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_UNWRAP) {
-                networkIn.clear();
-                while (socketChan.read(networkIn) < 1)
-                    Thread.sleep(20);
-                networkIn.flip();
-                unwrap(networkIn);
-            } else if (result.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_WRAP) {
-                applicationOut.clear();
-                socketChan.write(wrap(applicationOut));
-                if (result.getHandshakeStatus() != SSLEngineResult.HandshakeStatus.FINISHED) {
-                    applicationOut.clear();
-                    socketChan.write(wrap(applicationOut));
-                }
-            }
-            else 
-            {
-                Thread.sleep(100);
-            }
-        }
-    
-        applicationIn.clear();
-        applicationIn.flip();
-    }
-    
-    private synchronized ByteBuffer wrap(ByteBuffer appOut) throws SSLException {
-        networkOut.clear();
-        result = engine.wrap(appOut, networkOut);
-        networkOut.flip();
-        return networkOut;
-    }
-
-    private synchronized ByteBuffer unwrap(ByteBuffer netIn) throws SSLException {
-        applicationIn.clear();
-    
-        //TODO: unklar!!
-        while (netIn.hasRemaining()) {
-            result = engine.unwrap(netIn, applicationIn);
-            if (result.getHandshakeStatus() == 
-                SSLEngineResult.HandshakeStatus.NEED_TASK) {
-                // Task
-                Runnable task;
-                while ((task=engine.getDelegatedTask()) != null)
-                {
-                    task.run();
-                }
-            } else if (result.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.FINISHED) {
-                return applicationIn;
-            } else if (result.getStatus() == SSLEngineResult.Status.BUFFER_UNDERFLOW) {
-                return applicationIn;
-            }
-        }
-       return applicationIn;
-    }
-
     /**
      * @return Returns the isControllConnection.
      */
@@ -235,5 +147,15 @@ public class SocketProvider {
      */
     public void setControllConnection(boolean isControllConnection) {
         this.isControllConnection = isControllConnection;
+    }
+    
+    public void negotiate() {
+        try {
+            supporter = new SSLChannel(socketChan, getSSLMode());
+            supporter.initEngineAndBuffers();
+            supporter.handshake();
+        }catch (Exception e) {
+            log.fatal(e,e);
+        }
     }
 }

@@ -24,7 +24,7 @@ public class AuthTLSFTPConnection extends FTPConnection {
           {
               socketProvider = new SocketProvider();
               
-              socketProvider.setSSLMode(FTPConnection.FTP_CONNECTION);
+            
           }catch (IOException ioe)
           {
               String error = "Error creating SocketProvider: " + ioe.getMessage();
@@ -96,6 +96,7 @@ public class AuthTLSFTPConnection extends FTPConnection {
         if (ReplyCode.isPositiveCompletionReply(reply)) {
             try
             {
+            	socketProvider.setSSLMode(FTPConnection.AUTH_TLS_FTP_CONNECTION);
                 socketProvider.negotiate();
             }catch (Exception e)
             {

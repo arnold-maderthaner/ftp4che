@@ -12,7 +12,6 @@ import org.ftp4che.FTPConnection;
 import org.ftp4che.commands.Command;
 import org.ftp4che.exception.AuthenticationNotSupportedException;
 import org.ftp4che.exception.NotConnectedException;
-import org.ftp4che.reply.Reply;
 import org.ftp4che.util.ReplyWorker;
 import org.ftp4che.util.SocketProvider;
 
