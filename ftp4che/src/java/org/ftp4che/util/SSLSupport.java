@@ -241,20 +241,6 @@ public class SSLSupport {
         network.clear();
         return res.bytesConsumed();
     }
-
-    /**
-     * @return Returns the application.
-     */
-    public ByteBuffer getApplication() {
-        return application;
-    }   
-
-    /**
-     * @param application The application to set.
-     */
-    public void setApplication(ByteBuffer application) {
-        this.application = application;
-    }
     
     public int read(ByteBuffer dst) throws IOException {     
         if (initialHandshake) {
@@ -279,12 +265,4 @@ public class SSLSupport {
 
         return limit;
     }
-
-	public ByteBuffer getNetwork() {
-		return network;
-	}
-
-	public void setNetwork(ByteBuffer network) {
-		this.network = network;
-	}
 }
