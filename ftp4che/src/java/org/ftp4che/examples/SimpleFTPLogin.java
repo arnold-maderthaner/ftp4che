@@ -45,20 +45,20 @@ public class SimpleFTPLogin {
             try
             {
                 connection.connect();
-                connection.getWorkDirectory();
-
-                connection.makeDirectory("testdir");
-                connection.changeDirectory("testdir");
-                log.debug("Working Directory: " + connection.getWorkDirectory());    
-                
-                connection.changeToParentDirectory();
-                
-                connection.removeDirectory("testdir");
-                
-                log.debug("Working Directory: " + connection.getWorkDirectory());
-                
-                connection.noOperation();
-                connection.changeDirectory("/home/ftpuser/download");
+//                connection.getWorkDirectory();
+//
+//                connection.makeDirectory("testdir");
+//                connection.changeDirectory("testdir");
+//                log.debug("Working Directory: " + connection.getWorkDirectory());    
+//                
+//                connection.changeToParentDirectory();
+//                
+//                connection.removeDirectory("testdir");
+//                
+//                log.debug("Working Directory: " + connection.getWorkDirectory());
+//                
+//                connection.noOperation();
+//                connection.changeDirectory("/home/ftpuser/download");
                 List<FTPFile> fileList = connection.getDirectoryListing();
                 for(int i = 0; i < fileList.size(); i++)
                     log.info("Name:" + fileList.get(i).getName() + " Mode:" + fileList.get(i).getMode() + " Date:" + fileList.get(i).getDate() + " Size:" + fileList.get(i).getSize());

@@ -66,6 +66,7 @@ public abstract class FTPConnection {
     /* Member variables 
      */
     Logger log = Logger.getLogger(FTPConnection.class.getName());
+    private int connectionType = FTPConnection.FTP_CONNECTION; 
     InetSocketAddress address = null;
     String user = "";
     String password = "";
@@ -76,8 +77,6 @@ public abstract class FTPConnection {
     Charset charset = Charset.forName("ISO-8859-1");
     CharsetDecoder decoder = charset.newDecoder();
     CharsetEncoder encoder = charset.newEncoder();
-    // Direct byte buffer for reading
-    
     //TODO: make configurable 
     ByteBuffer downloadBuffer = ByteBuffer.allocateDirect(65536);
     ByteBuffer uploadBuffer = ByteBuffer.allocateDirect(8192);
@@ -391,6 +390,8 @@ public abstract class FTPConnection {
     {
     	ListCommand command = new ListCommand(directory);
     	SocketProvider provider = null;
+        Command prot = new Command(Command.PROT,"C");
+        (sendCommand(prot)).dumpReply(System.out);
         if(isPassiveMode())
         {
         	provider = initDataSocket(command);
@@ -510,9 +511,27 @@ public abstract class FTPConnection {
         InetSocketAddress dataSocket = sendPassiveMode();
         SocketProvider provider = new SocketProvider(false);
         provider.connect(dataSocket);
+        if(connectionType == FTPConnection.AUTH_TLS_FTP_CONNECTION || connectionType == FTPConnection.AUTH_SSL_FTP_CONNECTION)
+            provider.negotiate();
         Reply reply = sendCommand(command);
         reply.dumpReply(System.out);
         reply.validate();
         return provider;
+    }
+
+
+    /**
+     * @return Returns the connectionType.
+     */
+    public int getConnectionType() {
+        return connectionType;
+    }
+
+
+    /**
+     * @param connectionType The connectionType to set.
+     */
+    public void setConnectionType(int connectionType) {
+        this.connectionType = connectionType;
     }
 }

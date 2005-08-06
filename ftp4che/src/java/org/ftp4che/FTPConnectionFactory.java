@@ -10,9 +10,7 @@ import java.net.InetSocketAddress;
 import java.util.Properties;
 
 import org.ftp4che.exception.ConfigurationException;
-import org.ftp4che.impl.AuthSSLFTPConnection;
-import org.ftp4che.impl.AuthTLSFTPConnection;
-import org.ftp4che.impl.ImplicitSSLFTPConnection;
+import org.ftp4che.impl.SecureFTPConnection;
 import org.ftp4che.impl.NormalFTPConnection;
 
 /**
@@ -74,22 +72,17 @@ public class FTPConnectionFactory {
         {
             connection = new NormalFTPConnection();
         }
-        else if(connectionType == FTPConnection.IMPLICIT_SSL_FTP_CONNECTION)
+        else if(connectionType == FTPConnection.AUTH_TLS_FTP_CONNECTION ||
+                connectionType == FTPConnection.AUTH_SSL_FTP_CONNECTION ||
+                connectionType == FTPConnection.IMPLICIT_SSL_FTP_CONNECTION)
         {
-           	connection = new ImplicitSSLFTPConnection();
-        }
-        else if(connectionType == FTPConnection.AUTH_SSL_FTP_CONNECTION)
-        {
-            connection = new AuthSSLFTPConnection();
-        }
-        else if(connectionType == FTPConnection.AUTH_TLS_FTP_CONNECTION)
-        {
-            connection = new AuthTLSFTPConnection();
+           	connection = new SecureFTPConnection();
         }
         else
         {
             throw new ConfigurationException("No or unknown connection.type in properties");
         }
+        connection.setConnectionType(connectionType);
         connection.setAddress(new InetSocketAddress(host,port));
         connection.setUser(user);
         connection.setPassword(password);

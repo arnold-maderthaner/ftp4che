@@ -3,6 +3,7 @@ package org.ftp4che.impl;
 import java.io.IOException;
 import java.util.List;
 
+
 import org.apache.log4j.Logger;
 import org.ftp4che.FTPConnection;
 import org.ftp4che.commands.Command;
@@ -13,17 +14,17 @@ import org.ftp4che.reply.ReplyCode;
 import org.ftp4che.util.ReplyWorker;
 import org.ftp4che.util.SocketProvider;
 
- 
-
-public class AuthSSLFTPConnection extends FTPConnection {
-
-public static final String AUTH_STRING = "AUTH SSL";
-	Logger log = Logger.getLogger(AuthTLSFTPConnection.class.getName());
+public class SecureFTPConnection extends FTPConnection {
+	public static final String AUTH_STRING = "AUTH TLS";
+	Logger log = Logger.getLogger(SecureFTPConnection.class.getName());
 	    
+    @Override
     public void connect() throws NotConnectedException, IOException,AuthenticationNotSupportedException {
     	  try
           {
               socketProvider = new SocketProvider();
+              
+            
           }catch (IOException ioe)
           {
               String error = "Error creating SocketProvider: " + ioe.getMessage();
@@ -84,7 +85,7 @@ public static final String AUTH_STRING = "AUTH SSL";
           {
               negotiateAndLogin(authCommand);
           }
-          socketProvider.setSSLMode(FTPConnection.AUTH_SSL_FTP_CONNECTION);  
+          socketProvider.setSSLMode(FTPConnection.AUTH_TLS_FTP_CONNECTION);  
     }
     
     private void negotiateAndLogin(String authCommand) throws IOException,AuthenticationNotSupportedException
@@ -95,7 +96,7 @@ public static final String AUTH_STRING = "AUTH SSL";
         if (ReplyCode.isPositiveCompletionReply(reply)) {
             try
             {
-            	socketProvider.setSSLMode(FTPConnection.AUTH_SSL_FTP_CONNECTION);
+            	socketProvider.setSSLMode(FTPConnection.AUTH_TLS_FTP_CONNECTION);
                 socketProvider.negotiate();
             }catch (Exception e)
             {
@@ -112,5 +113,4 @@ public static final String AUTH_STRING = "AUTH SSL";
                     + " not supported by server");
         }
     }
-
 }
