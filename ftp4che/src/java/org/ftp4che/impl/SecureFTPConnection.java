@@ -15,7 +15,6 @@ import org.ftp4che.util.ReplyWorker;
 import org.ftp4che.util.SocketProvider;
 
 public class SecureFTPConnection extends FTPConnection {
-	public static final String AUTH_STRING = "AUTH TLS";
 	Logger log = Logger.getLogger(SecureFTPConnection.class.getName());
 	    
     @Override
@@ -23,8 +22,6 @@ public class SecureFTPConnection extends FTPConnection {
     	  try
           {
               socketProvider = new SocketProvider();
-              
-            
           }catch (IOException ioe)
           {
               String error = "Error creating SocketProvider: " + ioe.getMessage();
@@ -57,7 +54,9 @@ public class SecureFTPConnection extends FTPConnection {
           //Till here the connection is not encrypted!!
           (ReplyWorker.readReply(socketProvider)).dumpReply(System.out);
           Reply reply = sendCommand(new Command(Command.FEAT));
-          String authCommand = AUTH_STRING;
+          
+          String authCommand = getAuthString();
+
           if(ReplyCode.isPositiveCompletionReply(reply))
           {
         	  List<String> lines = reply.getLines();
@@ -65,7 +64,7 @@ public class SecureFTPConnection extends FTPConnection {
              
         	  for(String s : lines)
         	  {
-        		  if(s.indexOf(AUTH_STRING) > -1)
+        		  if(s.indexOf(authCommand) > -1)
         		  {
                     authCommand = s;
         			found = true;
@@ -85,7 +84,6 @@ public class SecureFTPConnection extends FTPConnection {
           {
               negotiateAndLogin(authCommand);
           }
-          socketProvider.setSSLMode(FTPConnection.AUTH_TLS_FTP_CONNECTION);  
     }
     
     private void negotiateAndLogin(String authCommand) throws IOException,AuthenticationNotSupportedException
@@ -96,7 +94,7 @@ public class SecureFTPConnection extends FTPConnection {
         if (ReplyCode.isPositiveCompletionReply(reply)) {
             try
             {
-            	socketProvider.setSSLMode(FTPConnection.AUTH_TLS_FTP_CONNECTION);
+            	socketProvider.setSSLMode(getConnectionType());
                 socketProvider.negotiate();
             }catch (Exception e)
             {
@@ -112,5 +110,17 @@ public class SecureFTPConnection extends FTPConnection {
             throw new AuthenticationNotSupportedException(authCommand
                     + " not supported by server");
         }
+    }
+    
+    private String getAuthString() {
+        switch (this.getConnectionType()) {
+            case FTPConnection.IMPLICIT_SSL_FTP_CONNECTION:
+            case FTPConnection.AUTH_SSL_FTP_CONNECTION:
+                return "AUTH SSL";
+            case FTPConnection.AUTH_TLS_FTP_CONNECTION:
+                return "AUTH TLS";
+        }
+        
+        return "AUTH TLS";
     }
 }

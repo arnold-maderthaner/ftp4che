@@ -45,6 +45,7 @@ public class Command {
     public final static String NOOP = "NOOP";
     public final static String STAT = "STAT -LA";
     public final static String PROT = "PROT";
+    public final static String PBSZ = "PBSZ";
     
     
     String command;

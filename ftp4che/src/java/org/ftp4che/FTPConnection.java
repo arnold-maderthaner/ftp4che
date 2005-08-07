@@ -390,7 +390,9 @@ public abstract class FTPConnection {
     {
     	ListCommand command = new ListCommand(directory);
     	SocketProvider provider = null;
-        Command prot = new Command(Command.PROT,"C");
+        Command pbsz = new Command(Command.PBSZ,"0");
+        (sendCommand(pbsz)).dumpReply(System.out);
+        Command prot = new Command(Command.PROT,"P");
         (sendCommand(prot)).dumpReply(System.out);
         if(isPassiveMode())
         {
@@ -446,6 +448,11 @@ public abstract class FTPConnection {
         provider.socket().setReceiveBufferSize(65536);
         provider.socket().setSendBufferSize(65536);
 
+        provider.configureBlocking(false);
+        provider.setSSLMode(getConnectionType());
+        if(connectionType == FTPConnection.AUTH_TLS_FTP_CONNECTION || connectionType == FTPConnection.AUTH_SSL_FTP_CONNECTION)
+            provider.negotiate();
+        
         return provider;
 
     }
@@ -511,11 +518,17 @@ public abstract class FTPConnection {
         InetSocketAddress dataSocket = sendPassiveMode();
         SocketProvider provider = new SocketProvider(false);
         provider.connect(dataSocket);
-        if(connectionType == FTPConnection.AUTH_TLS_FTP_CONNECTION || connectionType == FTPConnection.AUTH_SSL_FTP_CONNECTION)
-            provider.negotiate();
+        provider.configureBlocking(false);
+        provider.setSSLMode(getConnectionType());
+        
         Reply reply = sendCommand(command);
         reply.dumpReply(System.out);
         reply.validate();
+
+        
+        if(connectionType == FTPConnection.AUTH_TLS_FTP_CONNECTION || connectionType == FTPConnection.AUTH_SSL_FTP_CONNECTION)
+            provider.negotiate();
+        
         return provider;
     }
 

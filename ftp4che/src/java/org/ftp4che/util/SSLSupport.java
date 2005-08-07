@@ -102,9 +102,12 @@ public class SSLSupport {
 	
 	private int unwrapData() throws IOException {
         application.clear();
+
+        log.debug("uw data: remaining network: " + network.remaining());
+        log.debug("uw data: remaining application: " + application.remaining());
         
         int bytesRead = 0;
-        
+ 
         while ((bytesRead = channel.read(network)) < 1) {
             try {
                 Thread.sleep(20);
@@ -133,6 +136,7 @@ public class SSLSupport {
             } else if (res.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.FINISHED) {
                 initialHandshake = false;
                 log.debug("Handshake finished");
+                break;
             } else if (res.getStatus() == SSLEngineResult.Status.BUFFER_UNDERFLOW) {
                 log.debug("underflow");
                 log.debug("remaining: "+network.remaining());
@@ -145,12 +149,11 @@ public class SSLSupport {
             }
         }
   	
-		if (application.position() == 0 && 
-				res.getStatus() == SSLEngineResult.Status.OK &&
-				network.hasRemaining()) {
-			res = engine.unwrap(network, application);
-			log.info("Unwrapping:\n" + res);			
-		}
+//		if (application.position() == 0 && res.getStatus() == SSLEngineResult.Status.OK && network.hasRemaining()) {
+//			res = engine.unwrap(network, application);
+//			log.info("Unwrapping:\n" + res);			
+//		}
+//       
 		status = res.getStatus();
 		handshakeStatus = res.getHandshakeStatus();
 
@@ -184,6 +187,7 @@ public class SSLSupport {
 			log.debug("Redo the handshake()");
 			handshake();
 		}
+   
 		
 		return application.remaining();
 	}
@@ -196,7 +200,11 @@ public class SSLSupport {
 			network.position(network.limit());
 			throw ioe;
 		}
-		log.debug("Written to socket: " + written);	
+		log.debug("Written to socket: " + written);
+        
+        log.debug("application remaining: " + application.remaining());
+        log.debug("network remaining: " + network.remaining());
+        
 		if (network.hasRemaining()) {
 			return false;
 		}  else {
@@ -250,7 +258,8 @@ public class SSLSupport {
         if (engine.isInboundDone()) {
             return -1;
         }
-
+        log.debug("Has network remaing:" + network.hasRemaining());
+        log.debug("network remaining:" + network.remaining());
         if (!application.hasRemaining()) {
             int byteCount = unwrapData(); 
             

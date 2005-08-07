@@ -28,11 +28,11 @@ import org.ftp4che.util.FTPFile;
 public class SimpleFTPLogin {
     public static void main(String args[])
     {
-        Logger log = Logger.getLogger(SimpleFTPLogin.class.getName());
+        Logger log = Logger.getLogger("MAIN");
         
         Properties pt = new Properties();
         pt.setProperty("connection.host","127.0.0.1");
-        pt.setProperty("connection.port","54322");
+        pt.setProperty("connection.port","21");
         pt.setProperty("user.login","ftpuser");
         pt.setProperty("user.password","ftp4che");
         pt.put("connection.type", new Integer(FTPConnection.AUTH_TLS_FTP_CONNECTION));
@@ -45,6 +45,21 @@ public class SimpleFTPLogin {
             try
             {
                 connection.connect();
+//                connection.getWorkDirectory();
+
+//                connection.makeDirectory("testdir");
+//                connection.changeDirectory("testdir");
+//                log.debug("Working Directory: " + connection.getWorkDirectory());    
+                
+//                connection.changeToParentDirectory();
+                
+//                connection.removeDirectory("testdir");
+                
+//                log.debug("Working Directory: " + connection.getWorkDirectory());
+                
+//                connection.noOperation();
+//                connection.changeDirectory("/home/ftpuser/download");
+
 //                connection.getWorkDirectory();
 //
 //                connection.makeDirectory("testdir");
@@ -63,13 +78,15 @@ public class SimpleFTPLogin {
                 for(int i = 0; i < fileList.size(); i++)
                     log.info("Name:" + fileList.get(i).getName() + " Mode:" + fileList.get(i).getMode() + " Date:" + fileList.get(i).getDate() + " Size:" + fileList.get(i).getSize());
                 log.debug("List Size:" + fileList.size());
+
+/*
                 FTPFile fromFile = new FTPFile();
                 fromFile.setName("testfile1.doc");
                 connection.downloadFile(fromFile,new File("/home/ftpuser/download/testfile1.doc"));
                 connection.changeDirectory("/home/ftpuser/upload");
                 connection.uploadFile(new File("/home/ftpuser/download" + File.separator + "testfile1.doc"),new FTPFile("testfile1.doc"));
                 connection.changeDirectory("/home/ftpuser/download");
-                
+  */              
                 connection.disconnect();
             }catch (NotConnectedException nce)
             {
@@ -88,5 +105,4 @@ public class SimpleFTPLogin {
             log.error(ce);
         }
     }
-
 }
