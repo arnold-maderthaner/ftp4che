@@ -43,7 +43,7 @@ public class Command {
     public final static String TYPE = "TYPE";
     public final static String LIST = "LIST";
     public final static String NOOP = "NOOP";
-    public final static String STAT = "STAT -LA";
+    public final static String STAT = "STAT";
     public final static String PROT = "PROT";
     public final static String PBSZ = "PBSZ";
     
