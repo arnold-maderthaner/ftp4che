@@ -1,0 +1,33 @@
+body {
+	background-color : #77BBDD ;
+	color : #FFFFFF ;
+	font-size : 12px ;
+}
+
+
+td.menuEntry {
+	border : 2px ;
+	border-style : solid ;
+	border-color : #006688 ;
+}
+
+a.menuEntry {
+	color : #1166AA ;
+}
+
+
+a.menuEntrySelected {
+	color : #1166AA ;
+	background-color : #cceeff ;
+}
+
+table.menu {
+	
+	width : 130px ;
+	padding: 0px ;
+	border : 2px ;
+	border-style : solid ;
+	border-collapse : collapse ;
+	border-color : #006688 ;
+	background-color : #cceeff ;
+}
