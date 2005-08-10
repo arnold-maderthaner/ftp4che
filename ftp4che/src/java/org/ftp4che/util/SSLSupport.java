@@ -109,6 +109,8 @@ public class SSLSupport {
         int bytesRead = 0;
  
         while ((bytesRead = channel.read(network)) < 1) {
+        	if (bytesRead == -1)
+        		break;
             try {
                 Thread.sleep(20);
             }catch (Exception e) { e.printStackTrace(); }
@@ -116,11 +118,13 @@ public class SSLSupport {
      
 		log.debug("Read from socket: " + bytesRead);			
 		if (bytesRead == -1) {
-			engine.closeInbound();			
-			if (network.position() == 0 ||
-					status == SSLEngineResult.Status.BUFFER_UNDERFLOW) {
-				return -1;
-			}
+			return bytesRead;
+			//TODO: DONT KNOW WHAT TO DO HERE !!
+//			engine.closeInbound();			
+//			if (network.position() == 0 ||
+//					status == SSLEngineResult.Status.BUFFER_UNDERFLOW) {
+//				return -1;
+//			}
 		}
 		
 		network.flip();
