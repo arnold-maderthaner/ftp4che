@@ -51,6 +51,7 @@ public class SSLSupport {
 	    engine.setEnableSessionCreation(true);
 	    SSLSession session = engine.getSession();
 		application = ByteBuffer.allocate(session.getApplicationBufferSize());
+        application = ByteBuffer.allocate(32000);
 	    network = ByteBuffer.allocate(session.getPacketBufferSize());
 		log.debug("Starting handshake");		
 		engine.beginHandshake();
@@ -208,8 +209,8 @@ public class SSLSupport {
 		}
 		log.debug("Written to socket: " + written);
         
-        log.debug("application remaining: " + application.remaining());
-        log.debug("network remaining: " + network.remaining());
+        log.debug("write application remaining: " + application.remaining());
+        log.debug("write network remaining: " + network.remaining());
         
 		if (network.hasRemaining()) {
 			return false;
