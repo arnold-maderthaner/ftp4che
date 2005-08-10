@@ -127,16 +127,18 @@ public class SSLSupport {
 		SSLEngineResult res = null;
         
         while (network.hasRemaining()) {
-            log.debug("remaining network: " + network.remaining());
-            log.debug("remaining application: " + application.remaining());
+            log.debug("remaining before unwrap network: " + network.remaining());
+            log.debug("remaining before unwrap application: " + application.remaining());
             res = engine.unwrap(network, application);
+            log.debug("remaining after unwrap network: " + network.remaining());
+            log.debug("remaining after unwrap application: " + application.remaining());
             log.debug(res);
             if (res.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_TASK) {
                 openTask();
             } else if (res.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.FINISHED) {
                 initialHandshake = false;
                 log.debug("Handshake finished");
-                break;
+                handshakeStatus = res.getHandshakeStatus();
             } else if (res.getStatus() == SSLEngineResult.Status.BUFFER_UNDERFLOW) {
                 log.debug("underflow");
                 log.debug("remaining: "+network.remaining());
@@ -155,7 +157,7 @@ public class SSLSupport {
 //		}
 //       
 		status = res.getStatus();
-		handshakeStatus = res.getHandshakeStatus();
+		
 
 		if (status == SSLEngineResult.Status.CLOSED) {
 			try
