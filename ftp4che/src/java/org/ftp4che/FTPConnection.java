@@ -408,10 +408,15 @@ public abstract class FTPConnection {
     {
     	ListCommand command = new ListCommand(directory);
     	SocketProvider provider = null;
-        Command pbsz = new Command(Command.PBSZ,"0");
-        (sendCommand(pbsz)).dumpReply(System.out);
-        Command prot = new Command(Command.PROT,"P");
-        (sendCommand(prot)).dumpReply(System.out);
+        
+        if ( getConnectionType() != FTPConnection.FTP_CONNECTION &&
+             getConnectionType() != FTPConnection.IMPLICIT_SSL_FTP_CONNECTION ) {
+            Command pbsz = new Command(Command.PBSZ,"0");
+            (sendCommand(pbsz)).dumpReply(System.out);
+            Command prot = new Command(Command.PROT,"P");
+            (sendCommand(prot)).dumpReply(System.out);
+        }
+            
         if(isPassiveMode())
         {
         	provider = initDataSocket(command);
@@ -491,6 +496,15 @@ public abstract class FTPConnection {
     	
     	RetrieveCommand command = new RetrieveCommand(Command.RETR,fromFile,toFile);
     	SocketProvider provider = null;
+        
+        if ( getConnectionType() != FTPConnection.FTP_CONNECTION &&
+             getConnectionType() != FTPConnection.IMPLICIT_SSL_FTP_CONNECTION ) {
+            Command pbsz = new Command(Command.PBSZ,"0");
+            (sendCommand(pbsz)).dumpReply(System.out);
+            Command prot = new Command(Command.PROT,"P");
+            (sendCommand(prot)).dumpReply(System.out);
+        }   
+        
         if(isPassiveMode())
         {
             provider = initDataSocket(command);
@@ -518,6 +532,15 @@ public abstract class FTPConnection {
     	
     	StoreCommand command = new StoreCommand(Command.STOR,fromFile,toFile);
     	SocketProvider provider = null;
+        
+        if ( getConnectionType() != FTPConnection.FTP_CONNECTION &&
+             getConnectionType() != FTPConnection.IMPLICIT_SSL_FTP_CONNECTION ) {
+            Command pbsz = new Command(Command.PBSZ,"0");
+            (sendCommand(pbsz)).dumpReply(System.out);
+            Command prot = new Command(Command.PROT,"P");
+            (sendCommand(prot)).dumpReply(System.out);
+        }
+        
         if(isPassiveMode())
         {
             provider = initDataSocket(command);
