@@ -1,7 +1,21 @@
-/**
- * Created on 11.06.2005
- * @author arnold, kurt
- */
+/**                                                                         *
+*  This file is part of ftp4che.                                            *
+*                                                                           *
+*  This library is free software; you can redistribute it and/or modify it  *
+*  under the terms of the GNU General Public License as published    		*
+*  by the Free Software Foundation; either version 2 of the License, or     *
+*  (at your option) any later version.                                      *
+*                                                                           *
+*  This library is distributed in the hope that it will be useful, but      *
+*  WITHOUT ANY WARRANTY; without even the implied warranty of               *
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        *
+*  General Public License for more details.                          		*
+*                                                                           *
+*  You should have received a copy of the GNU General Public		        *
+*  License along with this library; if not, write to the Free Software      *
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
+*                                                                           *
+*****************************************************************************/
 package org.ftp4che.util;
 
 import java.io.IOException;
@@ -93,8 +107,8 @@ public class SocketProvider {
 	{
         if (needsCrypt())
         {
-        	//return supporter.write(src);
-        	throw new IOException("SSL NOT IMPLEMENTED YET");
+        	return supporter.write(src);
+        	//throw new IOException("SSL NOT IMPLEMENTED YET");
         }
 		return socketChan.write(src);
 	}
@@ -102,8 +116,8 @@ public class SocketProvider {
 	public int read( ByteBuffer dst ) throws IOException {
         if (needsCrypt())
         {
-           // return supporter.read(dst);
-        	throw new IOException("SSL NOT IMPLEMENTED YET");
+            return supporter.read(dst);
+        	//throw new IOException("SSL NOT IMPLEMENTED YET");
         }
 		return socketChan.read(dst);
 	}
@@ -148,11 +162,9 @@ public class SocketProvider {
     
     public void negotiate() {
         try {
-        	//TODO: Do handshake here 
-        	/*   supporter = new SSLSupport(socketChan, getSSLMode());
+        	supporter = new SSLSupport(socketChan, getSSLMode());
             supporter.initEngineAndBuffers();
             supporter.handshake();
-            */
         	
         }catch (Exception e) {
             log.fatal(e,e);
