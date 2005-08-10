@@ -102,8 +102,14 @@ public class ReplyWorker extends Thread {
                 {
                     String[] stringLines = output.split("\n");
                     
-                    for ( String line : stringLines )
-                        lines.add(line);
+                    for ( String line : stringLines ) {
+                        // Empty lines cause NoSuchElementException in 
+                        // FTPFile org.ftp4che.util.FTPFile.parseLine(String line)
+                        // (unsave use of StringTokenizer.nextToken
+                        if (line.length() > 0) {
+                            lines.add(line);
+                        }
+                    }
                     read = false;
                     output = "";
                     buf.clear();
