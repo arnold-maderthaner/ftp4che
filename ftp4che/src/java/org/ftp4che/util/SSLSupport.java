@@ -274,4 +274,8 @@ public class SSLSupport {
 
         return limit;
     }
+    
+ public boolean isInboundDone() {
+        return engine.isInboundDone();
+    }
 }

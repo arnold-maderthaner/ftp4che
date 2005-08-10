@@ -10,8 +10,6 @@ import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SocketChannel;
-import javax.net.ssl.SSLEngine;
-import javax.net.ssl.SSLEngineResult;
 import org.apache.log4j.Logger;
 import org.ftp4che.FTPConnection;
 
@@ -28,8 +26,6 @@ public class SocketProvider {
 	Logger log = Logger.getLogger(SocketProvider.class.getName());
     
 	ByteBuffer applicationIn, applicationOut,networkIn,networkOut;
-    SSLEngine engine;
-    SSLEngineResult result;
     boolean isControllConnection = true;
     
 	public SocketProvider() throws IOException {
@@ -130,7 +126,7 @@ public class SocketProvider {
     }
         
     public boolean isInboundDone() {
-        return engine.isInboundDone();
+        return supporter.isInboundDone();
     }
     
     /**
