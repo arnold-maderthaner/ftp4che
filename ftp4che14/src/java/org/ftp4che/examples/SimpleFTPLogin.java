@@ -57,7 +57,7 @@ public class SimpleFTPLogin {
             try
             {
                 connection.connect();
-//                connection.getWorkDirectory();
+                connection.getWorkDirectory();
 
 //                connection.makeDirectory("testdir");
 //                connection.changeDirectory("testdir");
@@ -69,7 +69,7 @@ public class SimpleFTPLogin {
                 
 //                log.debug("Working Directory: " + connection.getWorkDirectory());
                 
-//                connection.noOperation();
+                connection.noOperation();
 //                connection.changeDirectory("/home/ftpuser/download");
 
 //                connection.getWorkDirectory();
@@ -95,14 +95,15 @@ public class SimpleFTPLogin {
                     
                 log.debug("List Size:" + fileList.size());
 
-/*
+
                 FTPFile fromFile = new FTPFile();
-                fromFile.setName("testfile1.doc");
-                connection.downloadFile(fromFile,new File("/home/ftpuser/download/testfile1.doc"));
-                connection.changeDirectory("/home/ftpuser/upload");
-                connection.uploadFile(new File("/home/ftpuser/download" + File.separator + "testfile1.doc"),new FTPFile("testfile1.doc"));
                 connection.changeDirectory("/home/ftpuser/download");
-  */              
+                fromFile.setName("rc");
+                connection.downloadFile(fromFile,new File("/home/arnold/test.file.14"));
+//                connection.changeDirectory("/home/ftpuser/upload");
+//                connection.uploadFile(new File("/home/ftpuser/download" + File.separator + "testfile1.doc"),new FTPFile("testfile1.doc"));
+//                connection.changeDirectory("/home/ftpuser/download");
+                
                 connection.disconnect();
             }catch (NotConnectedException nce)
             {

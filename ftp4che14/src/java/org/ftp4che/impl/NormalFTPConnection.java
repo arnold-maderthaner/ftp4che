@@ -56,23 +56,20 @@ public class NormalFTPConnection extends FTPConnection {
         String hostAndPort = getAddress().getHostName() + ":" + getAddress().getPort();
         try
         {
-            if(socketProvider.connect(getAddress()))
-            {   
-                log.debug("connected to:" + hostAndPort);
-                socketProvider.socket().setSoTimeout(getTimeout());
-                socketProvider.socket().setKeepAlive(true);
-            }
-            else
-            {
-                String error = "Couln't not connect to: " + hostAndPort;
-                log.error(error);
-                throw new NotConnectedException(error);
-            }
+            socketProvider.connect(getAddress());
+            log.debug("connected to:" + hostAndPort);
+            socketProvider.socket().setSoTimeout(getTimeout());
+            socketProvider.socket().setKeepAlive(true);
         }catch (IOException ioe)
         {
             String error = "Error connection to:" + hostAndPort;
             log.error(error,ioe);
             throw new NotConnectedException(error);
+        }catch (Exception e)
+        {
+        	 String error = "Couln't not connect to: " + hostAndPort;
+             log.error(error);
+             throw new NotConnectedException(error);
         }
         (ReplyWorker.readReply(socketProvider)).dumpReply(System.out);
         (sendCommand(new Command(Command.USER,getUser()))).dumpReply(System.out);

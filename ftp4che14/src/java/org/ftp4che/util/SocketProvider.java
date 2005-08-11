@@ -19,11 +19,12 @@
 package org.ftp4che.util;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectableChannel;
-import java.nio.channels.SocketChannel;
 import org.apache.log4j.Logger;
 import org.ftp4che.FTPConnection;
 
@@ -36,14 +37,16 @@ public class SocketProvider {
     private SSLSupport supporter;
 	private int sslMode = FTPConnection.FTP_CONNECTION; 
 
-    SocketChannel socketChan = null;
+    Socket socket = null;
 	Logger log = Logger.getLogger(SocketProvider.class.getName());
     
-	ByteBuffer applicationIn, applicationOut,networkIn,networkOut;
     boolean isControllConnection = true;
+    OutputStream out = null;
+    InputStream in = null;
+    byte[] readArray = new byte[16384];
     
 	public SocketProvider() throws IOException {
-		socketChan = SocketChannel.open();
+		socket = new Socket();
 	}
     
     public SocketProvider(boolean isControllConnection) throws IOException {
@@ -51,33 +54,30 @@ public class SocketProvider {
         setControllConnection(isControllConnection);
     }
     
-	public SocketProvider( SocketChannel socketChan ) {
-		this.socketChan = socketChan;
+	public SocketProvider( Socket socket ) {
+		this.socket = socket;
 	}
     
-    public SocketProvider(SocketChannel socketChan, boolean isControllConnection )
+    public SocketProvider(Socket socket, boolean isControllConnection )
     {
-        this(socketChan);
+        this(socket);
         setControllConnection(isControllConnection);
     }
     
-	public boolean connect( SocketAddress remote ) throws IOException {
-		return socketChan.connect(remote);
+	public void connect( SocketAddress remote ) throws IOException {
+		socket.connect(remote);
+		out = socket.getOutputStream();
+		in = socket.getInputStream();
 	}
     
-    
-	
-	public boolean finishConnect() throws IOException {
-		return socketChan.finishConnect();
-	}
 	
 	public Socket socket() {
-		return socketChan.socket();
+		return socket;
 	}
 	
 	
 	public boolean isConnected() {
-		return socketChan.isConnected();
+		return socket.isConnected();
 	}
     
     public boolean needsCrypt()
@@ -95,13 +95,8 @@ public class SocketProvider {
                ;
             	//supporter;
         }        
-        socketChan.close();
-	}
-	
-	public SelectableChannel configureBlocking( boolean blockingState ) throws IOException {
-		return socketChan.configureBlocking(blockingState);
-	}
-	
+        socket.close();
+	}	
 
 	public int write(ByteBuffer src) throws IOException 
 	{
@@ -110,21 +105,27 @@ public class SocketProvider {
         	return supporter.write(src);
         	//throw new IOException("SSL NOT IMPLEMENTED YET");
         }
-		return socketChan.write(src);
+        int byteCount = src.remaining();
+        out.write(src.array());
+		return byteCount;
 	}
 	
 	public int read( ByteBuffer dst ) throws IOException {
         if (needsCrypt())
         {
             return supporter.read(dst);
-        	//throw new IOException("SSL NOT IMPLEMENTED YET");
         }
-		return socketChan.read(dst);
+        int byteCount = 0;
+        byteCount = in.read(readArray);
+        if(byteCount <= 0)
+        	return byteCount;
+        dst.put(readArray,dst.position(),byteCount);
+        return byteCount;
 	}
 	
 	
 	public String toString() {
-		return socketChan.socket().getInetAddress().getHostAddress() + ":" + socketChan.socket().getPort();
+		return socket.getInetAddress().getHostAddress() + ":" + socket.getPort();
 	}
 
     /**
@@ -162,7 +163,7 @@ public class SocketProvider {
     
     public void negotiate() {
         try {
-        	supporter = new SSLSupport(socketChan, getSSLMode());
+        	supporter = new SSLSupport(socket, getSSLMode());
             supporter.initEngineAndBuffers();
             supporter.handshake();
         	

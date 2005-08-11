@@ -21,6 +21,7 @@ package org.ftp4che.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.security.KeyManagementException;
@@ -40,19 +41,21 @@ import org.ftp4che.FTPConnection;
 
 public class SSLSupport {
 	//TODO: Use this class to integrate ssl support to ftp4che14
-	private SocketChannel channel;
+	private Socket socket;
 	private SSLSocket sslSocket = null;
 	private int mode;
 	private Logger log = Logger.getLogger(SSLSupport.class.getName());
 	private ByteBuffer application,network;
 	private SSLContext context;
     private boolean initialHandshake = false;
- 
+    private OutputStream out = null;
+    private InputStream in = null;
+    byte[] readArray = new byte[16384];
     
-	public SSLSupport(SocketChannel channel, int mode)
+	public SSLSupport(Socket socket, int mode)
 	{
 		setMode(mode);
-		setChannel(channel);
+		setSocket(socket);
 	}
 	
 	public void initEngineAndBuffers() throws NoSuchAlgorithmException,KeyStoreException,KeyManagementException,SSLException,IOException
@@ -67,14 +70,14 @@ public class SSLSupport {
 	    };
 	    context.init(null, trustManagers , null);
 	    SSLSocketFactory sslFact = (SSLSocketFactory)SSLSocketFactory.getDefault();
-	    sslSocket = (SSLSocket)sslFact.createSocket(channel.socket(),channel.socket().getInetAddress().getHostAddress(),channel.socket().getPort(),true);
+	    sslSocket = (SSLSocket)sslFact.createSocket(socket,socket.getInetAddress().getHostAddress(),socket.getPort(),true);
 	    sslSocket.setEnableSessionCreation(false);
 	   
 	    sslSocket.setUseClientMode(true);
 	    SSLSession session = sslSocket.getSession();
-		application = ByteBuffer.allocate(32000);
-	    network = ByteBuffer.allocate(32000);
-		
+//		application = ByteBuffer.allocate(32000);
+//	    network = ByteBuffer.allocate(32000);
+//		
 	}
 	
 	public void handshake() throws SSLException,IOException
@@ -84,12 +87,12 @@ public class SSLSupport {
 		sslSocket.startHandshake();
 	}
 
-	public SocketChannel getChannel() {
-		return channel;
+	public Socket getSocket() {
+		return socket;
 	}
 
-	public void setChannel(SocketChannel channel) {
-		this.channel = channel;
+	public void setSocket(Socket socket) {
+		this.socket = socket;
 	}
 
 	public int getMode() {
@@ -101,17 +104,18 @@ public class SSLSupport {
 	}
 
     public int write(ByteBuffer src) throws IOException {
-    	return channel.write(src);
+    	int byteCount = src.remaining();
+        out.write(src.array());
+  		return byteCount;
     }
     
     public int read(ByteBuffer dst) throws IOException {     
-        if (initialHandshake) {
-            return 0;
-        }
-        while(channel.read(dst) > 0)
-        ;
-        dst.flip();
-        return dst.remaining();
+    	   int byteCount = 0;
+           byteCount = in.read(readArray);
+           if(byteCount <= 0)
+           	return byteCount;
+           dst.put(readArray,dst.position(),byteCount);
+           return byteCount;
     }
     
 }

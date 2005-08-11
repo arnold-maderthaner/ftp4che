@@ -21,6 +21,7 @@ package org.ftp4che;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.ServerSocketChannel;
@@ -28,6 +29,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.util.List;
+
+import javax.net.ServerSocketFactory;
 
 
 
@@ -408,10 +411,13 @@ public abstract class FTPConnection {
     {
     	ListCommand command = new ListCommand(directory);
     	SocketProvider provider = null;
-        Command pbsz = new Command(Command.PBSZ,"0");
-        (sendCommand(pbsz)).dumpReply(System.out);
-        Command prot = new Command(Command.PROT,"P");
-        (sendCommand(prot)).dumpReply(System.out);
+    	if (getConnectionType() != FTPConnection.FTP_CONNECTION
+		 && getConnectionType() != FTPConnection.IMPLICIT_SSL_FTP_CONNECTION) {
+			Command pbsz = new Command(Command.PBSZ, "0");
+			(sendCommand(pbsz)).dumpReply(System.out);
+			Command prot = new Command(Command.PROT, "P");
+			(sendCommand(prot)).dumpReply(System.out);
+		}
         if(isPassiveMode())
         {
         	provider = initDataSocket(command);
@@ -436,13 +442,13 @@ public abstract class FTPConnection {
      */
     public SocketProvider sendPortCommand(Command command) throws IOException,FtpWorkflowException,FtpIOException
     {
-    	ServerSocketChannel server = ServerSocketChannel.open();
+    	ServerSocket server = ServerSocketFactory.getDefault().createServerSocket();
     	InetSocketAddress isa = new InetSocketAddress(socketProvider.socket().getLocalAddress(), 0);
-    	server.socket().bind(isa);
-    	int port = server.socket().getLocalPort();
+    	server.bind(isa);
+    	int port = server.getLocalPort();
 
     	StringBuffer modifiedHost = new StringBuffer();
-    	modifiedHost.append(server.socket().getInetAddress().getHostAddress().replace('.',','));
+    	modifiedHost.append(server.getInetAddress().getHostAddress().replace('.',','));
     	modifiedHost.append(",");
     	modifiedHost.append(port >> 8);
     	modifiedHost.append(",");
@@ -456,17 +462,8 @@ public abstract class FTPConnection {
         commandReply.dumpReply(System.out);
         commandReply.validate();
         SocketProvider provider = new SocketProvider(server.accept(),false);
-        try
-        {
-            while(!provider.finishConnect())
-            {
-                Thread.sleep(20);
-            }
-        } catch (InterruptedException e) {}
         provider.socket().setReceiveBufferSize(65536);
         provider.socket().setSendBufferSize(65536);
-
-        provider.configureBlocking(false);
         provider.setSSLMode(getConnectionType());
         if(connectionType == FTPConnection.AUTH_TLS_FTP_CONNECTION || connectionType == FTPConnection.AUTH_SSL_FTP_CONNECTION)
             provider.negotiate();
@@ -491,6 +488,13 @@ public abstract class FTPConnection {
     	
     	RetrieveCommand command = new RetrieveCommand(Command.RETR,fromFile,toFile);
     	SocketProvider provider = null;
+    	if (getConnectionType() != FTPConnection.FTP_CONNECTION
+		 && getConnectionType() != FTPConnection.IMPLICIT_SSL_FTP_CONNECTION) {
+			Command pbsz = new Command(Command.PBSZ, "0");
+			(sendCommand(pbsz)).dumpReply(System.out);
+			Command prot = new Command(Command.PROT, "P");
+			(sendCommand(prot)).dumpReply(System.out);
+		}
         if(isPassiveMode())
         {
             provider = initDataSocket(command);
@@ -518,7 +522,14 @@ public abstract class FTPConnection {
     	
     	StoreCommand command = new StoreCommand(Command.STOR,fromFile,toFile);
     	SocketProvider provider = null;
-        if(isPassiveMode())
+    	if (getConnectionType() != FTPConnection.FTP_CONNECTION
+		 && getConnectionType() != FTPConnection.IMPLICIT_SSL_FTP_CONNECTION) {
+			Command pbsz = new Command(Command.PBSZ, "0");
+			(sendCommand(pbsz)).dumpReply(System.out);
+			Command prot = new Command(Command.PROT, "P");
+			(sendCommand(prot)).dumpReply(System.out);
+		}
+    	if(isPassiveMode())
         {
             provider = initDataSocket(command);
         }
@@ -536,7 +547,6 @@ public abstract class FTPConnection {
         InetSocketAddress dataSocket = sendPassiveMode();
         SocketProvider provider = new SocketProvider(false);
         provider.connect(dataSocket);
-        provider.configureBlocking(false);
         provider.setSSLMode(getConnectionType());
         
         Reply reply = sendCommand(command);

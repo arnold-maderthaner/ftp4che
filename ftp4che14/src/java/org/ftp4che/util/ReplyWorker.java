@@ -30,6 +30,8 @@ import java.nio.charset.CharsetDecoder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
+import java.util.Vector;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
@@ -129,7 +131,7 @@ public class ReplyWorker extends Thread {
                 socketProvider.close();
             }
         } catch (Exception e) {
-          log.error("Exception in reading Reply! Exception was: " + e.getMessage());
+          log.error("Exception in reading Reply! Exception was: " + e.getMessage(),e);
         }
         
         return new Reply( lines );
