@@ -24,13 +24,8 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.SelectableChannel;
 import org.apache.log4j.Logger;
 import org.ftp4che.FTPConnection;
-
-
-
-
 
 public class SocketProvider {
 
@@ -92,8 +87,7 @@ public class SocketProvider {
         if (needsCrypt())
         {
             if ( supporter != null )
-               ;
-            	//supporter;
+                 supporter.close();
         }        
         socket.close();
 	}	
@@ -171,4 +165,6 @@ public class SocketProvider {
             log.fatal(e,e);
         }
     }
+    
+
 }

@@ -172,7 +172,7 @@ public abstract class FTPConnection {
      * @exception NotConnectedException will be thrown if it was not possible to establish a connection to the specified server
      * @exception IOException will be thrown if it there was a problem sending the LoginCommand to the server
      */
-    public abstract void connect() throws NotConnectedException,IOException,AuthenticationNotSupportedException;
+    public abstract void connect() throws NotConnectedException,IOException,AuthenticationNotSupportedException,FtpIOException,FtpWorkflowException;
     
     /**
      * This method is used to disconnect from the specified server.
@@ -252,7 +252,7 @@ public abstract class FTPConnection {
     {
         Command command = new Command(Command.CWD,directory);
         Reply reply = sendCommand(command);
-        reply.dumpReply(System.out);
+        reply.dumpReply();
         reply.validate();
     }
     
@@ -268,7 +268,7 @@ public abstract class FTPConnection {
     {
         Command command = new Command(Command.PWD);
         Reply reply = sendCommand(command);
-        reply.dumpReply(System.out);
+        reply.dumpReply();
         reply.validate();
         return ReplyFormatter.parsePWDReply(reply);
     }
@@ -284,7 +284,7 @@ public abstract class FTPConnection {
     {
         Command command = new Command(Command.CDUP);
         Reply reply = sendCommand(command);
-        reply.dumpReply(System.out);
+        reply.dumpReply();
         reply.validate();
     }
     
@@ -300,7 +300,7 @@ public abstract class FTPConnection {
     {
         Command command = new Command(Command.MKD,pathname);
         Reply reply = sendCommand(command);
-        reply.dumpReply(System.out);
+        reply.dumpReply();
         reply.validate();
     }
 
@@ -316,7 +316,7 @@ public abstract class FTPConnection {
     {
         Command command = new Command(Command.RMD,pathname);
         Reply reply = sendCommand(command);
-        reply.dumpReply(System.out);
+        reply.dumpReply();
         reply.validate();
     }
     
@@ -332,7 +332,7 @@ public abstract class FTPConnection {
     {
         Command command = new Command(Command.NOOP);
         Reply reply = sendCommand(command);
-        reply.dumpReply(System.out);
+        reply.dumpReply();
         reply.validate();
     }
     
@@ -349,7 +349,7 @@ public abstract class FTPConnection {
     	try
     	{
             Reply reply = sendCommand(command);
-            reply.dumpReply(System.out);
+            reply.dumpReply();
             reply.validate();
     		return ReplyFormatter.parsePASVCommand(reply);
     	}catch (UnkownReplyStateException urse)
@@ -414,9 +414,9 @@ public abstract class FTPConnection {
     	if (getConnectionType() != FTPConnection.FTP_CONNECTION
 		 && getConnectionType() != FTPConnection.IMPLICIT_SSL_FTP_CONNECTION) {
 			Command pbsz = new Command(Command.PBSZ, "0");
-			(sendCommand(pbsz)).dumpReply(System.out);
+			(sendCommand(pbsz)).dumpReply();
 			Command prot = new Command(Command.PROT, "P");
-			(sendCommand(prot)).dumpReply(System.out);
+			(sendCommand(prot)).dumpReply();
 		}
         if(isPassiveMode())
         {
@@ -428,6 +428,7 @@ public abstract class FTPConnection {
         }
         command.setDataSocket(provider);
         //INFO response from ControllConnection is ignored
+        ReplyWorker.readReply(socketProvider).dumpReply();
         List parsedList = ReplyFormatter.parseListReply(command.fetchDataConnectionReply());
         return parsedList;
     }
@@ -456,10 +457,10 @@ public abstract class FTPConnection {
         
     	Command portCommand = new Command(Command.PORT,modifiedHost.toString());
         Reply portReply = sendCommand(portCommand);
-        portReply.dumpReply(System.out);
+        portReply.dumpReply();
         portReply.validate();
         Reply commandReply = sendCommand(command);
-        commandReply.dumpReply(System.out);
+        commandReply.dumpReply();
         commandReply.validate();
         SocketProvider provider = new SocketProvider(server.accept(),false);
         provider.socket().setReceiveBufferSize(65536);
@@ -491,9 +492,9 @@ public abstract class FTPConnection {
     	if (getConnectionType() != FTPConnection.FTP_CONNECTION
 		 && getConnectionType() != FTPConnection.IMPLICIT_SSL_FTP_CONNECTION) {
 			Command pbsz = new Command(Command.PBSZ, "0");
-			(sendCommand(pbsz)).dumpReply(System.out);
+			(sendCommand(pbsz)).dumpReply();
 			Command prot = new Command(Command.PROT, "P");
-			(sendCommand(prot)).dumpReply(System.out);
+			(sendCommand(prot)).dumpReply();
 		}
         if(isPassiveMode())
         {
@@ -525,9 +526,9 @@ public abstract class FTPConnection {
     	if (getConnectionType() != FTPConnection.FTP_CONNECTION
 		 && getConnectionType() != FTPConnection.IMPLICIT_SSL_FTP_CONNECTION) {
 			Command pbsz = new Command(Command.PBSZ, "0");
-			(sendCommand(pbsz)).dumpReply(System.out);
+			(sendCommand(pbsz)).dumpReply();
 			Command prot = new Command(Command.PROT, "P");
-			(sendCommand(prot)).dumpReply(System.out);
+			(sendCommand(prot)).dumpReply();
 		}
     	if(isPassiveMode())
         {
@@ -550,7 +551,7 @@ public abstract class FTPConnection {
         provider.setSSLMode(getConnectionType());
         
         Reply reply = sendCommand(command);
-        reply.dumpReply(System.out);
+        reply.dumpReply();
         reply.validate();
 
         

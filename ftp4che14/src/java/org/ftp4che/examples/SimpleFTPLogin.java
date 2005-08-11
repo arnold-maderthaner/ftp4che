@@ -44,10 +44,10 @@ public class SimpleFTPLogin {
         
         Properties pt = new Properties();
         pt.setProperty("connection.host","127.0.0.1");
-        pt.setProperty("connection.port","21");
+        pt.setProperty("connection.port","54322");
         pt.setProperty("user.login","ftpuser");
         pt.setProperty("user.password","ftp4che");
-        pt.put("connection.type", new Integer(FTPConnection.AUTH_TLS_FTP_CONNECTION));
+        pt.put("connection.type", new Integer(FTPConnection.AUTH_SSL_FTP_CONNECTION));
         pt.put("connection.timeout",new Integer(10000));
         pt.put("connection.passive",new Boolean(true));
         try
@@ -107,15 +107,15 @@ public class SimpleFTPLogin {
                 connection.disconnect();
             }catch (NotConnectedException nce)
             {
-                log.error(nce);
+                log.error(nce,nce);
             }
             catch (IOException ioe)
             {
-                log.error(ioe);
+                log.error(ioe,ioe);
             }
             catch (Exception e)
             {
-                log.error(e);
+                log.error(e,e);
             }
         }catch(ConfigurationException ce)
         {

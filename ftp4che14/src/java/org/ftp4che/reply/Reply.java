@@ -53,17 +53,11 @@ public class Reply {
         this.lines = new ArrayList(lines);
     }
     
-    public void dumpReply(OutputStream out)
-    {
-        try
+    public void dumpReply()
+    {   
+        for(Iterator it = lines.iterator(); it.hasNext();)
         {
-            for(Iterator it = lines.iterator(); it.hasNext();)
-            {
-                out.write(((String)it.next()).getBytes());
-            }
-        }catch (IOException ioe)
-        {
-            log.error("Couldn't dump reply",ioe);
+           log.debug(it.next());
         }
     }
     

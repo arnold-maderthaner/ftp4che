@@ -23,14 +23,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
@@ -40,14 +38,11 @@ import org.ftp4che.FTPConnection;
 
 
 public class SSLSupport {
-	//TODO: Use this class to integrate ssl support to ftp4che14
 	private Socket socket;
 	private SSLSocket sslSocket = null;
 	private int mode;
-	private Logger log = Logger.getLogger(SSLSupport.class.getName());
-	private ByteBuffer application,network;
+	private Logger log = Logger.getLogger(SSLSupport.class.getName());	
 	private SSLContext context;
-    private boolean initialHandshake = false;
     private OutputStream out = null;
     private InputStream in = null;
     byte[] readArray = new byte[16384];
@@ -68,22 +63,18 @@ public class SSLSupport {
 	    {
 	        new EasyX509TrustManager(null)
 	    };
-	    context.init(null, trustManagers , null);
-	    SSLSocketFactory sslFact = (SSLSocketFactory)SSLSocketFactory.getDefault();
+	    context.init(null, trustManagers , null);        
+	    SSLSocketFactory sslFact = context.getSocketFactory();
 	    sslSocket = (SSLSocket)sslFact.createSocket(socket,socket.getInetAddress().getHostAddress(),socket.getPort(),true);
-	    sslSocket.setEnableSessionCreation(false);
-	   
+        out = sslSocket.getOutputStream();
+        in = sslSocket.getInputStream();
+	    sslSocket.setEnableSessionCreation(true);
 	    sslSocket.setUseClientMode(true);
-	    SSLSession session = sslSocket.getSession();
-//		application = ByteBuffer.allocate(32000);
-//	    network = ByteBuffer.allocate(32000);
-//		
 	}
 	
 	public void handshake() throws SSLException,IOException
 	{
 		log.debug("Starting handshake");		
-		initialHandshake = true;
 		sslSocket.startHandshake();
 	}
 
@@ -118,4 +109,14 @@ public class SSLSupport {
            return byteCount;
     }
     
+    public void close()
+    { 
+        try
+        {
+            socket.close();
+        }catch (IOException ioe)
+        {
+            log.error(ioe,ioe);
+        }
+    }
 }
