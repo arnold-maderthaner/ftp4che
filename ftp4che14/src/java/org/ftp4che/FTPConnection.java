@@ -427,8 +427,6 @@ public abstract class FTPConnection {
         	provider = sendPortCommand(command);
         }
         command.setDataSocket(provider);
-        //INFO response from ControllConnection is ignored
-        ReplyWorker.readReply(socketProvider).dumpReply();
         List parsedList = ReplyFormatter.parseListReply(command.fetchDataConnectionReply());
         return parsedList;
     }
