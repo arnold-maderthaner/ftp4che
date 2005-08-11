@@ -21,11 +21,12 @@ package org.ftp4che.impl;
 import java.io.IOException;
 import java.util.List;
 
-
 import org.apache.log4j.Logger;
 import org.ftp4che.FTPConnection;
 import org.ftp4che.commands.Command;
 import org.ftp4che.exception.AuthenticationNotSupportedException;
+import org.ftp4che.exception.FtpIOException;
+import org.ftp4che.exception.FtpWorkflowException;
 import org.ftp4che.exception.NotConnectedException;
 import org.ftp4che.reply.Reply;
 import org.ftp4che.reply.ReplyCode;
@@ -36,7 +37,7 @@ public class SecureFTPConnection extends FTPConnection {
 	Logger log = Logger.getLogger(SecureFTPConnection.class.getName());
 	    
     @Override
-    public void connect() throws NotConnectedException, IOException,AuthenticationNotSupportedException {
+    public void connect() throws NotConnectedException,IOException,AuthenticationNotSupportedException,FtpIOException,FtpWorkflowException {
     	  try
           {
               socketProvider = new SocketProvider();
@@ -70,7 +71,7 @@ public class SecureFTPConnection extends FTPConnection {
               throw new NotConnectedException(error);
           }
           //Till here the connection is not encrypted!!
-          (ReplyWorker.readReply(socketProvider)).dumpReply(System.out);
+          (ReplyWorker.readReply(socketProvider)).dumpReply();
           Reply reply = sendCommand(new Command(Command.FEAT));
           
           String authCommand = getAuthString();
@@ -104,11 +105,11 @@ public class SecureFTPConnection extends FTPConnection {
           }
     }
     
-    private void negotiateAndLogin(String authCommand) throws IOException,AuthenticationNotSupportedException
+    private void negotiateAndLogin(String authCommand) throws IOException,AuthenticationNotSupportedException,FtpWorkflowException,FtpIOException
     {
     	
         Reply reply = sendCommand(new Command(authCommand));
-        reply.dumpReply(System.out);
+        reply.dumpReply();
         if (ReplyCode.isPositiveCompletionReply(reply)) {
             try
             {
@@ -118,12 +119,21 @@ public class SecureFTPConnection extends FTPConnection {
             {
                 log.error(e,e);
             }
-            (sendCommand(new Command(Command.USER, getUser()))).dumpReply(System.out);
-
+            reply = sendCommand(new Command(Command.USER,getUser()));
+            reply.dumpReply();
+            reply.validate();
             if (getPassword() != null && getPassword().length() > 0)
-                (sendCommand(new Command(Command.PASS, getPassword()))).dumpReply(System.out);
+            {
+                reply = sendCommand(new Command(Command.PASS, getPassword()));
+                reply.dumpReply();
+                reply.validate();
+            }
             if (getAccount() != null && getAccount().length() > 0)
-                (sendCommand(new Command(Command.ACCT, getAccount()))).dumpReply(System.out);
+            {
+                reply = sendCommand(new Command(Command.ACCT, getAccount()));
+                reply.dumpReply();
+                reply.validate();
+            }
         } else {
             throw new AuthenticationNotSupportedException(authCommand
                     + " not supported by server");

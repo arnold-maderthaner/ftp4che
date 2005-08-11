@@ -23,7 +23,10 @@ import org.apache.log4j.Logger;
 import org.ftp4che.FTPConnection;
 import org.ftp4che.commands.Command;
 import org.ftp4che.exception.AuthenticationNotSupportedException;
+import org.ftp4che.exception.FtpIOException;
+import org.ftp4che.exception.FtpWorkflowException;
 import org.ftp4che.exception.NotConnectedException;
+import org.ftp4che.reply.Reply;
 import org.ftp4che.util.ReplyWorker;
 import org.ftp4che.util.SocketProvider;
 
@@ -43,7 +46,8 @@ public class NormalFTPConnection extends FTPConnection {
     }
     
     @Override
-    public void connect() throws NotConnectedException, IOException,AuthenticationNotSupportedException {
+    public void connect() throws NotConnectedException,IOException,AuthenticationNotSupportedException,FtpIOException,FtpWorkflowException
+    {
         try
         {
             socketProvider = new SocketProvider();
@@ -75,11 +79,21 @@ public class NormalFTPConnection extends FTPConnection {
             log.error(error,ioe);
             throw new NotConnectedException(error);
         }
-        (ReplyWorker.readReply(socketProvider)).dumpReply(System.out);
-        (sendCommand(new Command(Command.USER,getUser()))).dumpReply(System.out);
-        if(getPassword() != null && getPassword().length() > 0)
-           (sendCommand(new Command(Command.PASS,getPassword()))).dumpReply(System.out);
-        if(getAccount() != null && getAccount().length() > 0)
-            (sendCommand(new Command(Command.ACCT,getAccount()))).dumpReply(System.out);
+        (ReplyWorker.readReply(socketProvider)).dumpReply();
+        Reply reply = sendCommand(new Command(Command.USER,getUser()));
+        reply.dumpReply();
+        reply.validate();
+        if (getPassword() != null && getPassword().length() > 0)
+        {
+            reply = sendCommand(new Command(Command.PASS, getPassword()));
+            reply.dumpReply();
+            reply.validate();
+        }
+        if (getAccount() != null && getAccount().length() > 0)
+        {
+            reply = sendCommand(new Command(Command.ACCT, getAccount()));
+            reply.dumpReply();
+            reply.validate();
+        }
     }
 }

@@ -52,17 +52,11 @@ public class Reply {
         this.lines = new ArrayList<String>(lines);
     }
     
-    public void dumpReply(OutputStream out)
+    public void dumpReply()
     {
-        try
+        for(String line: lines)
         {
-            for(String line: lines)
-            {
-                out.write(line.getBytes());
-            }
-        }catch (IOException ioe)
-        {
-            log.error("Couldn't dump reply",ioe);
+            log.debug(line);
         }
     }
     
