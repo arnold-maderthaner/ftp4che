@@ -57,7 +57,8 @@ public class Reply {
     {   
         for(Iterator it = lines.iterator(); it.hasNext();)
         {
-           log.debug(it.next());
+            String line = (String)it.next();
+           log.debug(line.substring(0,line.length()-1));
         }
     }
     

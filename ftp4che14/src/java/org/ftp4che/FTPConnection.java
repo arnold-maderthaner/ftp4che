@@ -201,7 +201,7 @@ public abstract class FTPConnection {
     */
     public Reply sendCommand(Command cmd) throws IOException{
         controlBuffer.clear();
-        log.debug("Sending command: " + cmd.toString());
+        log.debug("Sending command: " + cmd.toString().substring(0,cmd.toString().length()-2));
         controlBuffer.put(cmd.toString());
         controlBuffer.flip();
         socketProvider.write(encoder.encode(controlBuffer));

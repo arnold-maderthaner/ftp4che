@@ -101,12 +101,12 @@ public class SSLSupport {
     }
     
     public int read(ByteBuffer dst) throws IOException {     
-    	   int byteCount = 0;
-           byteCount = in.read(readArray);
-           if(byteCount <= 0)
-           	return byteCount;
-           dst.put(readArray,dst.position(),byteCount);
-           return byteCount;
+        int byteCount = 0;
+        byteCount = in.read(readArray);
+        if(byteCount <= 0)
+            return byteCount;
+        dst.put(readArray,dst.position(),byteCount);
+        return byteCount;
     }
     
     public void close()
