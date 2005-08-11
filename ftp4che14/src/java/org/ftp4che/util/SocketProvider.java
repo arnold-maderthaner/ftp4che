@@ -49,11 +49,15 @@ public class SocketProvider {
         setControllConnection(isControllConnection);
     }
     
-	public SocketProvider( Socket socket ) {
+	public SocketProvider( Socket socket ) throws IOException{
 		this.socket = socket;
+        if(out == null)
+            out = socket.getOutputStream();
+        if(in == null)
+            in = socket.getInputStream();
 	}
     
-    public SocketProvider(Socket socket, boolean isControllConnection )
+    public SocketProvider(Socket socket, boolean isControllConnection ) throws IOException
     {
         this(socket);
         setControllConnection(isControllConnection);
