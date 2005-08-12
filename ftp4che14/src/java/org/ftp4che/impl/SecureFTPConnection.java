@@ -39,15 +39,8 @@ public class SecureFTPConnection extends FTPConnection {
 	Logger log = Logger.getLogger(SecureFTPConnection.class.getName());
 	    
     public void connect() throws NotConnectedException, IOException,AuthenticationNotSupportedException,FtpIOException,FtpWorkflowException {
-    	  try
-          {
-              socketProvider = new SocketProvider();
-          }catch (IOException ioe)
-          {
-              String error = "Error creating SocketProvider: " + ioe.getMessage();
-              log.error(error,ioe);
-              throw new NotConnectedException(error);
-          }
+    	  socketProvider = new SocketProvider();
+        
           // Only for logging
           String hostAndPort = getAddress().getHostName() + ":" + getAddress().getPort();
           try
@@ -61,11 +54,6 @@ public class SecureFTPConnection extends FTPConnection {
               String error = "Error connection to:" + hostAndPort;
               log.error(error,ioe);
               throw new NotConnectedException(error);
-          }catch (Exception e)
-          {
-          	 String error = "Couln't not connect to: " + hostAndPort;
-               log.error(error);
-               throw new NotConnectedException(error);
           }
           //Till here the connection is not encrypted!!
           (ReplyWorker.readReply(socketProvider)).dumpReply();

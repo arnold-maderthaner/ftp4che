@@ -30,8 +30,6 @@ import java.nio.charset.CharsetDecoder;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
-import java.util.Vector;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
@@ -55,7 +53,7 @@ public class ReplyWorker extends Thread {
     List lines = new ArrayList();
     Charset charset = Charset.forName( "ISO8859-1" );
     CharsetDecoder charDecoder = charset.newDecoder();
-    ByteBuffer buffer = ByteBuffer.allocate(16384);
+    ByteBuffer buffer = ByteBuffer.allocateDirect(16384);
     
     private int status = ReplyWorker.UNKNOWN;
     Reply reply;
@@ -76,7 +74,7 @@ public class ReplyWorker extends Thread {
         try {
             String output = "";
             String out = "";
-            ByteBuffer buf = ByteBuffer.allocate(1024);
+            ByteBuffer buf = ByteBuffer.allocateDirect(1024);
             int amount;
             buf.clear();
             socketProvider.socket().setKeepAlive(true);

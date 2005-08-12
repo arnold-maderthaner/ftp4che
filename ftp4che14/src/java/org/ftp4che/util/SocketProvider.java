@@ -40,7 +40,7 @@ public class SocketProvider {
     InputStream in = null;
     byte[] readArray = new byte[16384];
     
-	public SocketProvider() throws IOException {
+	public SocketProvider(){
 		socket = new Socket();
 	}
     
@@ -138,11 +138,6 @@ public class SocketProvider {
      */
     public void setSSLMode(int sslMode) {
         this.sslMode = sslMode;
-    }
-        
-    public boolean isInboundDone() {
-    	//TODO: NEEDED BY ANYONE ???
-        return true;
     }
     
     /**

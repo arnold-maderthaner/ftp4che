@@ -52,6 +52,16 @@ public class FTPFile {
 			visible = true;
 		}
 	}
+	
+	public FTPFile(String path, String name) {
+		this.name = name;
+		this.path = path;
+		if (name.startsWith(".")) {
+			visible = false;
+		} else {
+			visible = true;
+		}
+	}
 
 	public FTPFile() { }
 
