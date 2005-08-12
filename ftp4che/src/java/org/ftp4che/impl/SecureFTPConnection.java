@@ -38,32 +38,15 @@ public class SecureFTPConnection extends FTPConnection {
 	    
     @Override
     public void connect() throws NotConnectedException,IOException,AuthenticationNotSupportedException,FtpIOException,FtpWorkflowException {
-    	  try
-          {
-              socketProvider = new SocketProvider();
-          }catch (IOException ioe)
-          {
-              String error = "Error creating SocketProvider: " + ioe.getMessage();
-              log.error(error,ioe);
-              throw new NotConnectedException(error);
-          }
+    	  socketProvider = new SocketProvider();
           // Only for logging
           String hostAndPort = getAddress().getHostName() + ":" + getAddress().getPort();
           try
           {
-              if(socketProvider.connect(getAddress()))
-              {   
-                  log.debug("connected to:" + hostAndPort);
-                  socketProvider.socket().setSoTimeout(getTimeout());
-                  socketProvider.socket().setKeepAlive(true);
-                  socketProvider.configureBlocking(false);
-              }
-              else
-              {
-                  String error = "Couln't not connect to: " + hostAndPort;
-                  log.error(error);
-                  throw new NotConnectedException(error);
-              }
+              socketProvider.connect(getAddress());
+              log.debug("connected to:" + hostAndPort);
+              socketProvider.socket().setSoTimeout(getTimeout());
+              socketProvider.socket().setKeepAlive(true);
           }catch (IOException ioe)
           {
               String error = "Error connection to:" + hostAndPort;

@@ -19,17 +19,18 @@
 package org.ftp4che.util;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
-import javax.net.ssl.SSLEngineResult;
 import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 
 import org.apache.log4j.Logger;
@@ -37,23 +38,22 @@ import org.ftp4che.FTPConnection;
 
 
 public class SSLSupport {
-	private SocketChannel channel;
+	private Socket socket;
+	private SSLSocket sslSocket = null;
 	private int mode;
-	private Logger log = Logger.getLogger(SSLSupport.class.getName());
-	private SSLEngineResult.HandshakeStatus handshakeStatus;
-	private ByteBuffer application,network;
-	private SSLEngine engine;
+	private static final Logger log = Logger.getLogger(SSLSupport.class.getName());	
 	private SSLContext context;
-    private boolean initialHandshake = false;
-    private SSLEngineResult.Status status = null;
+    private OutputStream out = null;
+    private InputStream in = null;
+    private byte[] readArray = new byte[16384];
     
-	public SSLSupport(SocketChannel channel, int mode)
+	public SSLSupport(Socket socket, int mode)
 	{
 		setMode(mode);
-		setChannel(channel);
+		setSocket(socket);
 	}
 	
-	public void initEngineAndBuffers() throws NoSuchAlgorithmException,KeyStoreException,KeyManagementException,SSLException
+	public void initEngineAndBuffers() throws NoSuchAlgorithmException,KeyStoreException,KeyManagementException,SSLException,IOException
 	{
 		if(mode == FTPConnection.AUTH_SSL_FTP_CONNECTION)
 		  context = SSLContext.getInstance("SSL");
@@ -63,186 +63,27 @@ public class SSLSupport {
 	    {
 	        new EasyX509TrustManager(null)
 	    };
-	    context.init(null, trustManagers , null);
-	    engine = context.createSSLEngine();
-	    engine.setUseClientMode(true);
-	    engine.setEnableSessionCreation(true);
-	    SSLSession session = engine.getSession();
-		application = ByteBuffer.allocate(session.getApplicationBufferSize());
-        application = ByteBuffer.allocate(32000);
-	    network = ByteBuffer.allocate(session.getPacketBufferSize());
-		log.debug("Starting handshake");		
-		engine.beginHandshake();
-		handshakeStatus = engine.getHandshakeStatus();
-		initialHandshake = true;
-	}
-	
-	private void openTask() {
-            Runnable task;
-            while ((task=engine.getDelegatedTask()) != null)
-            {
-                task.run();
-            }
-		handshakeStatus = engine.getHandshakeStatus();
+	    context.init(null, trustManagers , null);        
+	    SSLSocketFactory sslFact = context.getSocketFactory();
+	    sslSocket = (SSLSocket)sslFact.createSocket(socket,socket.getInetAddress().getHostAddress(),socket.getPort(),true);
+        out = sslSocket.getOutputStream();
+        in = sslSocket.getInputStream();
+	    sslSocket.setEnableSessionCreation(true);
+	    sslSocket.setUseClientMode(true);
 	}
 	
 	public void handshake() throws SSLException,IOException
 	{
-		while (true) {
-			SSLEngineResult result = null;
-			log.debug("Handshake status:" + handshakeStatus.toString());
-			switch (handshakeStatus) {
-			case NEED_WRAP:
-					network.clear();
-					result = engine.wrap(application, network);
-					log.info("Wrap:" + result);
-					handshakeStatus = result.getHandshakeStatus();
-					network.flip();
-					if (!sendData())
-						return;
-					break;
-			case FINISHED:
-					initialHandshake = false;
-				return;
-			case NEED_UNWRAP:
-                network.clear();
-				unwrapData();	
-			break;
-			case NEED_TASK:
-				openTask();
-				break;
-			default:
-				log.debug("You should never reach this status:" + result);
-				return;
-			}
-		}
-		
-	}
-	
-	private int unwrapData() throws IOException {
-        application.clear();
-
-        log.debug("uw data: remaining network: " + network.remaining());
-        log.debug("uw data: remaining application: " + application.remaining());
-        
-        int bytesRead = 0;
- 
-        while ((bytesRead = channel.read(network)) < 1) {
-        	if (bytesRead == -1)
-        		break;
-            try {
-                Thread.sleep(20);
-            }catch (Exception e) { e.printStackTrace(); }
-        }
-     
-		log.debug("Read from socket: " + bytesRead);			
-		if (bytesRead == -1) {
-			return bytesRead;
-			//TODO: DONT KNOW WHAT TO DO HERE !!
-//			engine.closeInbound();			
-//			if (network.position() == 0 ||
-//					status == SSLEngineResult.Status.BUFFER_UNDERFLOW) {
-//				return -1;
-//			}
-		}
-		
-		network.flip();
-		SSLEngineResult res = null;
-        
-        while (network.hasRemaining()) {
-            log.debug("remaining before unwrap network: " + network.remaining());
-            log.debug("remaining before unwrap application: " + application.remaining());
-            res = engine.unwrap(network, application);
-            log.debug("remaining after unwrap network: " + network.remaining());
-            log.debug("remaining after unwrap application: " + application.remaining());
-            log.debug(res);
-            if (res.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_TASK) {
-                openTask();
-            } else if (res.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.FINISHED) {
-                initialHandshake = false;
-                log.debug("Handshake finished");
-                handshakeStatus = res.getHandshakeStatus();
-            } else if (res.getStatus() == SSLEngineResult.Status.BUFFER_UNDERFLOW) {
-                log.debug("underflow");
-                log.debug("remaining: "+network.remaining());
-            } else if (res.getStatus() == SSLEngineResult.Status.BUFFER_OVERFLOW)
-            {
-                log.debug("overflow");
-                log.debug("remaining network: " + network.remaining());
-                log.debug("remaining application: " + application.remaining());
-                break;
-            }
-        }
-  	
-//		if (application.position() == 0 && res.getStatus() == SSLEngineResult.Status.OK && network.hasRemaining()) {
-//			res = engine.unwrap(network, application);
-//			log.info("Unwrapping:\n" + res);			
-//		}
-//       
-		status = res.getStatus();
-		
-
-		if (status == SSLEngineResult.Status.CLOSED) {
-			try
-			{
-				log.debug("Connection is being closed by peer.");
-				network.clear();
-				application.clear();
-				res = engine.wrap(application, network);
-			} catch (SSLException e1) {
-				log.warn("Error during shutdown.\n" + e1.toString());
-				try {
-					channel.close();
-				} catch (IOException e) {	
-					//DO NOTHING 
-				}
-			}
-			network.flip();
-			sendData();
-			return -1;
-		}	
-		
-		network.compact();
-		application.flip();
-		
-		if (handshakeStatus == SSLEngineResult.HandshakeStatus.NEED_TASK ||
-				handshakeStatus == SSLEngineResult.HandshakeStatus.NEED_WRAP ||
-				handshakeStatus == SSLEngineResult.HandshakeStatus.FINISHED) 
-		{
-			log.debug("Redo the handshake()");
-			handshake();
-		}
-   
-		
-		return application.remaining();
-	}
-	
-	private boolean sendData() throws IOException {		
-		int written;
-		try {
-			written = channel.write(network);
-		} catch (IOException ioe) {
-			network.position(network.limit());
-			throw ioe;
-		}
-		log.debug("Written to socket: " + written);
-        
-        log.debug("write application remaining: " + application.remaining());
-        log.debug("write network remaining: " + network.remaining());
-        
-		if (network.hasRemaining()) {
-			return false;
-		}  else {
-			return true;
-		}
+		log.debug("Starting handshake");		
+		sslSocket.startHandshake();
 	}
 
-	public SocketChannel getChannel() {
-		return channel;
+	public Socket getSocket() {
+		return socket;
 	}
 
-	public void setChannel(SocketChannel channel) {
-		this.channel = channel;
+	public void setSocket(Socket socket) {
+		this.socket = socket;
 	}
 
 	public int getMode() {
@@ -254,53 +95,28 @@ public class SSLSupport {
 	}
 
     public int write(ByteBuffer src) throws IOException {
-        if (initialHandshake) {
-            log.debug("Don't call write till handshake is done");
-            return 0;
-        }
-        log.debug("Trying to write");
-        
-//        if (network.hasRemaining()) {
-//            return 0;
-//        }
-
-        network.clear();
-        SSLEngineResult res = engine.wrap(src, network);
-        
-        log.info("Wrap: " + res);
-
-        network.flip();
-        sendData();
-        network.clear();
-        return res.bytesConsumed();
+    	int byteCount = src.remaining();
+        out.write(src.array());
+  		return byteCount;
     }
     
     public int read(ByteBuffer dst) throws IOException {     
-        if (initialHandshake) {
-            return 0;
-        }
-
-        if (engine.isInboundDone()) {
-            return -1;
-        }
-        log.debug("Has network remaing:" + network.hasRemaining());
-        log.debug("network remaining:" + network.remaining());
-        if (!application.hasRemaining()) {
-            int byteCount = unwrapData(); 
-            
-            if (byteCount <= 0) {
-                return byteCount;
-            } 
-        }
-        int limit = Math.min(application.remaining(), dst.remaining());
-        for (int i = 0; i < limit; i++) {
-                dst.put(application.get());
-        }
-
-        return limit;
+        int byteCount = 0;
+        byteCount = in.read(readArray);
+        if(byteCount <= 0)
+            return byteCount;
+        dst.put(readArray,dst.position(),byteCount);
+        return byteCount;
     }
     
- public boolean isInboundDone() {
-        return engine.isInboundDone();
+    public void close()
+    { 
+        try
+        {
+            socket.close();
+        }catch (IOException ioe)
+        {
+            log.error(ioe,ioe);
+        }
     }
 }

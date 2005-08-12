@@ -20,7 +20,6 @@ package org.ftp4che.util;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -44,10 +43,10 @@ public class ReplyFormatter {
     {
         List<String> lines = listReply.getLines();
         List<FTPFile> parsedLines = new ArrayList<FTPFile>(lines.size());
-        for(Iterator<String> it=lines.iterator();it.hasNext();)
+        for(String line : lines)
         {
          
-            parsedLines.add(FTPFile.parseLine(it.next()));
+            parsedLines.add(FTPFile.parseLine(line));
         }
         return parsedLines;
     }

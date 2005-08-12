@@ -18,8 +18,6 @@
 *****************************************************************************/
 package org.ftp4che.reply;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +30,11 @@ import org.ftp4che.exception.NotConnectedException;
 public class Reply {
     List<String> lines = new ArrayList<String>();
     Logger log = Logger.getLogger(Reply.class.getName());
+    
+    public Reply()
+    {
+    	
+    }
     
     public Reply(List<String> lines)
     {
@@ -56,7 +59,7 @@ public class Reply {
     {
         for(String line: lines)
         {
-            log.debug(line);
+            log.debug(line.substring(0,line.length()-1));
         }
     }
     
