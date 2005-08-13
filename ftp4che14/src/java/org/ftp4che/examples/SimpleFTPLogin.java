@@ -99,7 +99,7 @@ public class SimpleFTPLogin {
                 FTPFile fromFile = new FTPFile();
                 connection.changeDirectory("/home/ftpuser/download");
                 fromFile.setName("rc");
-                connection.downloadFile(fromFile,new File("/home/arnold/test.file.14"));
+                connection.downloadFile(fromFile,new FTPFile("/home/arnold/", "test.file.14"));
 //                connection.changeDirectory("/home/ftpuser/upload");
 //                connection.uploadFile(new File("/home/ftpuser/download" + File.separator + "testfile1.doc"),new FTPFile("testfile1.doc"));
 //                connection.changeDirectory("/home/ftpuser/download");
