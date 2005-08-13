@@ -427,13 +427,14 @@ public abstract class FTPConnection {
         {
         	provider = sendPortCommand(command,commandReply);
         }
-        if(commandReply.getLines().size() == 1)
-        {
-        	(ReplyWorker.readReply(socketProvider)).dumpReply();
-        }
+      
         command.setDataSocket(provider);
         //INFO response from ControllConnection is ignored
         List<FTPFile> parsedList = ReplyFormatter.parseListReply(command.fetchDataConnectionReply());
+        if(commandReply.getLines().size() == 1)
+        {
+            (ReplyWorker.readReply(socketProvider)).dumpReply();
+        }
         return parsedList;
     }
     
@@ -511,13 +512,14 @@ public abstract class FTPConnection {
         {
         	provider = sendPortCommand(command,commandReply);
         }
-        if(commandReply.getLines().size() == 1)
-        {
-        	(ReplyWorker.readReply(socketProvider)).dumpReply();
-        }
+   
         command.setDataSocket(provider);
         //INFO response from ControllConnection is ignored
         command.fetchDataConnectionReply();
+        if(commandReply.getLines().size() == 1)
+        {
+            (ReplyWorker.readReply(socketProvider)).dumpReply();
+        }
     }
     
     /**
@@ -552,13 +554,14 @@ public abstract class FTPConnection {
         {
         	provider = sendPortCommand(command,commandReply);
         }
-        if(commandReply.getLines().size() == 1)
-        {
-        	(ReplyWorker.readReply(socketProvider)).dumpReply();
-        }
+      
         command.setDataSocket(provider);
         //INFO response from ControllConnection is ignored
       	command.fetchDataConnectionReply();
+        if(commandReply.getLines().size() == 1)
+        {
+            (ReplyWorker.readReply(socketProvider)).dumpReply();
+        }
     }
     
     private SocketProvider initDataSocket(Command command,Reply commandReply) throws IOException,FtpIOException,FtpWorkflowException

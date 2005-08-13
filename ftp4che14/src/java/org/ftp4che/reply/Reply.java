@@ -31,6 +31,11 @@ public class Reply {
     List lines = new ArrayList();
     Logger log = Logger.getLogger(Reply.class.getName());
     
+    public Reply()
+    {
+        
+    }
+    
     public Reply(List lines)
     {
         setLines(lines);

@@ -417,9 +417,11 @@ public abstract class FTPConnection {
 			Command prot = new Command(Command.PROT, "P");
 			(sendCommand(prot)).dumpReply();
 		}
+        
+        Reply commandReply = new Reply();
         if(isPassiveMode())
         {
-        	provider = initDataSocket(command);
+        	provider = initDataSocket(command,commandReply);
         }
         else
         {
@@ -427,6 +429,10 @@ public abstract class FTPConnection {
         }
         command.setDataSocket(provider);
         List parsedList = ReplyFormatter.parseListReply(command.fetchDataConnectionReply());
+        if(commandReply.getLines().size() == 1)
+        {
+            (ReplyWorker.readReply(socketProvider)).dumpReply();
+        }
         return parsedList;
     }
     
@@ -493,9 +499,11 @@ public abstract class FTPConnection {
 			Command prot = new Command(Command.PROT, "P");
 			(sendCommand(prot)).dumpReply();
 		}
+        
+        Reply commandReply = new Reply();
         if(isPassiveMode())
         {
-            provider = initDataSocket(command);
+            provider = initDataSocket(command,commandReply);
         }
         else
         {
@@ -504,6 +512,10 @@ public abstract class FTPConnection {
         command.setDataSocket(provider);
         //INFO response from ControllConnection is ignored
         command.fetchDataConnectionReply();
+        if(commandReply.getLines().size() == 1)
+        {
+            (ReplyWorker.readReply(socketProvider)).dumpReply();
+        }
     }
     
     /**
@@ -527,9 +539,10 @@ public abstract class FTPConnection {
 			Command prot = new Command(Command.PROT, "P");
 			(sendCommand(prot)).dumpReply();
 		}
+        Reply commandReply = new Reply();
     	if(isPassiveMode())
         {
-            provider = initDataSocket(command);
+            provider = initDataSocket(command,commandReply);
         }
         else
         {
@@ -538,18 +551,22 @@ public abstract class FTPConnection {
         command.setDataSocket(provider);
         //INFO response from ControllConnection is ignored
       	command.fetchDataConnectionReply();
+         if(commandReply.getLines().size() == 1)
+         {
+             (ReplyWorker.readReply(socketProvider)).dumpReply();
+         }
     }
     
-    private SocketProvider initDataSocket(Command command) throws IOException,FtpIOException,FtpWorkflowException
+    private SocketProvider initDataSocket(Command command,Reply commandReply) throws IOException,FtpIOException,FtpWorkflowException
     {
         InetSocketAddress dataSocket = sendPassiveMode();
         SocketProvider provider = new SocketProvider(false);
         provider.connect(dataSocket);
         provider.setSSLMode(getConnectionType());
         
-        Reply reply = sendCommand(command);
-        reply.dumpReply();
-        reply.validate();
+        commandReply.setLines(sendCommand(command).getLines());
+        commandReply.dumpReply();
+        commandReply.validate();
 
         
         if(connectionType == FTPConnection.AUTH_TLS_FTP_CONNECTION || connectionType == FTPConnection.AUTH_SSL_FTP_CONNECTION)
