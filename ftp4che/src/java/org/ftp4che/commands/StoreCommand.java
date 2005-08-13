@@ -29,7 +29,7 @@ import org.ftp4che.util.ReplyWorker;
 public class StoreCommand extends DataConnectionCommand {
     
     FTPFile toFile;
-    File fromFile;
+    FTPFile fromFile;
     //TODO: throw Exception if fromFile not Exists
     
     
@@ -39,7 +39,7 @@ public class StoreCommand extends DataConnectionCommand {
        setToFile( toFile );
     }
     
-    public StoreCommand(String command, File fromFile, FTPFile toFile)
+    public StoreCommand(String command, FTPFile fromFile, FTPFile toFile)
     {
        super(command, toFile.getName() );
        setToFile( toFile );
@@ -87,14 +87,14 @@ public class StoreCommand extends DataConnectionCommand {
     /**
      * @return Returns the fromFile.
      */
-    public File getFromFile() {
+    public FTPFile getFromFile() {
         return fromFile;
     }
 
     /**
      * @param fromFile The fromFile to set.
      */
-    public void setFromFile(File fromFile) {
+    public void setFromFile(FTPFile fromFile) {
         this.fromFile = fromFile;
     }
 }

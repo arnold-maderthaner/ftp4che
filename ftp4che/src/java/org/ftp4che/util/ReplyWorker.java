@@ -18,6 +18,7 @@
 *****************************************************************************/
 package org.ftp4che.util;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -154,7 +155,7 @@ public class ReplyWorker extends Thread {
             {
                 try
                 {
-                    FileOutputStream out = new FileOutputStream(retrieveCommand.getToFile());
+                    FileOutputStream out = new FileOutputStream(retrieveCommand.getToFile().getFile());
                     FileChannel channel = out.getChannel();
                     int amount;
                     try {
@@ -202,7 +203,7 @@ public class ReplyWorker extends Thread {
                 try
                 {
                 	log.debug("Upload file: " + storeCommand.getFromFile().toString());
-                    FileInputStream in = new FileInputStream(storeCommand.getFromFile());
+                    FileInputStream in = new FileInputStream(storeCommand.getFromFile().getFile());
                     FileChannel channel = in.getChannel();
                     int amount;
                     int socketWrite;

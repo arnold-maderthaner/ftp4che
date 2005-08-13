@@ -489,7 +489,7 @@ public abstract class FTPConnection {
      * @throws FtpFileNotFountException will be thrown if the specified fromFile is not found on the server
      */
     
-    public void downloadFile(FTPFile fromFile,File toFile) throws IOException,FtpWorkflowException,FtpIOException
+    public void downloadFile(FTPFile fromFile,FTPFile toFile) throws IOException,FtpWorkflowException,FtpIOException
     {
     	
     	RetrieveCommand command = new RetrieveCommand(Command.RETR,fromFile,toFile);
@@ -531,7 +531,7 @@ public abstract class FTPConnection {
      * @throws FtpWorkflowException will be thrown if there was a ftp reply class 4xx. this should indicate some secific problems on the server
      * @throws FileNotFountException will be thrown if the specified fromFile is not found on the local computer
      */
-    public void uploadFile(File fromFile,FTPFile toFile) throws IOException,FtpWorkflowException,FtpIOException
+    public void uploadFile(FTPFile fromFile,FTPFile toFile) throws IOException,FtpWorkflowException,FtpIOException
     {
     	
     	StoreCommand command = new StoreCommand(Command.STOR,fromFile,toFile);
@@ -562,6 +562,41 @@ public abstract class FTPConnection {
         {
             (ReplyWorker.readReply(socketProvider)).dumpReply();
         }
+    }
+    
+    public void fxpFile(FTPConnection destination, FTPFile fromFile,FTPFile toFile) throws IOException,FtpWorkflowException,FtpIOException
+    {
+        // send PASV to source site
+        Command pasvCommand = new Command(Command.PASV);
+        Reply pasvReply = sendCommand(pasvCommand);
+        pasvReply.dumpReply();
+        pasvReply.validate(); 
+        
+        // parse the host and port from reply
+        List<String> lines = pasvReply.getLines();
+        if(lines.size() != 1)
+            throw new UnkownReplyStateException("PASV Reply has to have a size of 1 entry but it has: " + lines.size());
+        String line = lines.get(0);
+        line = line.substring(line.indexOf('(')+1,line.lastIndexOf(')'));
+        
+        
+        // send PORT to destination site
+        Command portCommand = new Command(Command.PORT, line);
+        Reply portReply = destination.sendCommand(portCommand);
+        portReply.dumpReply();
+        portReply.validate();
+        
+        // send STOR command to destination site
+        Command storeCommand = new Command(Command.STOR, toFile.getName());
+        Reply storeReply = destination.sendCommand(storeCommand);
+        storeReply.dumpReply();
+        storeReply.validate();
+        
+        // send RETR command to source site
+        Command retrCommand = new Command(Command.RETR,fromFile.getName());
+        Reply retrReply = sendCommand(retrCommand);
+        retrReply.dumpReply();
+        retrReply.validate();   
     }
     
     private SocketProvider initDataSocket(Command command,Reply commandReply) throws IOException,FtpIOException,FtpWorkflowException

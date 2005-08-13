@@ -18,6 +18,7 @@
 *****************************************************************************/
 package org.ftp4che.util;
 
+import java.io.File;
 import java.util.StringTokenizer;
 
 import org.ftp4che.commands.Command;
@@ -190,4 +191,8 @@ public class FTPFile {
 	public void setPath(String path) {
 		this.path = path;
 	}
+    
+    public File getFile() {
+        return new File( getPath(), getName() );
+    }
 }
