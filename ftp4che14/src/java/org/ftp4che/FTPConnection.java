@@ -566,10 +566,10 @@ public abstract class FTPConnection {
         pasvReply.validate(); 
         
         // parse the host and port from reply
-        List<String> lines = pasvReply.getLines();
+        List lines = pasvReply.getLines();
         if(lines.size() != 1)
             throw new UnkownReplyStateException("PASV Reply has to have a size of 1 entry but it has: " + lines.size());
-        String line = lines.get(0);
+        String line = (String)lines.get(0);
         line = line.substring(line.indexOf('(')+1,line.lastIndexOf(')'));
         
         
