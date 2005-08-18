@@ -637,4 +637,12 @@ public abstract class FTPConnection {
     public void setConnectionType(int connectionType) {
         this.connectionType = connectionType;
     }
+    
+    public void sendSiteCommand(String commandParameter) throws IOException,FtpIOException,FtpWorkflowException
+    {
+    	Command command = new Command(Command.SITE,commandParameter);
+    	Reply reply = sendCommand(command);
+    	reply.dumpReply();
+    	reply.validate();
+    }
 }
