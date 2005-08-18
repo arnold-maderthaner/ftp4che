@@ -34,13 +34,13 @@ public class RetrieveCommand extends DataConnectionCommand {
     
     public RetrieveCommand( String command, FTPFile fromFile )
     {
-       super(command, new String[]{fromFile.getName()} );
+       super(command, new String[]{fromFile.toString()} );
        setFromFile( fromFile );
     }
 
     public RetrieveCommand( String command, FTPFile fromFile, FTPFile toFile )
     {
-       super(command, new String[]{fromFile.getName()} );
+       super(command, new String[]{fromFile.toString()} );
        setFromFile( fromFile );
        setToFile ( toFile );
     }
