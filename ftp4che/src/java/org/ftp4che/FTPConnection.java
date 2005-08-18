@@ -403,10 +403,12 @@ public abstract class FTPConnection {
        return getDirectoryListing(".");
     }
     
-    public List<String> getFastDirectoryListing() throws IOException,FtpWorkflowException,FtpIOException
+    public List<FTPFile> getFastDirectoryListing() throws IOException,FtpWorkflowException,FtpIOException
     {
         Command command = new Command(Command.STAT,"-LA");
-        return (sendCommand(command)).getLines();
+        Reply reply = sendCommand(command);
+        reply.validate();
+        return ReplyFormatter.parseListReply(reply);
     }
 
     /**

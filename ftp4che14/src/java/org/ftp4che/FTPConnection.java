@@ -18,7 +18,6 @@
 *****************************************************************************/
 package org.ftp4che;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -406,7 +405,9 @@ public abstract class FTPConnection {
     public List getFastDirectoryListing() throws IOException,FtpWorkflowException,FtpIOException
     {
         Command command = new Command(Command.STAT,"-LA");
-        return (sendCommand(command)).getLines();
+        Reply reply = sendCommand(command);
+        reply.validate();
+        return ReplyFormatter.parseListReply(reply);
     }
 
     /**

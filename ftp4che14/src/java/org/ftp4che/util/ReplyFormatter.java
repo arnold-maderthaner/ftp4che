@@ -46,8 +46,9 @@ public class ReplyFormatter {
         List parsedLines = new ArrayList(lines.size());
         for(Iterator it=lines.iterator();it.hasNext();)
         {
-         
-            parsedLines.add(FTPFile.parseLine((String)it.next()));
+        	FTPFile file = FTPFile.parseLine((String)it.next());
+        	if(file != null)
+        		parsedLines.add(file);
         }
         return parsedLines;
     }

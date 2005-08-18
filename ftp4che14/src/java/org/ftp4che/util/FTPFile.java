@@ -20,6 +20,7 @@ package org.ftp4che.util;
 
 import java.io.File;
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 
 import org.ftp4che.commands.Command;
 
@@ -154,7 +155,12 @@ public class FTPFile {
 	{
 	    FTPFile file = new FTPFile();
 	    StringTokenizer st = new StringTokenizer(line," ");
-	    file.setMode(st.nextToken());
+	    String mode = st.nextToken();
+	    if(Pattern.matches("[0-9]+", mode.substring(0, 3)))
+	    	mode = mode.substring(3);
+	    if(st.countTokens() < 8)
+	    	return null;
+	    file.setMode(mode);
 	    st.nextToken();
 	    file.setUser(st.nextToken());
 	    file.setGroup(st.nextToken());
