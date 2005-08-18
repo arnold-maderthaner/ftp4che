@@ -111,8 +111,7 @@ public class SocketProvider {
         {
             return supporter.read(dst);
         }
-        int byteCount = 0;
-        byteCount = in.read(readArray);
+        int byteCount = in.read(readArray);
         if(byteCount <= 0)
         	return byteCount;
         dst.put(readArray,dst.position(),byteCount);

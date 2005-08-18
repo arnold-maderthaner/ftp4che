@@ -79,5 +79,6 @@ public class NormalFTPConnection extends FTPConnection {
             reply.dumpReply();
             reply.validate();
         }
+        this.setConnectionStatus(FTPConnection.CONNECTED);
     }
 }

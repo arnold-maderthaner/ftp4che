@@ -40,7 +40,7 @@ public class RetrieveCommand extends DataConnectionCommand {
 
     public RetrieveCommand( String command, FTPFile fromFile, FTPFile toFile )
     {
-       super(command, fromFile.getName() );
+       super(command, fromFile.toString() );
        setFromFile( fromFile );
        setToFile ( toFile );
     }

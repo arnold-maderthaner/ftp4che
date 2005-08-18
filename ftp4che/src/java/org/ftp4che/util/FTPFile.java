@@ -54,6 +54,26 @@ public class FTPFile {
 		}
 	}
 	
+	public FTPFile(File file)
+	{
+		setName(file.getName());
+		setPath(file.getParent());
+		String mode = "";
+		
+		if(file.isFile())
+			mode += "-";
+		else
+			mode += "d";
+		if(file.canRead())
+			mode += "r";
+		else
+			mode += "-";
+		if(file.canWrite())
+			mode += "w";
+		else
+			mode += "-";
+	}
+	
 	public FTPFile(String path, String name) {
 		this.name = name;
 		this.path = path;
@@ -117,6 +137,11 @@ public class FTPFile {
 	}
 
 	public String toString() {
+		if(path != null && path.length() > 0)
+			if(path.charAt(path.length() -1 ) == '/')
+				return path + name;
+			else
+				return path + "/" + name;
 		return name;
 	}
 
@@ -195,4 +220,6 @@ public class FTPFile {
     public File getFile() {
         return new File( getPath(), getName() );
     }
+    
+ 
 }

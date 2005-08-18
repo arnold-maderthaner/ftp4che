@@ -167,15 +167,15 @@ public class ReplyWorker extends Thread {
                                    Thread.sleep(4);
                                 } catch (InterruptedException e) {}
                             } 
-                            if (buffer.remaining() > 0) {
-                                continue;
-                            }
                             buffer.flip();
-                            channel.write(buffer);
+                            while(buffer.hasRemaining())
+                            	channel.write(buffer);
+                            
                             buffer.clear();
                         }
                         buffer.flip();
-                        channel.write(buffer);
+                        while(buffer.hasRemaining())
+                        	channel.write(buffer);
                         buffer.clear();
                         setStatus(ReplyWorker.FINISHED);
                         channel.close();

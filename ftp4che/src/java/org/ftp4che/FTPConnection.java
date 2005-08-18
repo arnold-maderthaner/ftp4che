@@ -96,6 +96,7 @@ public abstract class FTPConnection {
     private ByteBuffer uploadBuffer = ByteBuffer.allocateDirect(8192);
     private CharBuffer controlBuffer = CharBuffer.allocate(4096);
     protected SocketProvider socketProvider = null;
+    private int connectionStatus = UNKNOWN;
     
     /**
      * @author arnold,kurt
@@ -181,13 +182,13 @@ public abstract class FTPConnection {
         try
         {
             Command command = new Command(Command.QUIT);
-            sendCommand(command);
+            sendCommand(command).dumpReply();
+            socketProvider.close();
         }catch (IOException ioe)
         {
           log.warn("Error closing connection: " + getAddress().getHostName() + ":" + getAddress().getPort(),ioe);
-          socketProvider = null;
         }
-         
+        socketProvider = null;
      }
     
     /**
@@ -217,7 +218,18 @@ public abstract class FTPConnection {
     public int getConnectionStatus()
     {
         //TODO: IMPLEMENT / DO WE NEED THIS ???
-        return FTPConnection.CONNECTED;
+        return connectionStatus;
+    }
+    
+ /**
+     * 
+     * This method is used to get the status of your connection
+     * @return status there are constants in FTPConnection (f.e. CONNECTED / DISCONNECTED / IDLE ...) where you can identify the status of your ftp connection
+     * @author arnold,kurt
+     */
+    public void setConnectionStatus(int connectionStatus)
+    {
+        this.connectionStatus = connectionStatus;
     }
     
     /**

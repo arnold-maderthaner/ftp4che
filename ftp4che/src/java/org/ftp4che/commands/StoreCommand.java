@@ -35,14 +35,13 @@ public class StoreCommand extends DataConnectionCommand {
     
     public StoreCommand(String command, FTPFile toFile)
     {
-       super(command, toFile.getName() );
+       super(command, toFile.toString() );
        setToFile( toFile );
     }
     
     public StoreCommand(String command, FTPFile fromFile, FTPFile toFile)
     {
-       super(command, toFile.getName() );
-       setToFile( toFile );
+       this(command, toFile);
        setFromFile( fromFile );
        
     }
