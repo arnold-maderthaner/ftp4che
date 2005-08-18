@@ -179,16 +179,16 @@ public abstract class FTPConnection {
      * @author arnold,kurt
     */
     public void disconnect() {
-        try
-        {
-            Command command = new Command(Command.QUIT);
-            sendCommand(command);
-        }catch (IOException ioe)
-        {
-          log.warn("Error closing connection: " + getAddress().getHostName() + ":" + getAddress().getPort(),ioe);
-          socketProvider = null;
-        }
-         
+    	  try
+          {
+              Command command = new Command(Command.QUIT);
+              sendCommand(command).dumpReply();
+              socketProvider.close();
+          }catch (IOException ioe)
+          {
+            log.warn("Error closing connection: " + getAddress().getHostName() + ":" + getAddress().getPort(),ioe);
+          }
+          socketProvider = null;    
      }
     
     /**
