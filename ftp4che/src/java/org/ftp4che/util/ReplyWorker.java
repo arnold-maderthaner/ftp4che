@@ -53,7 +53,7 @@ public class ReplyWorker extends Thread {
     private Command command;
     private Charset charset = Charset.forName( "ISO8859-1" );
     private CharsetDecoder charDecoder = charset.newDecoder();
-    private ByteBuffer buffer = ByteBuffer.allocateDirect(16384);
+    private ByteBuffer buffer = ByteBuffer.allocate(16384);
     
     private int status = ReplyWorker.UNKNOWN;
     private Reply reply;

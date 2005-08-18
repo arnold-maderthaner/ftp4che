@@ -221,9 +221,9 @@ public abstract class FTPConnection {
         return connectionStatus;
     }
     
- /**
+    /**
      * 
-     * This method is used to get the status of your connection
+     * This method is used to set the status of your connection
      * @return status there are constants in FTPConnection (f.e. CONNECTED / DISCONNECTED / IDLE ...) where you can identify the status of your ftp connection
      * @author arnold,kurt
      */
