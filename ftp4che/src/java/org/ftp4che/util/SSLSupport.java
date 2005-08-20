@@ -46,11 +46,13 @@ public class SSLSupport {
     private OutputStream out = null;
     private InputStream in = null;
     private byte[] readArray = new byte[16384];
+    private boolean controllConnection;
     
-	public SSLSupport(Socket socket, int mode)
+	public SSLSupport(Socket socket, int mode,boolean controllConnection)
 	{
 		setMode(mode);
 		setSocket(socket);
+        setControllConnection(controllConnection);
 	}
 	
 	public void initEngineAndBuffers() throws NoSuchAlgorithmException,KeyStoreException,KeyManagementException,SSLException,IOException
@@ -102,7 +104,10 @@ public class SSLSupport {
     
     public int read(ByteBuffer dst) throws IOException {     
         int byteCount = 0;
-        byteCount = in.read(readArray);
+        if(isControllConnection())
+            byteCount = in.read(readArray,0,1024);
+        else
+            byteCount = in.read(readArray);
         if(byteCount <= 0)
             return byteCount;
         dst.put(readArray,dst.position(),byteCount);
@@ -118,5 +123,19 @@ public class SSLSupport {
         {
             log.error(ioe,ioe);
         }
+    }
+
+    /**
+     * @return Returns the controllConnection.
+     */
+    public boolean isControllConnection() {
+        return controllConnection;
+    }
+
+    /**
+     * @param controllConnection The controllConnection to set.
+     */
+    public void setControllConnection(boolean controllConnection) {
+        this.controllConnection = controllConnection;
     }
 }

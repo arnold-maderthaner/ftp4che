@@ -113,7 +113,16 @@ public class SocketProvider {
         {
             return supporter.read(dst);
         }
-        int byteCount = in.read(readArray);
+        int byteCount = 0;
+        if(isControllConnection())
+        {
+            byteCount = in.read(readArray,0,1024);
+        }
+        else
+        {
+            byteCount = in.read(readArray);
+        }
+        
         if(byteCount <= 0)
         	return byteCount;
         dst.put(readArray,dst.position(),byteCount);
@@ -155,7 +164,7 @@ public class SocketProvider {
     
     public void negotiate() {
         try {
-        	supporter = new SSLSupport(socket, getSSLMode());
+        	supporter = new SSLSupport(socket, getSSLMode(),isControllConnection());
             supporter.initEngineAndBuffers();
             supporter.handshake();
         	
