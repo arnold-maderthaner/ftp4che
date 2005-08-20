@@ -57,11 +57,6 @@ public class ReplyWorker extends Thread {
     private int status = ReplyWorker.UNKNOWN;
     private Reply reply;
     
-    private static ByteBuffer controllConnectionBuffer = ByteBuffer.allocateDirect(1024);
-    private static ByteBuffer dataConnectionBuffer = ByteBuffer.allocateDirect(16384);
-    
-    
-    
     public ReplyWorker ( SocketProvider sc, Command command ) {
         setSocketProvider( sc );
         setCommand ( command );
@@ -79,9 +74,9 @@ public class ReplyWorker extends Thread {
             String out = "";
             ByteBuffer buf = null;
             if(!isListReply)
-                buf = controllConnectionBuffer;
+                buf = ByteBuffer.allocateDirect(1024);
             else
-                buf = dataConnectionBuffer;
+                buf = ByteBuffer.allocateDirect(16384);
             int amount;
             buf.clear();
             socketProvider.socket().setKeepAlive(true);

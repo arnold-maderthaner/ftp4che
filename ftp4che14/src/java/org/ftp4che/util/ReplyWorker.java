@@ -54,8 +54,6 @@ public class ReplyWorker extends Thread {
     Charset charset = Charset.forName( "ISO8859-1" );
     CharsetDecoder charDecoder = charset.newDecoder();
     ByteBuffer buffer = ByteBuffer.allocate(16384);
-    private static ByteBuffer controllConnectionBuffer = ByteBuffer.allocateDirect(1024);
-    private static ByteBuffer dataConnectionBuffer = ByteBuffer.allocateDirect(16384); 
     private int status = ReplyWorker.UNKNOWN;
     Reply reply;
     
@@ -77,9 +75,9 @@ public class ReplyWorker extends Thread {
             String out = "";
             ByteBuffer buf = null;
             if(!isListReply)
-                buf = controllConnectionBuffer;
+                buf = ByteBuffer.allocateDirect(1024);
             else
-                buf = dataConnectionBuffer;
+                buf = ByteBuffer.allocateDirect(16384);
             int amount;
             buf.clear();
             socketProvider.socket().setKeepAlive(true);

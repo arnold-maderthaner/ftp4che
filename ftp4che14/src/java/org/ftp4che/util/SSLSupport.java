@@ -105,7 +105,7 @@ public class SSLSupport {
     public int read(ByteBuffer dst) throws IOException {     
         int byteCount = 0;
         if(isControllConnection())
-            byteCount = in.read(readArray,0,1024);
+            byteCount = in.read(readArray,0,dst.remaining());
         else
             byteCount = in.read(readArray);
         if(byteCount <= 0)

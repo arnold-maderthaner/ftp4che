@@ -115,7 +115,7 @@ public class SocketProvider {
         int byteCount = 0;
         if(isControllConnection())
         {
-            byteCount = in.read(readArray,0,1024);
+            byteCount = in.read(readArray,0,dst.remaining());
         }
         else
         {
