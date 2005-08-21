@@ -60,13 +60,35 @@ public abstract class FTPConnection {
     //TODO: support PRET command
     
     
-    /* Constants for connection.type*/
+    /** 
+     * Constants for connection.type
+     *  public static final int FTP_CONNECTION = 1;
+     *  public static final int IMPLICIT_SSL_FTP_CONNECTION =  2;
+     *  public static final int AUTH_SSL_FTP_CONNECTION =  3;
+     *  public static final int AUTH_TLS_FTP_CONNECTION =  4;
+     */
     public static final int FTP_CONNECTION = 1;
     public static final int IMPLICIT_SSL_FTP_CONNECTION =  2;
     public static final int AUTH_SSL_FTP_CONNECTION =  3;
     public static final int AUTH_TLS_FTP_CONNECTION =  4;
-  
-    /* Connection status that are possbile */
+    
+    /** Constants for up-/download bandwidth
+     *   public static final long MAX_DOWNLOAD_BANDWIDTH =
+     *   public static final long MAX_UPLOAD_BANDWIDTH =  
+     */
+    public static final int MAX_DOWNLOAD_BANDWIDTH = Integer.MAX_VALUE;
+    public static final int MAX_UPLOAD_BANDWIDTH = Integer.MAX_VALUE;
+    
+    /**
+     * Connection status that are possbile
+     *  public static final int CONNECTED = 1001;
+     *  public static final int DISCONNECTED = 1002;
+     *  public static final int IDLE = 1003;
+     *  public static final int RECEIVING_FILE = 1004;
+     *  public static final int SENDING_FILE = 1005;
+     *  public static final int FXP_FILE = 1006;
+     *  public static final int UNKNOWN = 9999;
+     */
     
     public static final int CONNECTED = 1001;
     public static final int DISCONNECTED = 1002;
@@ -87,6 +109,8 @@ public abstract class FTPConnection {
     private String account = "";
     private boolean passiveMode = false;
     private int timeout = 10000;
+    private int downloadBandwidth = MAX_DOWNLOAD_BANDWIDTH;
+    private int uploadBandwidth = MAX_UPLOAD_BANDWIDTH;
 //  Charset and decoder
     private Charset charset = Charset.forName("ISO-8859-1");
     private CharsetDecoder decoder = charset.newDecoder();
@@ -617,7 +641,7 @@ public abstract class FTPConnection {
     {
         InetSocketAddress dataSocket = sendPassiveMode();
         SocketProvider provider = new SocketProvider(false);
-        provider.connect(dataSocket);
+        provider.connect(dataSocket, getDownloadBandwidth(), getUploadBandwidth());
         provider.setSSLMode(getConnectionType());
         
         commandReply.setLines(sendCommand(command).getLines());
@@ -654,5 +678,29 @@ public abstract class FTPConnection {
     	reply.dumpReply();
     	reply.validate();
     }
-    
+    /**
+     * @return Returns the downloadBandwidth.
+     */
+    public int getDownloadBandwidth() {
+        return downloadBandwidth;
+    }
+    /**
+     * @param downloadBandwidth The downloadBandwidth to set.
+     */
+    public void setDownloadBandwidth(int maxDownloadBandwidth) {
+        this.downloadBandwidth = maxDownloadBandwidth;
+    }
+    /**
+     * @return Returns the uploadBandwidth.
+     */
+    public int getUploadBandwidth() {
+        return uploadBandwidth;
+    }
+    /**
+     * @param uploadBandwidth The uploadBandwidth to set.
+     */
+    public void setUploadBandwidth(int maxUploadBandwidth) {
+        this.uploadBandwidth = maxUploadBandwidth;
+    }
+
 }
