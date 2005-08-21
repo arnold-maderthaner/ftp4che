@@ -21,10 +21,8 @@ package org.ftp4che;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
-import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.util.List;
 
@@ -99,24 +97,19 @@ public abstract class FTPConnection {
     
     /* Member variables 
      */
-    Logger log = Logger.getLogger(FTPConnection.class.getName());
+    private static final Logger log = Logger.getLogger(FTPConnection.class.getName());
     private int connectionType = FTPConnection.FTP_CONNECTION; 
-    InetSocketAddress address = null;
-    String user = "";
-    String password = "";
-    String account = "";
-    boolean passiveMode = false;
-    int timeout = 10000;
+    private InetSocketAddress address = null;
+    private String user = "";
+    private String password = "";
+    private String account = "";
+    private boolean passiveMode = false;
+    private int timeout = 10000;
     private int downloadBandwidth = MAX_DOWNLOAD_BANDWIDTH;
     private int uploadBandwidth = MAX_UPLOAD_BANDWIDTH;
-//  Charset and decoder
-    Charset charset = Charset.forName("ISO-8859-1");
-    CharsetDecoder decoder = charset.newDecoder();
-    CharsetEncoder encoder = charset.newEncoder();
-    //TODO: make configurable 
-    ByteBuffer downloadBuffer = ByteBuffer.allocateDirect(65536);
-    ByteBuffer uploadBuffer = ByteBuffer.allocateDirect(8192);
-    CharBuffer controlBuffer = CharBuffer.allocate(4096);
+    private Charset charset = Charset.forName("ISO-8859-1");
+    private CharsetEncoder encoder = charset.newEncoder();
+    private CharBuffer controlBuffer = CharBuffer.allocate(1024);
     protected SocketProvider socketProvider = null;
     private int connectionStatus = FTPConnection.UNKNOWN;
     

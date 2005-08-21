@@ -6,7 +6,6 @@
  */
 package org.ftp4che.examples;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
@@ -32,14 +31,14 @@ public class SimpleFTPLogin {
         
         Properties pt = new Properties();
         pt.setProperty("connection.host","127.0.0.1");
-        pt.setProperty("connection.port","21");
+        pt.setProperty("connection.port","54322");
         pt.setProperty("user.login","ftpuser");
         pt.setProperty("user.password","ftp4che");
         pt.put("connection.type", new Integer(FTPConnection.FTP_CONNECTION));
         pt.put("connection.timeout",new Integer(10000));
         pt.put("connection.passive",new Boolean(true));
-        pt.put("connection.downloadbw", new Integer(10000)); // 10KB/s
-        pt.put("connection.uploadbw", new Integer(10000)); // 10KB/s
+        pt.put("connection.downloadbw", 2500000); // 10KB/s
+        pt.put("connection.uploadbw", Integer.MAX_VALUE); // 10KB/s
         
         try
         {
@@ -55,47 +54,38 @@ public class SimpleFTPLogin {
 //                {
 //                    log.debug("FastList: " + s);
 //                }
-//                connection.getWorkDirectory();
-//                connection.getDirectoryListing();
+                connection.getWorkDirectory();
+                connection.getDirectoryListing();
+                connection.makeDirectory("testdir");
+                connection.changeDirectory("testdir");
+                log.debug("Working Directory: " + connection.getWorkDirectory());    
+              
+                connection.changeToParentDirectory();
+                
+                connection.removeDirectory("testdir");
+                
+                log.debug("Working Directory: " + connection.getWorkDirectory());
+               
+                connection.noOperation();
+                connection.changeDirectory("/home/ftpuser/download");
 
-//                connection.makeDirectory("testdir");
-//                connection.changeDirectory("testdir");
-//                log.debug("Working Directory: " + connection.getWorkDirectory());    
+                connection.getWorkDirectory();
+                log.debug("Working Directory: " + connection.getWorkDirectory());    
                 
-//                connection.changeToParentDirectory();
-                
-//                connection.removeDirectory("testdir");
-                
-//                log.debug("Working Directory: " + connection.getWorkDirectory());
-                
-//                connection.noOperation();
-//                connection.changeDirectory("/home/ftpuser/download");
 
-//                connection.getWorkDirectory();
-//
-//                connection.makeDirectory("testdir");
-//                connection.changeDirectory("testdir");
-//                log.debug("Working Directory: " + connection.getWorkDirectory());    
-//                
-//                connection.changeToParentDirectory();
-//                
-//                connection.removeDirectory("testdir");
-//                
-//                log.debug("Working Directory: " + connection.getWorkDirectory());
-//                
-//                connection.noOperation();
-//                connection.changeDirectory("/home/ftpuser/download");
-//                List<FTPFile> fileList = connection.getDirectoryListing();
-//                for(int i = 0; i < fileList.size(); i++)
-//                    log.info("Name:" + fileList.get(i).getName() + " Mode:" + fileList.get(i).getMode() + " Date:" + fileList.get(i).getDate() + " Size:" + fileList.get(i).getSize());
-//                log.debug("List Size:" + fileList.size());
+                List<FTPFile> fileList = connection.getDirectoryListing();
+                for(int i = 0; i < fileList.size(); i++)
+                    log.info("Name:" + fileList.get(i).getName() + " Mode:" + fileList.get(i).getMode() + " Date:" + fileList.get(i).getDate() + " Size:" + fileList.get(i).getSize());
+                log.debug("List Size:" + fileList.size());
 
 
                 connection.changeDirectory("/home/ftpuser/download");
                 FTPFile fromFile = new FTPFile();
                 fromFile.setPath("/home/ftpuser/download/");
-                fromFile.setName("10mb");
-                connection.downloadFile(fromFile,new FTPFile("/home/kurt/", "10mb_limited"));
+                fromFile.setName("50mb");
+                long start = System.currentTimeMillis();
+                connection.downloadFile(fromFile,new FTPFile("/tmp/", "50mb_limited"));
+                log.debug("kb/sec: " + ((double)50060 / (System.currentTimeMillis() - start)*1000));
 //                connection.changeDirectory("/home/ftpuser/upload");
 //                connection.uploadFile(new File("/home/ftpuser/download" + File.separator + "testfile1.doc"),new FTPFile("testfile1.doc"));
 //                connection.changeDirectory("/home/ftpuser/download");

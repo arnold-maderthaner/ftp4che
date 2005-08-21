@@ -46,6 +46,8 @@ public class FTPConnectionFactory {
      * connection.type = The connection you want to have (normal,auth ssl,auth tls,...). There are constants (int primitiv type) in FTPConnection. You have to give a Integer object.
      * connection.timeout = The timeout that will be used (Long object)
      * connection.passive = Should the DataConnection be established in passive mode (Boolean Object)
+     * connection.downloadbw = Maximum bytes / second that should be used for downloading
+     * connection.uploadbw = Maximum bytes / second that should be used for uploading
      * @return FTPConnection the ftpconnection. you can than do a connect() and login() to connect and login to the server
      * @throws ConfigurationException will be thrown if a parameter is missing or invalid
      * @author arnold,kurt
@@ -75,6 +77,8 @@ public class FTPConnectionFactory {
      * @param connectionType = The connection you want to have (normal,auth ssl,auth tls,...). There are constants (int primitiv type) in FTPConnection.
      * @param timeout = The timeout that will be used
      * @param passiveMode = Should the DataConnection be established in passive mode
+     * @param maxDownloadBandwidth = Maximum bytes / second that should be used for downloading
+     * @param maxUploadBandwidth = Maximum bytes / second that should be used for uploading
      * @return FTPConnection the ftpconnection. you can than do a connect() and login() to connect and login to the server
      * @throws ConfigurationException will be thrown if a parameter is missing or invalid
      * @author arnold,kurt
