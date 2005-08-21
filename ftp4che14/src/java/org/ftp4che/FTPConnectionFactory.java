@@ -2,16 +2,16 @@
 *  This file is part of ftp4che.                                            *
 *                                                                           *
 *  This library is free software; you can redistribute it and/or modify it  *
-*  under the terms of the GNU General Public License as published    		*
+*  under the terms of the GNU General Public License as published           *
 *  by the Free Software Foundation; either version 2 of the License, or     *
 *  (at your option) any later version.                                      *
 *                                                                           *
 *  This library is distributed in the hope that it will be useful, but      *
 *  WITHOUT ANY WARRANTY; without even the implied warranty of               *
 *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        *
-*  General Public License for more details.                          		*
+*  General Public License for more details.                                 *
 *                                                                           *
-*  You should have received a copy of the GNU General Public		        *
+*  You should have received a copy of the GNU General Public                *
 *  License along with this library; if not, write to the Free Software      *
 *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
 *                                                                           *
@@ -60,7 +60,9 @@ public class FTPConnectionFactory {
                                                 pt.getProperty("user.account"),
                                                 ((Integer)pt.get("connection.timeout")).intValue(),
                                                 ((Integer)pt.get("connection.type")).intValue(),
-                                                ((Boolean)pt.get("connection.passive")).booleanValue());
+                                                ((Boolean)pt.get("connection.passive")).booleanValue(),
+                                                ((Integer)pt.get("connection.downloadbw")).intValue(),
+                                                ((Integer)pt.get("connection.uploadbw")).intValue());
     }
 
     /**
@@ -79,6 +81,25 @@ public class FTPConnectionFactory {
      */
     public static FTPConnection getInstance(String host,int port,String user,String password,String account,int timeout,int connectionType,boolean passiveMode) throws ConfigurationException
     {
+        return FTPConnectionFactory.getInstance(host,port,user,password,null,10000,connectionType,passiveMode,FTPConnection.MAX_DOWNLOAD_BANDWIDTH, FTPConnection.MAX_UPLOAD_BANDWIDTH);
+    }
+    
+    /**
+     * This factory should be called to get you a new FTPConnection
+     * @param host = hostname to the server you want to connect 
+     * @param port = port you want to connect to
+     * @param user = login name 
+     * @param password = password. this parameter is optional
+     * @param account = Account Information. This parameter is optional
+     * @param connectionType = The connection you want to have (normal,auth ssl,auth tls,...). There are constants (int primitiv type) in FTPConnection.
+     * @param timeout = The timeout that will be used
+     * @param passiveMode = Should the DataConnection be established in passive mode
+     * @return FTPConnection the ftpconnection. you can than do a connect() and login() to connect and login to the server
+     * @throws ConfigurationException will be thrown if a parameter is missing or invalid
+     * @author arnold,kurt
+     */
+    public static FTPConnection getInstance(String host,int port,String user,String password,String account,int timeout,int connectionType,boolean passiveMode,int maxDownloadBandwidth, int maxUploadBandwidth) throws ConfigurationException
+    {
         FTPConnection connection = null;
         if(connectionType == FTPConnection.FTP_CONNECTION)
         {
@@ -88,7 +109,7 @@ public class FTPConnectionFactory {
                 connectionType == FTPConnection.AUTH_SSL_FTP_CONNECTION ||
                 connectionType == FTPConnection.IMPLICIT_SSL_FTP_CONNECTION)
         {
-           	connection = new SecureFTPConnection();
+            connection = new SecureFTPConnection();
         }
         else
         {
@@ -101,6 +122,9 @@ public class FTPConnectionFactory {
         connection.setAccount(account);
         connection.setTimeout(timeout);
         connection.setPassiveMode(passiveMode);
+        connection.setDownloadBandwidth(maxDownloadBandwidth);
+        connection.setUploadBandwidth(maxUploadBandwidth);
+        
         return connection;
     }
     

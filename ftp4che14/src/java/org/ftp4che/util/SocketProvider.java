@@ -49,26 +49,34 @@ public class SocketProvider {
         setControllConnection(isControllConnection);
     }
     
-	public SocketProvider( Socket socket ) throws IOException{
-		this.socket = socket;
-        if(out == null)
-            out = socket.getOutputStream();
-        if(in == null)
-            in = socket.getInputStream();
-	}
-    
     public SocketProvider(Socket socket, boolean isControllConnection ) throws IOException
     {
-        this(socket);
+        this(socket, isControllConnection, FTPConnection.MAX_DOWNLOAD_BANDWIDTH, FTPConnection.MAX_UPLOAD_BANDWIDTH);
+    }
+
+//  public SocketProvider( Socket socket ) throws IOException{
+//  this(socket, true, FTPConnection.MAX_DOWNLOAD_BANDWIDTH, FTPConnection.MAX_UPLOAD_BANDWIDTH);
+//}
+    
+    public SocketProvider( Socket socket, boolean isControllConnection, int maxDownload, int maxUpload ) throws IOException{
         setControllConnection(isControllConnection);
+        
+        this.socket = socket;
+        if(out == null)
+            out = new BandwidthControlledOutputStream(socket.getOutputStream(), maxUpload);
+        if(in == null)
+            in = new BandwidthControlledInputStream(socket.getInputStream(), maxDownload);
     }
     
-	public void connect( SocketAddress remote ) throws IOException {
-		socket.connect(remote);
-		out = socket.getOutputStream();
-		in = socket.getInputStream();
-	}
+//  public void connect( SocketAddress remote ) throws IOException {
+//      connect(remote, FTPConnection.MAX_DOWNLOAD_BANDWIDTH, FTPConnection.MAX_UPLOAD_BANDWIDTH);
+//  }
     
+    public void connect( SocketAddress remote, int maxDownload, int maxUpload ) throws IOException {
+        socket.connect(remote);
+        out = new BandwidthControlledOutputStream(socket.getOutputStream(), maxUpload);
+        in = new BandwidthControlledInputStream(socket.getInputStream(), maxDownload);
+    }
 	
 	public Socket socket() {
 		return socket;

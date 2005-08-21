@@ -51,7 +51,7 @@ public class NormalFTPConnection extends FTPConnection {
         String hostAndPort = getAddress().getHostName() + ":" + getAddress().getPort();
         try
         {
-            socketProvider.connect(getAddress());
+            socketProvider.connect(getAddress(), getDownloadBandwidth(), getUploadBandwidth());
             log.debug("connected to:" + hostAndPort);
             socketProvider.socket().setSoTimeout(getTimeout());
             socketProvider.socket().setKeepAlive(true);
