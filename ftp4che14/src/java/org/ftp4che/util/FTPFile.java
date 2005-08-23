@@ -32,14 +32,16 @@ import org.ftp4che.commands.Command;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class FTPFile {
-    String path = "", name = "", mode ="";
-    long size = 0;
-	boolean visible = true;
-	String date = "";
-	String parent = "";
-	String user, group;
-    String type = Command.TYPE_I;
+public class FTPFile implements Comparable {
+    private String path = "";
+    private String name = "";
+    private String mode ="";
+    private long size = 0;
+    private boolean visible = true;
+    private String date = "";
+    private String parent = "";
+    private String user, group;
+    private String type = Command.TYPE_I;
 
 	/**
 	 *  Constructor for the FtpFile object
@@ -47,12 +49,19 @@ public class FTPFile {
 	 *@param  name  Description of Parameter
 	 */
 	public FTPFile(String name) {
-		this.name = name;
-		if (name.startsWith(".")) {
-			visible = false;
-		} else {
-			visible = true;
-		}
+		int slashPos = name.lastIndexOf("/");
+		
+		if ( slashPos >= 0 ) {
+			if ( name.endsWith("/") ) {
+				setPath( name.substring(0, name.substring(0, name.length()-1).lastIndexOf("/")));
+				setName( name.substring(name.substring(0, name.length()-1).lastIndexOf("/")));
+				setMode("d");
+			}else {
+				setPath( name.substring(0, slashPos) );
+				setName( name.substring(slashPos) );
+			}
+		}else
+			setName( name );
 	}
 	
 	public FTPFile(String path, String name) {
@@ -83,6 +92,8 @@ public class FTPFile {
 			mode += "w";
 		else
 			mode += "-";
+		
+		setMode(mode);
 	}
 
 	public FTPFile() { }
@@ -138,12 +149,13 @@ public class FTPFile {
 	}
 
 	public String toString() {
-		if(path != null && path.length() > 0)
-			if(path.charAt(path.length() -1 ) == '/')
-				return path + name;
-			else
-				return path + "/" + name;
-		return name;
+		return new File(getPath(), getName()).toString();
+//		if(path != null && path.length() > 0)
+//			if(path.charAt(path.length() -1 ) == '/')
+//				return path + name;
+//			else
+//				return path + "/" + name;
+//		return name;
 	}
 
 	public boolean isVisible() {
@@ -226,4 +238,17 @@ public class FTPFile {
     public File getFile() {
         return new File( getPath(), getName() );
     }
+    
+	public int compareTo(Object o) {
+		FTPFile to = (FTPFile) o;
+		
+		if ( this.isDirectory() && to.isDirectory()  )
+			return this.getName().compareTo(to.getName());
+		else if ( this.isDirectory() && to.isDirectory() )
+			return this.getName().compareTo(to.getName());
+		else if (this.isDirectory())
+			return 1;
+		
+		return 0;
+	}
 }

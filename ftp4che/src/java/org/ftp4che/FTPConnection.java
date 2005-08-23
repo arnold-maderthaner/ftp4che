@@ -25,6 +25,8 @@ import java.net.ServerSocket;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.net.ServerSocketFactory;
@@ -38,6 +40,7 @@ import org.ftp4che.commands.RetrieveCommand;
 import org.ftp4che.commands.StoreCommand;
 import org.ftp4che.exception.AuthenticationNotSupportedException;
 import org.ftp4che.exception.ConfigurationException;
+import org.ftp4che.exception.FtpFileNotFoundException;
 import org.ftp4che.exception.FtpIOException;
 import org.ftp4che.exception.FtpWorkflowException;
 import org.ftp4che.exception.NotConnectedException;
@@ -511,7 +514,7 @@ public abstract class FTPConnection {
     
     
     /**
-     * This method is used to download a file from the server to a specifed File object
+     * This method is used to download a file from the server to a specifed local file object
      * @param fromFile the file on the server
      * @param toFile the file object where the file should be stored (on the local computer)
      * @throws IOException will be thrown if there was a communication problem with the server
@@ -519,10 +522,8 @@ public abstract class FTPConnection {
      * @throws FtpWorkflowException will be thrown if there was a ftp reply class 4xx. this should indicate some secific problems on the server
      * @throws FtpFileNotFountException will be thrown if the specified fromFile is not found on the server
      */
-    
     public void downloadFile(FTPFile fromFile,FTPFile toFile) throws IOException,FtpWorkflowException,FtpIOException
     {
-    	
     	RetrieveCommand command = new RetrieveCommand(Command.RETR,fromFile,toFile);
     	SocketProvider provider = null;
         
@@ -554,9 +555,38 @@ public abstract class FTPConnection {
     }
     
     /**
+     * This method is used to download a directory from the server to a specifed local directory object
+     * @param srcDir the directory on the server
+     * @param dstDir the directory object where the file should be stored (on the local computer)
+     * @throws IOException will be thrown if there was a communication problem with the server
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 5xx. in most cases wrong commands where send
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 4xx. this should indicate some secific problems on the server
+     * @throws FtpFileNotFountException will be thrown if the specified fromFile is not found on the server
+     */
+    public void downloadDirectory(FTPFile srcDir, FTPFile dstDir) throws IOException,FtpWorkflowException,FtpIOException {
+    	if ( !srcDir.isDirectory() )
+    		throw new FtpFileNotFoundException("Downloading: " + srcDir.getName() + " is not possible, it's not a directory!");
+
+    	new File( dstDir.toString() + "/" + srcDir.getName() ).mkdir();
+    	
+    	List<FTPFile> files = getDirectoryListing( srcDir.toString() );
+    	
+    	Collections.sort( files );
+    	
+    	for(FTPFile file : files) {
+    		file.setPath( srcDir.toString() );
+    		if ( file.isFile() ) {
+    			downloadFile(file, new FTPFile(dstDir.toString() + "/" + srcDir.getName(), file.getName()));
+    		}else {
+    			downloadDirectory( file, new FTPFile(dstDir  + "/" + srcDir.getName()));
+    		}
+    	}
+    }
+    
+    /**
      * This method is used to upload a file to the server to a specifed FtpFile
      * @param fromFile the file on the local computer
-     * @param toFile the FtpFile object where the file should be stored (on the server)
+     * @param toFile the file object where the file should be stored (on the server)
      * @throws IOException will be thrown if there was a communication problem with the server
      * @throws FtpWorkflowException will be thrown if there was a ftp reply class 5xx. in most cases wrong commands where send
      * @throws FtpWorkflowException will be thrown if there was a ftp reply class 4xx. this should indicate some secific problems on the server
@@ -564,7 +594,6 @@ public abstract class FTPConnection {
      */
     public void uploadFile(FTPFile fromFile,FTPFile toFile) throws IOException,FtpWorkflowException,FtpIOException
     {
-    	
     	StoreCommand command = new StoreCommand(Command.STOR,fromFile,toFile);
     	SocketProvider provider = null;
         
@@ -593,6 +622,38 @@ public abstract class FTPConnection {
         {
             (ReplyWorker.readReply(socketProvider)).dumpReply();
         }
+    }
+    
+    /**
+     * This method is used to upload a local directory to the server to a specifed remote directory
+     * @param srcDir the directory on the local computer
+     * @param dstDir the directory object where the file should be stored (on the server)
+     * @throws IOException will be thrown if there was a communication problem with the server
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 5xx. in most cases wrong commands where send
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 4xx. this should indicate some secific problems on the server
+     * @throws FileNotFountException will be thrown if the specified fromFile is not found on the local computer
+     */
+    public void uploadDirectory(FTPFile srcDir, FTPFile dstDir) throws IOException,FtpWorkflowException,FtpIOException {
+    	if ( !srcDir.isDirectory() )
+    		throw new FtpFileNotFoundException("Uploading: " + srcDir.getName() + " is not possible, it's not a directory!");
+
+    	makeDirectory(dstDir.toString());
+    	
+    	File[] files = srcDir.getFile().listFiles();
+    	List<FTPFile> ftpFiles = new ArrayList<FTPFile>();
+    	
+    	for ( File file : files)
+    		ftpFiles.add(new FTPFile(file));
+    	
+    	Collections.sort( ftpFiles );
+    	
+    	for ( FTPFile file : ftpFiles ) {
+    		if ( file.isFile() ) {
+    			uploadFile( file, new FTPFile(dstDir.toString() + "/" + file.getName()) );
+    		}else {
+    			uploadDirectory( file, new FTPFile(dstDir + "/" + file.getName()));
+    		}
+    	}
     }
     
     public void fxpFile(FTPConnection destination, FTPFile fromFile,FTPFile toFile) throws IOException,FtpWorkflowException,FtpIOException
