@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.net.ServerSocketFactory;
+import javax.swing.event.EventListenerList;
 
 
 
@@ -38,6 +39,8 @@ import org.ftp4che.commands.Command;
 import org.ftp4che.commands.ListCommand;
 import org.ftp4che.commands.RetrieveCommand;
 import org.ftp4che.commands.StoreCommand;
+import org.ftp4che.event.FTPEvent;
+import org.ftp4che.event.FTPListener;
 import org.ftp4che.exception.AuthenticationNotSupportedException;
 import org.ftp4che.exception.ConfigurationException;
 import org.ftp4che.exception.FtpFileNotFoundException;
@@ -59,9 +62,11 @@ import org.ftp4che.util.SocketProvider;
 public abstract class FTPConnection {
     
     //TODO: support PRET command
-    
-    
-    /** 
+	
+	// event handling
+	protected EventListenerList listenerList = new EventListenerList();
+	
+	/** 
      * Constants for connection.type
      *  public static final int FTP_CONNECTION = 1;
      *  public static final int IMPLICIT_SSL_FTP_CONNECTION =  2;
@@ -97,6 +102,14 @@ public abstract class FTPConnection {
     public static final int SENDING_FILE = 1005;
     public static final int FXP_FILE = 1006;
     public static final int UNKNOWN = 9999;
+    
+    // download / upload / fxp stati
+    public static final int RECEIVING_FILE_STARTED = 2001;
+    public static final int RECEIVING_FILE_ENDED   = 2002;
+    public static final int SENDING_FILE_STARTED   = 2003;
+    public static final int SENDING_FILE_ENDED     = 2004;
+    public static final int FXPING_FILE_STARTED    = 2005;
+    public static final int FXPING_FILE_ENDED      = 2006;
     
     
     /* Member variables 
@@ -225,7 +238,12 @@ public abstract class FTPConnection {
         controlBuffer.flip();
         socketProvider.write(encoder.encode(controlBuffer));
         controlBuffer.clear();
-        return ReplyWorker.readReply(socketProvider);
+        
+        Reply reply = ReplyWorker.readReply(socketProvider);
+        
+        fireReplyMessageArrived(new FTPEvent(this, getConnectionStatus(), reply));
+        
+        return reply; 
      }
     
     /**
@@ -522,6 +540,9 @@ public abstract class FTPConnection {
     
     public void downloadFile(FTPFile fromFile,FTPFile toFile) throws IOException,FtpWorkflowException,FtpIOException
     {
+    	setConnectionStatus(RECEIVING_FILE_STARTED);
+    	fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(), fromFile, toFile));
+    	setConnectionStatus(RECEIVING_FILE);
     	
     	RetrieveCommand command = new RetrieveCommand(Command.RETR,fromFile,toFile);
     	SocketProvider provider = null;
@@ -549,6 +570,9 @@ public abstract class FTPConnection {
         {
             (ReplyWorker.readReply(socketProvider)).dumpReply();
         }
+        
+        setConnectionStatus(RECEIVING_FILE_ENDED);
+        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(), commandReply, fromFile, toFile));
     }
     
     /**
@@ -593,6 +617,9 @@ public abstract class FTPConnection {
      */
     public void uploadFile(FTPFile fromFile,FTPFile toFile) throws IOException,FtpWorkflowException,FtpIOException
     {
+    	setConnectionStatus(SENDING_FILE_STARTED);
+    	fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(), fromFile, toFile));
+    	setConnectionStatus(SENDING_FILE);
     	
     	StoreCommand command = new StoreCommand(Command.STOR,fromFile,toFile);
     	SocketProvider provider = null;
@@ -619,6 +646,9 @@ public abstract class FTPConnection {
          {
              (ReplyWorker.readReply(socketProvider)).dumpReply();
          }
+         
+         setConnectionStatus(SENDING_FILE_ENDED);
+         fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(), commandReply, fromFile, toFile));
     }
     
     /**
@@ -656,6 +686,10 @@ public abstract class FTPConnection {
     
     public void fxpFile(FTPConnection destination, FTPFile fromFile,FTPFile toFile) throws IOException,FtpWorkflowException,FtpIOException
     {
+    	setConnectionStatus(FXPING_FILE_STARTED);
+        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(), fromFile, toFile));
+        setConnectionStatus(FXP_FILE);
+    	
         // send PASV to source site
         Command pasvCommand = new Command(Command.PASV);
         Reply pasvReply = sendCommand(pasvCommand);
@@ -687,6 +721,9 @@ public abstract class FTPConnection {
         Reply retrReply = sendCommand(retrCommand);
         retrReply.dumpReply();
         retrReply.validate();   
+        
+    	setConnectionStatus(FXPING_FILE_ENDED);
+        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(), fromFile, toFile));
     }
     
     private SocketProvider initDataSocket(Command command,Reply commandReply) throws IOException,FtpIOException,FtpWorkflowException
@@ -755,4 +792,79 @@ public abstract class FTPConnection {
     public void setUploadBandwidth(int maxUploadBandwidth) {
         this.uploadBandwidth = maxUploadBandwidth;
     }
+    
+    // listenerList methods
+    private boolean isListener(Class c, FTPListener f) {
+    	boolean isListener = false;
+    	Object[] listeners = listenerList.getListenerList();
+            for (int i = listeners.length-2; i>=0; i-=2) {
+                if (listeners[i]==c && listeners[i+1]==f) {
+    		    isListener=true;
+    	    }
+    	}
+    	return isListener;
+	}
+    
+    /**
+     * Adds a <code>FTPStatusListener</code> to the connection.
+     * @param l the listener to be added
+     */
+    public void addFTPStatusListener(FTPListener l) {
+        listenerList.add(FTPListener.class, l);
+    }
+    
+    /**
+     * Removes a FTPStatusListener from the connection.
+     * @param l the listener to be removed
+     */
+    public void removeFTPStatusListener(FTPListener l) {
+        listenerList.remove(FTPListener.class, l);
+    }
+    
+    /**
+     * Returns an array of all the <code>FTPStatusListener</code>s added
+     * to this FTPConnection with addFTPStatusListener().
+     *
+     * @return all of the <code>FTPStatusListener</code>s added or an empty
+     *         array if no listeners have been added
+     */
+    public FTPListener[] getFTPStatusListeners() {
+        return (FTPListener[])(listenerList.getListeners(FTPListener.class));
+    }
+    
+    /**
+     * Notifies all listeners that have registered interest for
+     * notification on this event type.  The event instance 
+     * is lazily created.
+     * @param event The FTPEvent holding the connection status
+     * @see EventListenerList
+     */
+    protected void fireConnectionStatusChanged( FTPEvent event ) {
+        Object[] listeners = listenerList.getListenerList();
+        for (int i = listeners.length-2; i>=0; i-=2) {
+            if (listeners[i]==FTPListener.class) {
+                if (event == null)
+                	event = new FTPEvent(this, getConnectionStatus(), null);
+                ((FTPListener)listeners[i+1]).connectionStatusChanged(event);
+            }          
+        }
+    }
+    
+    /**
+     * Notifies all listeners that have registered interest for
+     * notification on this event type.  The event instance 
+     * is lazily created.
+     * @param event The FTPEvent holding the connection status
+     * @see EventListenerList
+     */
+    protected void fireReplyMessageArrived( FTPEvent event ) {
+        Object[] listeners = listenerList.getListenerList();
+        for (int i = listeners.length-2; i>=0; i-=2) {
+            if (listeners[i]==FTPListener.class) {
+                if (event == null)
+                	event = new FTPEvent(this, getConnectionStatus(), null);
+                ((FTPListener)listeners[i+1]).replyMessageArrived(event);
+            }          
+        }
+    }   
 }
