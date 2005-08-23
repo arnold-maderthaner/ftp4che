@@ -24,6 +24,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.ftp4che.FTPConnection;
 import org.ftp4che.commands.Command;
+import org.ftp4che.event.FTPEvent;
 import org.ftp4che.exception.AuthenticationNotSupportedException;
 import org.ftp4che.exception.FtpIOException;
 import org.ftp4che.exception.FtpWorkflowException;
@@ -86,7 +87,9 @@ public class SecureFTPConnection extends FTPConnection {
           {
               negotiateAndLogin(authCommand);
           }
+          
           this.setConnectionStatus(FTPConnection.CONNECTED);
+          fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(), null));
     }
     
     private void negotiateAndLogin(String authCommand) throws IOException,AuthenticationNotSupportedException,FtpWorkflowException,FtpIOException
