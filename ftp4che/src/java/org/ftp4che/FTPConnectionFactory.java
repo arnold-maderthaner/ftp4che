@@ -54,17 +54,40 @@ public class FTPConnectionFactory {
      */
     public static FTPConnection getInstance(Properties pt) throws ConfigurationException
     {
-        //TODO: to make this more 1.5 like we could use autoboxing (if we don't want a 1.4 compatible build)
+        int port = 21;
+        int connectionTimeout = 10000;
+        int connectionType = FTPConnection.FTP_CONNECTION;
+        boolean passive = true;
+        int downloadBandwidth = Integer.MAX_VALUE;
+        int uploadBandwidth = Integer.MAX_VALUE;
+        if(pt.getProperty("connection.port") != null)
+            port = Integer.parseInt(pt.getProperty("connection.port"));
+        if(pt.getProperty("connection.timeout") != null)
+            connectionTimeout = Integer.parseInt(pt.getProperty("connection.timeout"));
+        String connectionTypeName = pt.getProperty("connection.type");
+        if(connectionTypeName != null)
+            if(connectionTypeName.equalsIgnoreCase("FTP_CONNETION")) connectionType = FTPConnection.FTP_CONNECTION;
+            else if(connectionTypeName.equalsIgnoreCase("AUTH_TLS_FTP_CONNECTION")) connectionType = FTPConnection.AUTH_TLS_FTP_CONNECTION;
+            else if(connectionTypeName.equalsIgnoreCase("AUTH_SSL_FTP_CONNECTION")) connectionType = FTPConnection.AUTH_SSL_FTP_CONNECTION;
+            else connectionType = FTPConnection.IMPLICIT_SSL_FTP_CONNECTION;
+        if(pt.getProperty("connection.passive") != null)
+            passive = Boolean.getBoolean(pt.getProperty("connection.passive"));
+        if(pt.getProperty("connection.downloadbw") != null)
+            downloadBandwidth = Integer.parseInt(pt.getProperty("connection.downloadbw"));
+        if(pt.getProperty("connection.uploadbw") != null)
+            uploadBandwidth = Integer.parseInt(pt.getProperty("connection.uploadbw"));
+        
         return FTPConnectionFactory.getInstance(pt.getProperty("connection.host"),
-                                                Integer.parseInt(pt.getProperty("connection.port")),
+                                                port,
                                                 pt.getProperty("user.login"),
                                                 pt.getProperty("user.password"),
                                                 pt.getProperty("user.account"),
-                                                ((Integer)pt.get("connection.timeout")).intValue(),
-                                                ((Integer)pt.get("connection.type")).intValue(),
-                                                ((Boolean)pt.get("connection.passive")).booleanValue(),
-                                                ((Integer)pt.get("connection.downloadbw")).intValue(),
-                                                ((Integer)pt.get("connection.uploadbw")).intValue());
+                                                connectionTimeout,
+                                                connectionType,
+                                                passive,
+                                                downloadBandwidth,
+                                                uploadBandwidth);
+    
     }
 
     /**
