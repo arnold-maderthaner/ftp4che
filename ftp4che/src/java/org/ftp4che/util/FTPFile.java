@@ -186,7 +186,13 @@ public class FTPFile implements Comparable {
 	    }
 	    date = date.trim();
 	    file.setDate(date);
-	    file.setName(st.nextToken().trim());
+	    
+	    String fileName = "";
+	    while (st.hasMoreTokens())
+	    	fileName = (fileName.concat(" ")).concat(st.nextToken());
+	    
+	    file.setName(fileName.trim());
+	    
 	    return file;
 	}
 	
