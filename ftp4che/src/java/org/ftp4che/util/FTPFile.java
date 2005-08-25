@@ -170,6 +170,9 @@ public class FTPFile implements Comparable {
 	    FTPFile file = new FTPFile();
 	    StringTokenizer st = new StringTokenizer(line," ");
 	    String mode = st.nextToken();
+	    String date = "";
+	    String fileName = "";
+	    
 	    if(Pattern.matches("[0-9]+", mode.substring(0, 3)))
 	    	mode = mode.substring(3);
 	    if(st.countTokens() < 8)
@@ -179,15 +182,14 @@ public class FTPFile implements Comparable {
 	    file.setUser(st.nextToken());
 	    file.setGroup(st.nextToken());
 	    file.setSize(Long.parseLong(st.nextToken()));
-	    String date = "";
-	    while(st.countTokens() > 1)
+	    
+	    if(st.countTokens() > 3)
 	    {
-	        date += st.nextToken() + " ";
+	        date = st.nextToken() + " " + st.nextToken() + " " + st.nextToken();
 	    }
 	    date = date.trim();
 	    file.setDate(date);
 	    
-	    String fileName = "";
 	    while (st.hasMoreTokens())
 	    	fileName = (fileName.concat(" ")).concat(st.nextToken());
 	    
