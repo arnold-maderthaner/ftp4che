@@ -62,20 +62,16 @@ public class FTPConnectionFactory {
         int uploadBandwidth = Integer.MAX_VALUE;
         if(pt.getProperty("connection.port") != null)
             port = Integer.parseInt(pt.getProperty("connection.port"));
-        if(pt.getProperty("connection.timeout") != null)
-            connectionTimeout = Integer.parseInt(pt.getProperty("connection.timeout"));
-        String connectionTypeName = pt.getProperty("connection.type");
-        if(connectionTypeName != null)
-            if(connectionTypeName.equalsIgnoreCase("FTP_CONNETION")) connectionType = FTPConnection.FTP_CONNECTION;
-            else if(connectionTypeName.equalsIgnoreCase("AUTH_TLS_FTP_CONNECTION")) connectionType = FTPConnection.AUTH_TLS_FTP_CONNECTION;
-            else if(connectionTypeName.equalsIgnoreCase("AUTH_SSL_FTP_CONNECTION")) connectionType = FTPConnection.AUTH_SSL_FTP_CONNECTION;
-            else connectionType = FTPConnection.IMPLICIT_SSL_FTP_CONNECTION;
-        if(pt.getProperty("connection.passive") != null)
-            passive = Boolean.getBoolean(pt.getProperty("connection.passive"));
-        if(pt.getProperty("connection.downloadbw") != null)
-            downloadBandwidth = Integer.parseInt(pt.getProperty("connection.downloadbw"));
-        if(pt.getProperty("connection.uploadbw") != null)
-            uploadBandwidth = Integer.parseInt(pt.getProperty("connection.uploadbw"));
+        if(pt.get("connection.timeout") != null)
+            connectionTimeout = ((Integer) pt.get("connection.timeout")).intValue();
+        if(pt.get("connection.type") != null)
+            connectionType = ((Integer) pt.get("connection.type")).intValue();
+        if(pt.get("connection.passive") != null)
+            passive = ((Boolean)pt.get("connection.passive")).booleanValue();
+        if(pt.get("connection.downloadbw") != null)
+            downloadBandwidth = ((Integer)pt.get("connection.downloadbw")).intValue();
+        if(pt.get("connection.uploadbw") != null)
+            uploadBandwidth = ((Integer)pt.get("connection.uploadbw")).intValue();
         
         return FTPConnectionFactory.getInstance(pt.getProperty("connection.host"),
                                                 port,

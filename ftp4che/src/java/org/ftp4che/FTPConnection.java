@@ -683,6 +683,16 @@ public abstract class FTPConnection {
     	}
     }
     
+    /**
+     * This method is used to fxp a directory from the server to a specifed server directory object
+     * @param destination the FTPConnection Object to the remote server
+     * @param srcDir the directory on the server
+     * @param dstDir the directory object where the file should be stored (on the remote server)
+     * @throws IOException will be thrown if there was a communication problem with the server
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 5xx. in most cases wrong commands where send
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 4xx. this should indicate some secific problems on the server
+     * @throws FtpFileNotFountException will be thrown if the specified fromFile is not found on the server
+     */
     public void fxpFile(FTPConnection destination, FTPFile fromFile,FTPFile toFile) throws IOException,FtpWorkflowException,FtpIOException
     {
     	setConnectionStatus(FXPING_FILE_STARTED);
@@ -710,20 +720,57 @@ public abstract class FTPConnection {
         portReply.validate();
         
         // send STOR command to destination site
-        Command storeCommand = new Command(Command.STOR, toFile.getName());
+        Command storeCommand = new Command(Command.STOR, toFile.toString());
         Reply storeReply = destination.sendCommand(storeCommand);
         storeReply.dumpReply();
         storeReply.validate();
         
         // send RETR command to source site
-        Command retrCommand = new Command(Command.RETR,fromFile.getName());
+        Command retrCommand = new Command(Command.RETR, fromFile.toString());
         Reply retrReply = sendCommand(retrCommand);
         retrReply.dumpReply();
         retrReply.validate();
         
+        // read the last control reply
+        if(retrReply.getLines().size() == 1)
+        {
+            (ReplyWorker.readReply(socketProvider)).dumpReply();
+        }
+        
+        
     	setConnectionStatus(FXPING_FILE_ENDED);
         fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(), fromFile, toFile));
     }
+    
+    /**
+     * This method is used to fxp a directory from the server to a specifed server directory object
+     * @param destination the FTPConnection Object to the remote server
+     * @param srcDir the directory on the server
+     * @param dstDir the directory object where the file should be stored (on the remote server)
+     * @throws IOException will be thrown if there was a communication problem with the server
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 5xx. in most cases wrong commands where send
+     * @throws FtpWorkflowException will be thrown if there was a ftp reply class 4xx. this should indicate some secific problems on the server
+     * @throws FtpFileNotFountException will be thrown if the specified fromFile is not found on the server
+     */
+    public void fxpDirectory(FTPConnection destination, FTPFile srcDir, FTPFile dstDir) throws IOException,FtpWorkflowException,FtpIOException {
+    	if ( !srcDir.isDirectory() )
+    		throw new FtpFileNotFoundException("Downloading: " + srcDir.getName() + " is not possible, it's not a directory!");
+
+    	makeDirectory(dstDir.toString() + "/" + srcDir.getName());
+
+    	List<FTPFile> files = getDirectoryListing( srcDir.toString() );
+    	
+    	Collections.sort( files );
+    	
+    	for(FTPFile file : files) {
+    		file.setPath( srcDir.toString() );
+    		if ( file.isFile() ) {
+    			fxpFile(destination, file, new FTPFile(dstDir.toString() + "/" + srcDir.getName(), file.getName()));
+    		}else {
+    			fxpDirectory(destination, file, new FTPFile(dstDir  + "/" + srcDir.getName()));
+    		}
+    	}
+    }    
     
     private SocketProvider initDataSocket(Command command,Reply commandReply) throws IOException,FtpIOException,FtpWorkflowException
     {
