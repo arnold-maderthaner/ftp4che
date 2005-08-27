@@ -58,6 +58,7 @@ public class Command {
     public final static String STAT = "STAT";
     public final static String PROT = "PROT";
     public final static String PBSZ = "PBSZ";
+    public final static String SSCN = "SSCN";
     private static final String[] nullString = {};
     
     String command;

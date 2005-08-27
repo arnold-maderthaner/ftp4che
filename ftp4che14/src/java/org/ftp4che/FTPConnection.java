@@ -112,10 +112,15 @@ public abstract class FTPConnection {
     public static final int FXPING_FILE_ENDED      = 2006;
     
     
+    public static final String SSCN_ON  = "ON";
+    public static final String SSCN_OFF = "OFF";
+    
     /* Member variables 
      */
     private static final Logger log = Logger.getLogger(FTPConnection.class.getName());
     private int connectionType = FTPConnection.FTP_CONNECTION; 
+    private String connectionSSCNType = FTPConnection.SSCN_OFF;
+    private boolean connectionSSCNActive = false;
     private InetSocketAddress address = null;
     private String user = "";
     private String password = "";
@@ -700,6 +705,12 @@ public abstract class FTPConnection {
         fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(), fromFile, toFile));
         setConnectionStatus(FXP_FILE);
     	
+        if (!connectionSSCNActive && getConnectionSSCNType() == FTPConnection.SSCN_ON) {
+
+            setSecuredFxp(true);
+            connectionSSCNActive = true;
+        }
+        
         // send PASV to source site
         Command pasvCommand = new Command(Command.PASV);
         Reply pasvReply = sendCommand(pasvCommand);
@@ -732,6 +743,12 @@ public abstract class FTPConnection {
         retrReply.dumpReply();
         retrReply.validate();   
         
+        if (connectionSSCNActive && getConnectionSSCNType() == FTPConnection.SSCN_ON) {
+
+            setSecuredFxp(false);
+            connectionSSCNActive = false;
+        }
+        
     	setConnectionStatus(FXPING_FILE_ENDED);
         fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(), fromFile, toFile));
     }
@@ -750,6 +767,12 @@ public abstract class FTPConnection {
     	if ( !srcDir.isDirectory() )
     		throw new FtpFileNotFoundException("Downloading: " + srcDir.getName() + " is not possible, it's not a directory!");
 
+        if (!connectionSSCNActive && getConnectionSSCNType() == FTPConnection.SSCN_ON) {
+
+            setSecuredFxp(true);
+            connectionSSCNActive = true;
+        }
+        
     	makeDirectory(dstDir.toString() + "/" + srcDir.getName());
 
     	List files = getDirectoryListing( srcDir.toString() );
@@ -765,6 +788,12 @@ public abstract class FTPConnection {
     			fxpDirectory(destination, file, new FTPFile(dstDir  + "/" + srcDir.getName()));
     		}
     	}
+        
+        if (connectionSSCNActive && getConnectionSSCNType() == FTPConnection.SSCN_ON) {
+
+            setSecuredFxp(false);
+            connectionSSCNActive = false;
+        }
     }  
     
     private SocketProvider initDataSocket(Command command,Reply commandReply) throws IOException,FtpIOException,FtpWorkflowException
@@ -908,4 +937,37 @@ public abstract class FTPConnection {
             }          
         }
     }   
+    
+    /**
+     * @return Returns the connectionSSCNType.
+     */
+    public String getConnectionSSCNType() {
+        return connectionSSCNType;
+    }
+    /**
+     * @param connectionSSCNType The connectionSSCNType to set.
+     */
+    public void setConnectionSSCNType(String connectionSSCNType) {
+        this.connectionSSCNType = connectionSSCNType;
+    }
+    
+    public void setSecuredFxp( boolean active ) throws IOException, FtpIOException, FtpWorkflowException {
+        Command command = null;
+        
+        if (active)
+            command = new Command(Command.SSCN, FTPConnection.SSCN_ON);
+        else
+            command = new Command(Command.SSCN, FTPConnection.SSCN_OFF);
+        
+        Reply reply = sendCommand(command);
+        reply.dumpReply();
+        reply.validate();
+    }
+    
+    public void isSecuredFxp() throws IOException, FtpIOException, FtpWorkflowException {
+        Command command = new Command(Command.SSCN);
+        Reply reply = sendCommand(command);
+        reply.dumpReply();
+        reply.validate();
+    }
 }

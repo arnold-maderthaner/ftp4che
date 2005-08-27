@@ -70,12 +70,15 @@ public class SecureFTPConnection extends FTPConnection {
         	  for(Iterator it = lines.iterator(); it.hasNext();)
         	  {
         		  String s = ((String)it.next());
-        		  if(s.indexOf(authCommand) > -1)
-        		  {
+                  if(s.indexOf(authCommand) > -1)
+                  {
                     authCommand = s;
-        			found = true;
-        			break;
-        		  }
+                    found = true;
+//                  break;
+                    
+                  } else if (s.indexOf(Command.SSCN) > -1) {
+                      setConnectionSSCNType(FTPConnection.SSCN_ON);
+                  }
         	  } 
         	  if(found)
         	  {
