@@ -33,17 +33,17 @@ public class Command {
     
     public final static String ACCT = "ACCT";
     public final static String APPE = "APPE";
-    public final static String CWD = "CWD";
+    public final static String CWD  = "CWD";
     public final static String CDUP = "CDUP";
     public final static String DELE = "DELE";
     public final static String FEAT = "FEAT";
-    public final static String MKD = "MKD";
+    public final static String MKD  = "MKD";
     public final static String PASV = "PASV";
     public final static String PASS = "PASS";
     public final static String PORT = "PORT";
-    public final static String PWD = "PWD";
+    public final static String PWD  = "PWD";
     public final static String QUIT = "QUIT";
-    public final static String RMD = "RMD";
+    public final static String RMD  = "RMD";
     public final static String REST = "REST";
     public final static String RETR = "RETR";
     public final static String RNTO = "RNTO";
@@ -58,6 +58,7 @@ public class Command {
     public final static String STAT = "STAT";
     public final static String PROT = "PROT";
     public final static String PBSZ = "PBSZ";
+    public final static String SSCN = "SSCN";
     
     
     String command;

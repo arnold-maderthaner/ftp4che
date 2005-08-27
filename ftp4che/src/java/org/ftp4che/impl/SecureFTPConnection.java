@@ -65,14 +65,16 @@ public class SecureFTPConnection extends FTPConnection {
         	  List<String> lines = reply.getLines();
         	  boolean found = false;
              
-        	  for(String s : lines)
-        	  {
+        	  for(String s : lines) {
         		  if(s.indexOf(authCommand) > -1)
         		  {
                     authCommand = s;
         			found = true;
-        			break;
-        		  }
+//        			break;
+                    
+        		  } else if (s.indexOf(Command.SSCN) > -1) {
+                      setConnectionSSCNType(FTPConnection.SSCN_ON);
+                  }
         	  } 
         	  if(found)
         	  {
