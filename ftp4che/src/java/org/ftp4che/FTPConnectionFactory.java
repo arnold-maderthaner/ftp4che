@@ -66,12 +66,17 @@ public class FTPConnectionFactory {
             connectionTimeout = Integer.parseInt(pt.getProperty("connection.timeout"));
         String connectionTypeName = pt.getProperty("connection.type");
         if(connectionTypeName != null)
-            if(connectionTypeName.equalsIgnoreCase("FTP_CONNETION")) connectionType = FTPConnection.FTP_CONNECTION;
+            if(connectionTypeName.equalsIgnoreCase("FTP_CONNECTION")) connectionType = FTPConnection.FTP_CONNECTION;
             else if(connectionTypeName.equalsIgnoreCase("AUTH_TLS_FTP_CONNECTION")) connectionType = FTPConnection.AUTH_TLS_FTP_CONNECTION;
             else if(connectionTypeName.equalsIgnoreCase("AUTH_SSL_FTP_CONNECTION")) connectionType = FTPConnection.AUTH_SSL_FTP_CONNECTION;
             else connectionType = FTPConnection.IMPLICIT_SSL_FTP_CONNECTION;
-        if(pt.getProperty("connection.passive") != null)
-            passive = Boolean.getBoolean(pt.getProperty("connection.passive"));
+        if(pt.getProperty("connection.passive") != null) {
+            if ( pt.getProperty("connection.passive").equalsIgnoreCase("true") )
+                passive = true;
+            else 
+                passive = false;
+//            passive = Boolean.getBoolean(pt.getProperty("connection.passive").trim());
+        }
         if(pt.getProperty("connection.downloadbw") != null)
             downloadBandwidth = Integer.parseInt(pt.getProperty("connection.downloadbw"));
         if(pt.getProperty("connection.uploadbw") != null)
