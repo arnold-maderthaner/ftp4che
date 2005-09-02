@@ -773,7 +773,6 @@ public abstract class FTPConnection {
     		throw new FtpFileNotFoundException("Downloading: " + srcDir.getName() + " is not possible, it's not a directory!");
 
         if (!connectionSSCNActive && getConnectionSSCNType() == FTPConnection.SSCN_ON) {
-
             setSecuredFxp(true);
             connectionSSCNActive = true;
         }
@@ -794,7 +793,6 @@ public abstract class FTPConnection {
     	}
         
         if (connectionSSCNActive && getConnectionSSCNType() == FTPConnection.SSCN_ON) {
-
             setSecuredFxp(false);
             connectionSSCNActive = false;
         }
@@ -969,6 +967,116 @@ public abstract class FTPConnection {
     
     public void isSecuredFxp() throws IOException, FtpIOException, FtpWorkflowException {
         Command command = new Command(Command.SSCN);
+        Reply reply = sendCommand(command);
+        reply.dumpReply();
+        reply.validate();
+    }
+    
+    /**
+     * public void renameFile(FTPFile fromName, FTPFile toName) 
+     * 
+     * renames a given FTPFile object to the given new name
+     * 
+     * @param fromName   the file object to rename
+     * @param toName     the new name for the given FTPFile object
+     * @throws IOException
+     * @throws FtpIOException
+     * @throws FtpWorkflowException
+     */
+    public void renameFile(FTPFile fromName, String toName) throws IOException, FtpIOException, FtpWorkflowException {
+        // send RNFR
+        Command commandRenFr = new Command(Command.RNFR, fromName.getName());
+        Reply replyRenFr = sendCommand(commandRenFr);
+        replyRenFr.dumpReply();
+        replyRenFr.validate();
+        
+        // send RNTO
+        Command commandRenTo = new Command(Command.RNTO, toName);
+        Reply replyRenTo = sendCommand(commandRenTo);
+        replyRenTo.dumpReply();
+        replyRenTo.validate();
+    }
+    
+    
+    /**
+     * public void deleteFile(FTPFile file)
+     * 
+     * deletes the given file on the server
+     * 
+     * @param file    the file to delete
+     * @throws IOException
+     * @throws FtpIOException
+     * @throws FtpWorkflowException
+     */
+    public void deleteFile(FTPFile file) throws IOException, FtpIOException, FtpWorkflowException {
+        Command command = new Command(Command.DELE, file.toString());
+        Reply reply = sendCommand(command);
+        reply.dumpReply();
+        reply.validate();  
+    }
+    
+    /**
+     * public void deleteDirectory(FTPFile directory)
+     * 
+     * deletes the given directory recursivly, means the directory and all
+     * subdirectories will be removed and all files deleted
+     * 
+     * @param directory
+     * @throws IOException
+     * @throws FtpIOException
+     * @throws FtpWorkflowException
+     */
+    public void deleteDirectory(FTPFile directory) throws IOException, FtpIOException, FtpWorkflowException {
+        if ( !directory.isDirectory() )
+            throw new FtpFileNotFoundException("Deleting: " + directory.getName() + " is not possible, it's not a directory!");
+
+        List<FTPFile> files = getDirectoryListing( directory.toString() );
+        
+        Collections.sort( files );
+        
+        for(FTPFile file : files) {
+            file.setPath( directory.toString() );
+            if ( file.isFile() ) {
+                deleteFile( file );
+            }else {
+                deleteDirectory( file );
+//                removeDirectory( file );
+            }
+        }
+        
+        removeDirectory(directory);
+    }
+    
+    /**
+     * public void removeDirectory(FTPFile directory)
+     * 
+     * removes an empty directory
+     * 
+     * @param directory         the directory to remove
+     * @throws IOException
+     * @throws FtpIOException
+     * @throws FtpWorkflowException
+     */
+    public void removeDirectory(FTPFile directory) throws IOException, FtpIOException, FtpWorkflowException {
+        Command command = new Command(Command.RMD, directory.toString());
+        Reply reply = sendCommand(command);
+        reply.dumpReply();
+        reply.validate();      
+    }
+    
+    /**
+     * public void setTransferType(boolean type)
+     * 
+     * this method is used to set the transfer type to binary (TYPE I) or
+     * asccii (TYPE A).
+     * 
+     * @param type      true: TYPE I    false: TYPE A
+     * @throws IOException
+     * @throws FtpIOException
+     * @throws FtpWorkflowException
+     */
+    public void setTransferType(boolean type) throws IOException, FtpIOException, FtpWorkflowException {
+        Command command = new Command( (type ? Command.TYPE_I : Command.TYPE_A) );
         Reply reply = sendCommand(command);
         reply.dumpReply();
         reply.validate();
