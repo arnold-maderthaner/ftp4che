@@ -16,7 +16,7 @@
 *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
 *                                                                           *
 *****************************************************************************/
-package org.ftp4che.util;
+package org.ftp4che.io;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,25 +35,26 @@ import javax.net.ssl.TrustManager;
 
 import org.apache.log4j.Logger;
 import org.ftp4che.FTPConnection;
+import org.ftp4che.util.EasyX509TrustManager;
 
 
 public class SSLSupport {
 	private Socket socket;
 	private SSLSocket sslSocket = null;
 	private int mode;
-	private Logger log = Logger.getLogger(SSLSupport.class.getName());	
+	private static final Logger log = Logger.getLogger(SSLSupport.class.getName());	
 	private SSLContext context;
     private OutputStream out = null;
     private InputStream in = null;
-    byte[] readArray = new byte[16384];
+    private byte[] readArray = new byte[16384];
     private boolean controllConnection;
     
-    public SSLSupport(Socket socket, int mode,boolean controllConnection)
-    {
-        setMode(mode);
-        setSocket(socket);
+	public SSLSupport(Socket socket, int mode,boolean controllConnection)
+	{
+		setMode(mode);
+		setSocket(socket);
         setControllConnection(controllConnection);
-    }
+	}
 	
 	public void initEngineAndBuffers() throws NoSuchAlgorithmException,KeyStoreException,KeyManagementException,SSLException,IOException
 	{

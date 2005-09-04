@@ -29,10 +29,10 @@ import org.ftp4che.exception.AuthenticationNotSupportedException;
 import org.ftp4che.exception.FtpIOException;
 import org.ftp4che.exception.FtpWorkflowException;
 import org.ftp4che.exception.NotConnectedException;
+import org.ftp4che.io.ReplyWorker;
+import org.ftp4che.io.SocketProvider;
 import org.ftp4che.reply.Reply;
 import org.ftp4che.reply.ReplyCode;
-import org.ftp4che.util.ReplyWorker;
-import org.ftp4che.util.SocketProvider;
 
 public class SecureFTPConnection extends FTPConnection {
 	Logger log = Logger.getLogger(SecureFTPConnection.class.getName());

@@ -16,7 +16,7 @@
 *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
 *                                                                           *
 *****************************************************************************/
-package org.ftp4che.util;
+package org.ftp4che.io;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,16 +30,17 @@ import org.ftp4che.FTPConnection;
 public class SocketProvider {
 
     private SSLSupport supporter;
-	private int sslMode = FTPConnection.FTP_CONNECTION;
-	private Socket socket = null;
-	private static final Logger log = Logger.getLogger(SocketProvider.class.getName());
-	private boolean isControllConnection = true;
-	private OutputStream out = null;
-	private InputStream in = null;
-	private byte[] readArray = new byte[16384];
-   
+	private int sslMode = FTPConnection.FTP_CONNECTION; 
+
+    Socket socket = null;
+	Logger log = Logger.getLogger(SocketProvider.class.getName());
     
-	public SocketProvider() {
+    boolean isControllConnection = true;
+    OutputStream out = null;
+    InputStream in = null;
+    byte[] readArray = new byte[16384];
+    
+	public SocketProvider(){
 		socket = new Socket();
 	}
     
@@ -47,15 +48,15 @@ public class SocketProvider {
         this();
         setControllConnection(isControllConnection);
     }
-
+    
     public SocketProvider(Socket socket, boolean isControllConnection ) throws IOException
     {
         this(socket, isControllConnection, FTPConnection.MAX_DOWNLOAD_BANDWIDTH, FTPConnection.MAX_UPLOAD_BANDWIDTH);
     }
-    
-//	public SocketProvider( Socket socket ) throws IOException{
-//		this(socket, true, FTPConnection.MAX_DOWNLOAD_BANDWIDTH, FTPConnection.MAX_UPLOAD_BANDWIDTH);
-//	}
+
+//  public SocketProvider( Socket socket ) throws IOException{
+//  this(socket, true, FTPConnection.MAX_DOWNLOAD_BANDWIDTH, FTPConnection.MAX_UPLOAD_BANDWIDTH);
+//}
     
     public SocketProvider( Socket socket, boolean isControllConnection, int maxDownload, int maxUpload ) throws IOException{
         setControllConnection(isControllConnection);
@@ -67,9 +68,9 @@ public class SocketProvider {
             in = new BandwidthControlledInputStream(socket.getInputStream(), maxDownload);
     }
     
-//	public void connect( SocketAddress remote ) throws IOException {
-//	    connect(remote, FTPConnection.MAX_DOWNLOAD_BANDWIDTH, FTPConnection.MAX_UPLOAD_BANDWIDTH);
-//	}
+//  public void connect( SocketAddress remote ) throws IOException {
+//      connect(remote, FTPConnection.MAX_DOWNLOAD_BANDWIDTH, FTPConnection.MAX_UPLOAD_BANDWIDTH);
+//  }
     
     public void connect( SocketAddress remote, int maxDownload, int maxUpload ) throws IOException {
         socket.connect(remote);
@@ -174,10 +175,11 @@ public class SocketProvider {
         	supporter = new SSLSupport(socket, getSSLMode(),isControllConnection());
             supporter.initEngineAndBuffers();
             supporter.handshake();
-            //TODO: throw exception and handle it !!
+        	
         }catch (Exception e) {
             log.fatal(e,e);
         }
     }
     
+
 }

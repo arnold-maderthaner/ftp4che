@@ -21,8 +21,8 @@ package org.ftp4che.commands;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import org.ftp4che.io.ReplyWorker;
 import org.ftp4che.reply.Reply;
-import org.ftp4che.util.ReplyWorker;
 
 public class ListCommand extends DataConnectionCommand {
 	

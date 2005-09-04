@@ -48,11 +48,11 @@ import org.ftp4che.exception.FtpIOException;
 import org.ftp4che.exception.FtpWorkflowException;
 import org.ftp4che.exception.NotConnectedException;
 import org.ftp4che.exception.UnkownReplyStateException;
+import org.ftp4che.io.ReplyWorker;
+import org.ftp4che.io.SocketProvider;
 import org.ftp4che.reply.Reply;
 import org.ftp4che.util.FTPFile;
 import org.ftp4che.util.ReplyFormatter;
-import org.ftp4che.util.ReplyWorker;
-import org.ftp4che.util.SocketProvider;
 
 
 /**

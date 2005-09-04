@@ -18,8 +18,8 @@
 *****************************************************************************/
 package org.ftp4che.commands;
 
+import org.ftp4che.io.SocketProvider;
 import org.ftp4che.reply.Reply;
-import org.ftp4che.util.SocketProvider;
 
 public abstract class DataConnectionCommand extends Command{
 	SocketProvider dataSocket;
