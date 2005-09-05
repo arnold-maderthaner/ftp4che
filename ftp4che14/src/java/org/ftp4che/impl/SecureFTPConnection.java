@@ -57,76 +57,82 @@ public class SecureFTPConnection extends FTPConnection {
               throw new NotConnectedException(error);
           }
           //Till here the connection is not encrypted!!
-          (ReplyWorker.readReply(socketProvider)).dumpReply();
-          Reply reply = sendCommand(new Command(Command.FEAT));
-          reply.dumpReply();
-          String authCommand = getAuthString();
-
-          if(ReplyCode.isPositiveCompletionReply(reply))
+          if (this.getConnectionType() == FTPConnection.IMPLICIT_SSL_FTP_CONNECTION) {
+              negotiateAndLogin(null);
+          } 
+          else 
           {
-        	  List lines = reply.getLines();
-        	  boolean found = false;
+              (ReplyWorker.readReply(socketProvider)).dumpReply();
+              Reply reply = sendCommand(new Command(Command.FEAT));
+              reply.dumpReply();
+              String authCommand = getAuthString();
+
+              if(ReplyCode.isPositiveCompletionReply(reply))
+              {
+                  List lines = reply.getLines();
+                  boolean found = false;
              
-        	  for(Iterator it = lines.iterator(); it.hasNext();)
-        	  {
-        		  String s = ((String)it.next());
-                  if(s.indexOf(authCommand) > -1)
+                  for(Iterator it = lines.iterator(); it.hasNext();)
                   {
-                    authCommand = s;
-                    found = true;
+                      String s = ((String)it.next());
+                      if(s.indexOf(authCommand) > -1)
+                      {
+                          authCommand = s;
+                          found = true;
 //                  break;
                     
-                  } else if (s.indexOf(Command.SSCN) > -1) {
-                      setConnectionSSCNType(FTPConnection.SSCN_ON);
+                      } else if (s.indexOf(Command.SSCN) > -1) {
+                          setConnectionSSCNType(FTPConnection.SSCN_ON);
+                      }
+                  } 
+                  if(found)
+                  {
+                      negotiateAndLogin(authCommand);
                   }
-        	  } 
-        	  if(found)
-        	  {
+                  else
+                  {
+                      throw new AuthenticationNotSupportedException(authCommand + " not supported by server (not listed in FEAT command)");
+                  }
+              }
+              else
+              {
                   negotiateAndLogin(authCommand);
-        	  }
-        	  else
-       		  {
-       			  throw new AuthenticationNotSupportedException(authCommand + " not supported by server (not listed in FEAT command)");
-       		  }
-          }
-          else
-          {
-              negotiateAndLogin(authCommand);
+              }
           }
           this.setConnectionStatus(FTPConnection.CONNECTED);
           fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(), null));
     }
     
-    private void negotiateAndLogin(String authCommand) throws IOException,AuthenticationNotSupportedException,FtpWorkflowException,FtpIOException
-    {
-    	
-        Reply reply = sendCommand(new Command(authCommand));
-        reply.dumpReply();
-        if (ReplyCode.isPositiveCompletionReply(reply)) {
-            try
-            {
-            	socketProvider.setSSLMode(getConnectionType());
+    private void negotiateAndLogin(String authCommand) throws IOException,
+            AuthenticationNotSupportedException, FtpWorkflowException,
+            FtpIOException {
+        Reply reply = null;
+        if (authCommand != null) // null means implicit SSL
+        {
+            reply = sendCommand(new Command(authCommand));
+            reply.dumpReply();
+        }
+        if (authCommand == null || ReplyCode.isPositiveCompletionReply(reply)) {
+            try {
+                socketProvider.setSSLMode(getConnectionType());
                 socketProvider.negotiate();
-            }catch (Exception e)
-            {
-                log.error(e,e);
+            } catch (Exception e) {
+                log.error(e, e);
             }
-            reply = sendCommand(new Command(Command.USER,getUser()));
+            reply = sendCommand(new Command(Command.USER, getUser()));
             reply.dumpReply();
             reply.validate();
-            if (getPassword() != null && getPassword().length() > 0)
-            {
+            if (getPassword() != null && getPassword().length() > 0) {
                 reply = sendCommand(new Command(Command.PASS, getPassword()));
                 reply.dumpReply();
                 reply.validate();
             }
-            if (getAccount() != null && getAccount().length() > 0)
-            {
+            if (getAccount() != null && getAccount().length() > 0) {
                 reply = sendCommand(new Command(Command.ACCT, getAccount()));
                 reply.dumpReply();
                 reply.validate();
             }
-           } else {
+        } else {
             throw new AuthenticationNotSupportedException(authCommand
                     + " not supported by server");
         }

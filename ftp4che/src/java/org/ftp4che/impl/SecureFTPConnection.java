@@ -55,39 +55,45 @@ public class SecureFTPConnection extends FTPConnection {
               throw new NotConnectedException(error);
           }
           //Till here the connection is not encrypted!!
-          (ReplyWorker.readReply(socketProvider)).dumpReply();
-          Reply reply = sendCommand(new Command(Command.FEAT));
+          if (this.getConnectionType() == FTPConnection.IMPLICIT_SSL_FTP_CONNECTION) {
+              negotiateAndLogin(null);
+          } 
+          else 
+          {
+              (ReplyWorker.readReply(socketProvider)).dumpReply();
+              Reply reply = sendCommand(new Command(Command.FEAT));
           
-          String authCommand = getAuthString();
+              String authCommand = getAuthString();
 
-          if(ReplyCode.isPositiveCompletionReply(reply))
-          {
-        	  List<String> lines = reply.getLines();
-        	  boolean found = false;
+              if(ReplyCode.isPositiveCompletionReply(reply))
+              {
+                  List<String> lines = reply.getLines();
+                  boolean found = false;
              
-        	  for(String s : lines) {
-        		  if(s.indexOf(authCommand) > -1)
-        		  {
-                    authCommand = s;
-        			found = true;
-//        			break;
+                  for(String s : lines) {
+                      if(s.indexOf(authCommand) > -1)
+                      {
+                          authCommand = s;
+                          found = true;
+//        			       break;
                     
-        		  } else if (s.indexOf(Command.SSCN) > -1) {
-                      setConnectionSSCNType(FTPConnection.SSCN_ON);
+                      } else if (s.indexOf(Command.SSCN) > -1) {
+                          setConnectionSSCNType(FTPConnection.SSCN_ON);
+                      }
+                  } 
+                  if(found)
+                  {
+                      negotiateAndLogin(authCommand);
                   }
-        	  } 
-        	  if(found)
-        	  {
+                  else
+                  {
+                      throw new AuthenticationNotSupportedException(authCommand + " not supported by server (not listed in FEAT command)");
+                  }
+              }
+              else
+              {
                   negotiateAndLogin(authCommand);
-        	  }
-        	  else
-       		  {
-       			  throw new AuthenticationNotSupportedException(authCommand + " not supported by server (not listed in FEAT command)");
-       		  }
-          }
-          else
-          {
-              negotiateAndLogin(authCommand);
+              }
           }
           
           this.setConnectionStatus(FTPConnection.CONNECTED);
@@ -96,10 +102,13 @@ public class SecureFTPConnection extends FTPConnection {
     
     private void negotiateAndLogin(String authCommand) throws IOException,AuthenticationNotSupportedException,FtpWorkflowException,FtpIOException
     {
-    	
-        Reply reply = sendCommand(new Command(authCommand));
-        reply.dumpReply();
-        if (ReplyCode.isPositiveCompletionReply(reply)) {
+    	    Reply reply = null;
+            if (authCommand != null) //null means implicit SSL
+            {
+                reply = sendCommand(new Command(authCommand));
+                reply.dumpReply();
+            }
+            if (authCommand == null || ReplyCode.isPositiveCompletionReply(reply)) {
             try
             {
             	socketProvider.setSSLMode(getConnectionType());
