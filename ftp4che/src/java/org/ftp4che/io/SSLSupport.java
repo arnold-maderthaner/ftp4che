@@ -99,7 +99,7 @@ public class SSLSupport {
 
     public int write(ByteBuffer src) throws IOException {
     	int byteCount = src.remaining();
-        out.write(src.array());
+        out.write(src.array(),0,byteCount);
   		return byteCount;
     }
     

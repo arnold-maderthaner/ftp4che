@@ -109,7 +109,7 @@ public class SocketProvider {
         	//throw new IOException("SSL NOT IMPLEMENTED YET");
         }
         int byteCount = src.remaining();
-        out.write(src.array());
+        out.write(src.array(),0,byteCount);
 		return byteCount;
 	}
 	
