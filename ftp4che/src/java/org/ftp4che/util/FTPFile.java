@@ -68,6 +68,7 @@ public class FTPFile implements Comparable {
 	{
 		setName(file.getName());
 		setPath(file.getParent());
+        setSize(file.length());
 		String mode = "";
 		
 		if(file.isFile())
