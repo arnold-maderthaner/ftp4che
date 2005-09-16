@@ -6,6 +6,7 @@
  */
 package org.ftp4che.examples;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
@@ -37,9 +38,9 @@ public class SimpleFTPLogin {
         pt.setProperty("connection.type", "FTP_CONNECTION");
         pt.setProperty("connection.timeout", "10000");
         pt.setProperty("connection.passive", "true");
-        pt.setProperty("connection.downloadbw", "30000"); // 30KB/s
-        pt.setProperty("connection.uploadbw", "30000"); // 30KB/s
-        
+//        pt.setProperty("connection.downloadbw", "100000"); // 30KB/s
+        pt.setProperty("connection.uploadbw", "100000"); // 30KB/s
+//        
         try
         {
             FTPConnection connection = FTPConnectionFactory.getInstance(pt);
@@ -54,38 +55,39 @@ public class SimpleFTPLogin {
 //                {
 //                    log.debug("FastList: " + s);
 //                }
-                connection.getWorkDirectory();
-                connection.getDirectoryListing();
-                connection.makeDirectory("testdir");
-                connection.changeDirectory("testdir");
-                log.debug("Working Directory: " + connection.getWorkDirectory());    
-              
-                connection.changeToParentDirectory();
-                
-                connection.removeDirectory("testdir");
-                
-                log.debug("Working Directory: " + connection.getWorkDirectory());
-               
-                connection.noOperation();
-                connection.changeDirectory("/home/ftpuser/download");
+//                connection.getWorkDirectory();
+//                connection.getDirectoryListing();
+//                connection.makeDirectory("testdir");
+//                connection.changeDirectory("testdir");
+//                log.debug("Working Directory: " + connection.getWorkDirectory());    
+//              
+//                connection.changeToParentDirectory();
+//                
+//                connection.removeDirectory("testdir");
+//                
+//                log.debug("Working Directory: " + connection.getWorkDirectory());
+//               
+//                connection.noOperation();
+//                connection.changeDirectory("/home/ftpuser/download");
+//
+//                connection.getWorkDirectory();
+//                log.debug("Working Directory: " + connection.getWorkDirectory());    
+//                
+//
+//                List<FTPFile> fileList = connection.getDirectoryListing();
+//                for(int i = 0; i < fileList.size(); i++)
+//                    log.info("Name:" + fileList.get(i).getName() + " Mode:" + fileList.get(i).getMode() + " Date:" + fileList.get(i).getDate() + " Size:" + fileList.get(i).getSize());
+//                log.debug("List Size:" + fileList.size());
 
-                connection.getWorkDirectory();
-                log.debug("Working Directory: " + connection.getWorkDirectory());    
-                
 
-                List<FTPFile> fileList = connection.getDirectoryListing();
-                for(int i = 0; i < fileList.size(); i++)
-                    log.info("Name:" + fileList.get(i).getName() + " Mode:" + fileList.get(i).getMode() + " Date:" + fileList.get(i).getDate() + " Size:" + fileList.get(i).getSize());
-                log.debug("List Size:" + fileList.size());
-
-
-                connection.changeDirectory("/home/ftpuser/download");
-                FTPFile fromFile = new FTPFile();
-                fromFile.setPath("/home/ftpuser/download/");
-                fromFile.setName("50mb");
+                connection.changeDirectory("/home/ftpuser");
+                FTPFile toFile = new FTPFile("/home/ftpuser/","test.bin");
+                FTPFile fromFile = new FTPFile(new File("/home/ftpuser/download/", "1mb"));
+                log.debug("From File size: " + fromFile.getSize());
                 long start = System.currentTimeMillis();
-                connection.downloadFile(fromFile,new FTPFile("/tmp/", "50mb_limited"));
-                log.debug("kb/sec: " + ((double)50060 / (System.currentTimeMillis() - start)*1000));
+                connection.uploadFile(fromFile,toFile);
+                log.debug("kb/sec: " + ((double)1024000 / (System.currentTimeMillis() - start)));
+                log.debug("milli sec: "  + (System.currentTimeMillis() - start));
 //                connection.changeDirectory("/home/ftpuser/upload");
 //                connection.uploadFile(new File("/home/ftpuser/download" + File.separator + "testfile1.doc"),new FTPFile("testfile1.doc"));
 //                connection.changeDirectory("/home/ftpuser/download");

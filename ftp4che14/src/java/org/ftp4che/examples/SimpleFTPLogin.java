@@ -35,11 +35,11 @@ public class SimpleFTPLogin {
         pt.setProperty("connection.port","21");
         pt.setProperty("user.login","ftpuser");
         pt.setProperty("user.password","ftp4che");
-        pt.setProperty("connection.type", "FTP_CONNECTION");
+        pt.setProperty("connection.type", "AUTH_TLS_FTP_CONNECTION");
         pt.setProperty("connection.timeout", "10000");
         pt.setProperty("connection.passive", "true");
-        pt.setProperty("connection.downloadbw", "30000"); // 30KB/s
-        pt.setProperty("connection.uploadbw", "30000"); // 30KB/s
+//        pt.setProperty("connection.downloadbw", "100000"); // 30KB/s
+        pt.setProperty("connection.uploadbw", "100000"); // 30KB/s
         
         try
         {

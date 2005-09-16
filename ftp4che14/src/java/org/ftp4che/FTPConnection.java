@@ -521,7 +521,7 @@ public abstract class FTPConnection {
         Reply commandReply = sendCommand(command);
         commandReply.dumpReply();
         commandReply.validate();
-        SocketProvider provider = new SocketProvider(server.accept(),false);
+        SocketProvider provider = new SocketProvider(server.accept(),false,getDownloadBandwidth(),getUploadBandwidth());
         provider.socket().setReceiveBufferSize(65536);
         provider.socket().setSendBufferSize(65536);
         provider.setSSLMode(getConnectionType());

@@ -63,37 +63,17 @@ public class SecureFTPConnection extends FTPConnection {
               (ReplyWorker.readReply(socketProvider)).dumpReply();
               Reply reply = sendCommand(new Command(Command.FEAT));
           
-              String authCommand = getAuthString();
-
               if(ReplyCode.isPositiveCompletionReply(reply))
               {
                   List<String> lines = reply.getLines();
-                  boolean found = false;
-             
                   for(String s : lines) {
-                      if(s.indexOf(authCommand) > -1)
-                      {
-                          authCommand = s;
-                          found = true;
-//        			       break;
-                    
-                      } else if (s.indexOf(Command.SSCN) > -1) {
+                     if (s.indexOf(Command.SSCN) > -1) {
                           setConnectionSSCNType(FTPConnection.SSCN_ON);
                       }
-                  } 
-                  if(found)
-                  {
-                      negotiateAndLogin(authCommand);
                   }
-                  else
-                  {
-                      throw new AuthenticationNotSupportedException(authCommand + " not supported by server (not listed in FEAT command)");
-                  }
+               
               }
-              else
-              {
-                  negotiateAndLogin(authCommand);
-              }
+              negotiateAndLogin(getAuthString());
           }
           
           this.setConnectionStatus(FTPConnection.CONNECTED);
@@ -140,13 +120,12 @@ public class SecureFTPConnection extends FTPConnection {
     
     private String getAuthString() {
         switch (this.getConnectionType()) {
-            case FTPConnection.IMPLICIT_SSL_FTP_CONNECTION:
             case FTPConnection.AUTH_SSL_FTP_CONNECTION:
                 return "AUTH SSL";
             case FTPConnection.AUTH_TLS_FTP_CONNECTION:
                 return "AUTH TLS";
         }
         
-        return "AUTH TLS";
+        return "SHOULD NOT HAPPEN";
     }
 }

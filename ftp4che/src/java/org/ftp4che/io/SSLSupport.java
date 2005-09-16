@@ -48,13 +48,16 @@ public class SSLSupport {
     private InputStream in = null;
     private byte[] readArray = new byte[16384];
     private boolean controllConnection;
+    private int maxDownload,maxUpload;
     
-	public SSLSupport(Socket socket, int mode,boolean controllConnection)
-	{
-		setMode(mode);
-		setSocket(socket);
+    public SSLSupport(Socket socket, int mode,boolean controllConnection,int maxDownload,int maxUpload)
+    {
+        setMode(mode);
+        setSocket(socket);
         setControllConnection(controllConnection);
-	}
+        this.maxDownload = maxDownload;
+        this.maxUpload = maxUpload;
+    }
 	
 	public void initEngineAndBuffers() throws NoSuchAlgorithmException,KeyStoreException,KeyManagementException,SSLException,IOException
 	{
@@ -69,8 +72,8 @@ public class SSLSupport {
 	    context.init(null, trustManagers , null);        
 	    SSLSocketFactory sslFact = context.getSocketFactory();
 	    sslSocket = (SSLSocket)sslFact.createSocket(socket,socket.getInetAddress().getHostAddress(),socket.getPort(),true);
-        out = sslSocket.getOutputStream();
-        in = sslSocket.getInputStream();
+        out = new BandwidthControlledOutputStream(sslSocket.getOutputStream(),maxUpload);
+        in = new BandwidthControlledInputStream(sslSocket.getInputStream(),maxDownload);
 	    sslSocket.setEnableSessionCreation(true);
 	    sslSocket.setUseClientMode(true);
 	}

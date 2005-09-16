@@ -37,7 +37,7 @@ public class SocketProvider {
 	private OutputStream out = null;
 	private InputStream in = null;
 	private byte[] readArray = new byte[16384];
-   
+    int maxDownload,maxUpload;
     
 	public SocketProvider() {
 		socket = new Socket();
@@ -59,7 +59,8 @@ public class SocketProvider {
     
     public SocketProvider( Socket socket, boolean isControllConnection, int maxDownload, int maxUpload ) throws IOException{
         setControllConnection(isControllConnection);
-        
+        this.maxDownload = maxDownload;
+        this.maxUpload = maxUpload;
         this.socket = socket;
         if(out == null)
             out = new BandwidthControlledOutputStream(socket.getOutputStream(), maxUpload);
@@ -169,7 +170,7 @@ public class SocketProvider {
     
     public void negotiate() {
         try {
-        	supporter = new SSLSupport(socket, getSSLMode(),isControllConnection());
+            supporter = new SSLSupport(socket, getSSLMode(),isControllConnection(),maxDownload,maxUpload);
             supporter.initEngineAndBuffers();
             supporter.handshake();
             //TODO: throw exception and handle it !!

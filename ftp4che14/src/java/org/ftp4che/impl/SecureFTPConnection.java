@@ -62,42 +62,21 @@ public class SecureFTPConnection extends FTPConnection {
           } 
           else 
           {
-              (ReplyWorker.readReply(socketProvider)).dumpReply();
-              Reply reply = sendCommand(new Command(Command.FEAT));
-              reply.dumpReply();
-              String authCommand = getAuthString();
-
-              if(ReplyCode.isPositiveCompletionReply(reply))
-              {
-                  List lines = reply.getLines();
-                  boolean found = false;
+             (ReplyWorker.readReply(socketProvider)).dumpReply();
+             Reply reply = sendCommand(new Command(Command.FEAT));
              
-                  for(Iterator it = lines.iterator(); it.hasNext();)
-                  {
-                      String s = ((String)it.next());
-                      if(s.indexOf(authCommand) > -1)
-                      {
-                          authCommand = s;
-                          found = true;
-//                  break;
-                    
-                      } else if (s.indexOf(Command.SSCN) > -1) {
-                          setConnectionSSCNType(FTPConnection.SSCN_ON);
-                      }
-                  } 
-                  if(found)
-                  {
-                      negotiateAndLogin(authCommand);
-                  }
-                  else
-                  {
-                      throw new AuthenticationNotSupportedException(authCommand + " not supported by server (not listed in FEAT command)");
-                  }
-              }
-              else
-              {
-                  negotiateAndLogin(authCommand);
-              }
+             if(ReplyCode.isPositiveCompletionReply(reply))
+             {
+                List lines = reply.getLines();
+                for(Iterator it = lines.iterator(); it.hasNext();) {
+                    String s = (String) it.next();
+                    if (s.indexOf(Command.SSCN) > -1) {
+                        setConnectionSSCNType(FTPConnection.SSCN_ON);
+                    }
+                }
+                   
+             }
+            negotiateAndLogin(getAuthString());
           }
           this.setConnectionStatus(FTPConnection.CONNECTED);
           fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(), null));
@@ -139,14 +118,13 @@ public class SecureFTPConnection extends FTPConnection {
     }
     
     private String getAuthString() {
-        switch (this.getConnectionType()) {
-            case FTPConnection.IMPLICIT_SSL_FTP_CONNECTION:
+        switch (this.getConnectionType()) {            
             case FTPConnection.AUTH_SSL_FTP_CONNECTION:
                 return "AUTH SSL";
             case FTPConnection.AUTH_TLS_FTP_CONNECTION:
                 return "AUTH TLS";
         }
         
-        return "AUTH TLS";
+        return "SHOULD NOT HAPPEN";
     }
 }
