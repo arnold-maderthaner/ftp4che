@@ -74,6 +74,8 @@ public class SocketProvider {
     
     public void connect( SocketAddress remote, int maxDownload, int maxUpload ) throws IOException {
         socket.connect(remote);
+        this.maxDownload = maxDownload;
+        this.maxUpload = maxUpload;
         out = new BandwidthControlledOutputStream(socket.getOutputStream(), maxUpload);
         in = new BandwidthControlledInputStream(socket.getInputStream(), maxDownload);
     }

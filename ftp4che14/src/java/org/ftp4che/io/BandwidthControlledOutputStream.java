@@ -25,13 +25,17 @@ public class BandwidthControlledOutputStream extends OutputStream {
     
     private OutputStream out;    
     private static long MAXIMUM_TIME = 1000;
+    private static int MINIMUM_BYTES = 512;
     private int maximumBytes;
     private int bytesWritten;
     private long startTime = System.currentTimeMillis();
 
     public BandwidthControlledOutputStream(OutputStream out, int maximumBytes) {
         this.out = out;
-        this.maximumBytes = maximumBytes;
+        if(maximumBytes > MINIMUM_BYTES)
+            this.maximumBytes = maximumBytes;
+        else
+            this.maximumBytes = MINIMUM_BYTES;
     }
 
     private int available() {
@@ -100,5 +104,10 @@ public class BandwidthControlledOutputStream extends OutputStream {
             } catch (Exception e) {
             }
         }
+    }
+    
+    public void close() throws IOException {
+        out.close();
+        out = null;
     }
 }

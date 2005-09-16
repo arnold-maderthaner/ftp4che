@@ -25,13 +25,18 @@ public class BandwidthControlledInputStream extends InputStream {
 
     private InputStream in;
     private static long MAXIMUM_TIME = 1000;
+    private static int MINIMUM_BYTES = 512;
     private int maximumBytes;
     private int bytesRead;
     private long startTime = System.currentTimeMillis();
 
     public BandwidthControlledInputStream(InputStream in, int maximumBytes) {
         this.in = in;
-        this.maximumBytes = maximumBytes;
+        //TO PREFENT PROBLEMS IF SOMEONES SETS TO 0
+        if(maximumBytes > MINIMUM_BYTES)
+            this.maximumBytes = maximumBytes;
+        else
+            this.maximumBytes = MINIMUM_BYTES;
     }
     
     public int available() {
