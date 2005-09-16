@@ -23,92 +23,70 @@ import java.io.OutputStream;
 
 public class BandwidthControlledOutputStream extends OutputStream {
     
-    private OutputStream out;    
-    private static long MAXIMUM_TIME = 1000;
-    private static int MINIMUM_BYTES = 512;
-    private int maximumBytes;
+    private int bandwidth = 512;
+    private OutputStream out;
+    private static int SLEEP_TIME = 1000;
     private int bytesWritten;
-    private long startTime = System.currentTimeMillis();
-
-    public BandwidthControlledOutputStream(OutputStream out, int maximumBytes) {
+       
+    public BandwidthControlledOutputStream(OutputStream out,int bandwidth)
+    {
+        if(bandwidth > this.bandwidth)
+            this.bandwidth = bandwidth;
         this.out = out;
-        //TO PREFENT PROBLEMS IF SOMEONES SETS TO 0
-        if(maximumBytes > MINIMUM_BYTES)
-            this.maximumBytes = maximumBytes;
-        else
-            this.maximumBytes = MINIMUM_BYTES;
-    }
-
-    private int available() {
-        long writeTime = System.currentTimeMillis() - startTime;
-        if (writeTime > MAXIMUM_TIME) resetStartTime();
-
-        return ((maximumBytes - bytesWritten) < 0 ? 0 : maximumBytes - bytesWritten);
     }
     
     public void write(int b) throws IOException {
-        waitBytes(1);
         bytesWritten++;
         out.write(b);
-    }
-
-    public void write(byte b[]) throws IOException {
-        write(b, 0, b.length);
-    }
-
-    public void write(byte b[], int off, int len) throws IOException {
-        int avail = available();
-        if (avail >= len) {
-            bytesWritten += len;
-            out.write(b, off, len);
-        } else {
-            int offset = 0;
-            while (offset < len) {
-                bytesWritten += avail;
-                out.write(b, off + offset, avail);
-                offset += avail;
-                waitBytes(maximumBytes);
-                avail = available();
-                if (avail > len - offset)
-                    avail = len - offset;
-            }
-        }
+        sleep();
     }
     
-    private void resetStartTime() {
-        startTime = System.currentTimeMillis();
-        bytesWritten = 0;
-    }
-
-    private int getWriteDuration(int no_bytes) {
-        long remain = 0;
-        int bytesToWaitFor = no_bytes - available();
-        if (bytesToWaitFor < 0) {
-            bytesToWaitFor = 0;
-        } else {
-            remain = MAXIMUM_TIME - (System.currentTimeMillis() - startTime);
-            if (remain < 0)
-                remain = 0;
-            bytesToWaitFor -= maximumBytes;
-            if (bytesToWaitFor < 0)
-                bytesToWaitFor = 0;
-        }
-        return (int) (MAXIMUM_TIME * bytesToWaitFor / maximumBytes + remain);
+    public void write(byte[] bytes) throws IOException
+    {
+          write(bytes,0,bytes.length);
     }
     
-    private void waitBytes(int bytes) {
-        long endTime = System.currentTimeMillis() + getWriteDuration(bytes);
+    public void write(byte[] bytes,int off, int len) throws IOException
+    {
+        int position = off;
+        int capacity = len;
         
-        while (endTime > System.currentTimeMillis()) {
-            try {
-                Thread.sleep(endTime - System.currentTimeMillis());
-            } catch (Exception e) {
+        while(position < capacity)
+        {
+            int bytes2write;
+            if((capacity - position) > bandwidth)
+                bytes2write= bandwidth;
+            else
+                bytes2write = capacity-position;
+            out.write(bytes,position,bytes2write);
+            position += bytes2write;
+            bytesWritten += bytes2write;
+            sleep();
+        }
+    }
+    
+    private void sleep()
+    {
+        if(bytesWritten >= bandwidth)
+        {
+            try
+            {
+//                System.out.println("sleeping");
+                Thread.sleep(SLEEP_TIME);
+                bytesWritten = 0;
+            }catch (InterruptedException ie) 
+            {
+                ie.printStackTrace();
             }
         }
     }
     
-    public void close() throws IOException {
-        out.close();
-        out = null;
+    public void close() throws IOException
+    {
+        if(out != null)
+        {
+            out.close();
+            out = null;
+        }
     }
 }
