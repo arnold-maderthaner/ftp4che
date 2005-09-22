@@ -93,7 +93,11 @@ public class SecureFTPConnection extends FTPConnection {
             {
             	socketProvider.setSSLMode(getConnectionType());
                 socketProvider.negotiate();
-                (ReplyWorker.readReply(socketProvider)).dumpReply();
+                if(authCommand == null)
+                {
+                	//We are in implicit mode and must read the initial reply
+                	 (ReplyWorker.readReply(socketProvider)).dumpReply();
+                }
             }catch (Exception e)
             {
                 log.error(e,e);
