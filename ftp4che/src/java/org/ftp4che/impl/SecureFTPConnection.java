@@ -93,6 +93,7 @@ public class SecureFTPConnection extends FTPConnection {
             {
             	socketProvider.setSSLMode(getConnectionType());
                 socketProvider.negotiate();
+                (ReplyWorker.readReply(socketProvider)).dumpReply();
             }catch (Exception e)
             {
                 log.error(e,e);
