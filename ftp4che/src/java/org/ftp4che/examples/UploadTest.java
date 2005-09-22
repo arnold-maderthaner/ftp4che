@@ -57,7 +57,29 @@ public class UploadTest {
             	pt.setProperty("connection.port","990");
             	connection = FTPConnectionFactory.getInstance(pt);
                 connection.connect();
-                FTPFile toFile = new FTPFile("/","testfile_implicit");
+                FTPFile toFile = new FTPFile("/","testfile_implicit_ssl");
+                connection.uploadFile(fromFile, toFile);
+                
+                connection.disconnect();
+            }catch (NotConnectedException nce)
+            {
+                log.error(nce);
+            }
+            catch (IOException ioe)
+            {
+                log.error(ioe);
+            }
+            catch (Exception e)
+            {
+                log.error(e);
+            }
+            
+            try {
+            	pt.setProperty("connection.type", "IMPLICIT_TLS_FTP_CONNECTION");
+            	pt.setProperty("connection.port","990");
+            	connection = FTPConnectionFactory.getInstance(pt);
+                connection.connect();
+                FTPFile toFile = new FTPFile("/","testfile_implicit_tls");
                 connection.uploadFile(fromFile, toFile);
                 
                 connection.disconnect();
