@@ -150,13 +150,13 @@ public class FTPFile implements Comparable {
 	}
 
 	public String toString() {
-		return new File(getPath(), getName()).toString();
-//		if(path != null && path.length() > 0)
-//			if(path.charAt(path.length() -1 ) == '/')
-//				return path + name;
-//			else
-//				return path + "/" + name;
-//		return name;
+//		return new File(getPath(), getName()).toString();
+		if(path != null && path.length() > 0)
+			if(path.charAt(path.length() -1 ) == '/')
+				return path + name;
+			else
+				return path + "/" + name;
+		return name;
 	}
 
 	public boolean isVisible() {
