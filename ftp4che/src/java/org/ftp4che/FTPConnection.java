@@ -72,11 +72,13 @@ public abstract class FTPConnection {
      *  public static final int IMPLICIT_SSL_FTP_CONNECTION =  2;
      *  public static final int AUTH_SSL_FTP_CONNECTION =  3;
      *  public static final int AUTH_TLS_FTP_CONNECTION =  4;
+     *  public static final int IMPLICIT_TLS_FTP_CONNECTION = 5;
      */
     public static final int FTP_CONNECTION = 1;
     public static final int IMPLICIT_SSL_FTP_CONNECTION =  2;
     public static final int AUTH_SSL_FTP_CONNECTION =  3;
     public static final int AUTH_TLS_FTP_CONNECTION =  4;
+    public static final int IMPLICIT_TLS_FTP_CONNECTION = 5;
     
     /** Constants for up-/download bandwidth
      *   public static final long MAX_DOWNLOAD_BANDWIDTH =
@@ -463,8 +465,8 @@ public abstract class FTPConnection {
     	ListCommand command = new ListCommand(directory);
     	SocketProvider provider = null;
         
-        if ( getConnectionType() != FTPConnection.FTP_CONNECTION &&
-             getConnectionType() != FTPConnection.IMPLICIT_SSL_FTP_CONNECTION ) {
+    	  if ( getConnectionType() == FTPConnection.AUTH_SSL_FTP_CONNECTION ||
+    	       getConnectionType() == FTPConnection.AUTH_TLS_FTP_CONNECTION ) {
             Command pbsz = new Command(Command.PBSZ,"0");
             (sendCommand(pbsz)).dumpReply();
             Command prot = new Command(Command.PROT,"P");
@@ -549,8 +551,8 @@ public abstract class FTPConnection {
     	RetrieveCommand command = new RetrieveCommand(Command.RETR,fromFile,toFile);
     	SocketProvider provider = null;
         
-        if ( getConnectionType() != FTPConnection.FTP_CONNECTION &&
-             getConnectionType() != FTPConnection.IMPLICIT_SSL_FTP_CONNECTION ) {
+    	  if ( getConnectionType() == FTPConnection.AUTH_SSL_FTP_CONNECTION ||
+    	       getConnectionType() == FTPConnection.AUTH_TLS_FTP_CONNECTION ) {
             Command pbsz = new Command(Command.PBSZ,"0");
             (sendCommand(pbsz)).dumpReply();
             Command prot = new Command(Command.PROT,"P");
@@ -626,8 +628,8 @@ public abstract class FTPConnection {
     	StoreCommand command = new StoreCommand(Command.STOR,fromFile,toFile);
     	SocketProvider provider = null;
         
-        if ( getConnectionType() != FTPConnection.FTP_CONNECTION &&
-             getConnectionType() != FTPConnection.IMPLICIT_SSL_FTP_CONNECTION ) {
+        if ( getConnectionType() == FTPConnection.AUTH_SSL_FTP_CONNECTION ||
+             getConnectionType() == FTPConnection.AUTH_TLS_FTP_CONNECTION ) {
             Command pbsz = new Command(Command.PBSZ,"0");
             (sendCommand(pbsz)).dumpReply();
             Command prot = new Command(Command.PROT,"P");

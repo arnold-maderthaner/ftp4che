@@ -55,7 +55,8 @@ public class SecureFTPConnection extends FTPConnection {
               throw new NotConnectedException(error);
           }
           //Till here the connection is not encrypted!!
-          if (this.getConnectionType() == FTPConnection.IMPLICIT_SSL_FTP_CONNECTION) {
+          if (this.getConnectionType() == FTPConnection.IMPLICIT_SSL_FTP_CONNECTION ||
+          	  this.getConnectionType() == FTPConnection.IMPLICIT_TLS_FTP_CONNECTION) {
               negotiateAndLogin(null);
           } 
           else 

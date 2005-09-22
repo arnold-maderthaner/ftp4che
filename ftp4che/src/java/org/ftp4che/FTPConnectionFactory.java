@@ -69,7 +69,10 @@ public class FTPConnectionFactory {
             if(connectionTypeName.equalsIgnoreCase("FTP_CONNECTION")) connectionType = FTPConnection.FTP_CONNECTION;
             else if(connectionTypeName.equalsIgnoreCase("AUTH_TLS_FTP_CONNECTION")) connectionType = FTPConnection.AUTH_TLS_FTP_CONNECTION;
             else if(connectionTypeName.equalsIgnoreCase("AUTH_SSL_FTP_CONNECTION")) connectionType = FTPConnection.AUTH_SSL_FTP_CONNECTION;
-            else connectionType = FTPConnection.IMPLICIT_SSL_FTP_CONNECTION;
+            else if(connectionTypeName.equalsIgnoreCase("IMPLICIT_SSL_FTP_CONNECTION")) connectionType = FTPConnection.IMPLICIT_SSL_FTP_CONNECTION;
+            else if(connectionTypeName.equalsIgnoreCase("IMPLICIT_TLS_FTP_CONNECTION"))	connectionType = FTPConnection.IMPLICIT_TLS_FTP_CONNECTION;
+            else
+            	throw new ConfigurationException("Connection method not specified");
         if(pt.getProperty("connection.passive") != null) {
             if ( pt.getProperty("connection.passive").equalsIgnoreCase("true") )
                 passive = true;
@@ -139,7 +142,8 @@ public class FTPConnectionFactory {
         }
         else if(connectionType == FTPConnection.AUTH_TLS_FTP_CONNECTION ||
                 connectionType == FTPConnection.AUTH_SSL_FTP_CONNECTION ||
-                connectionType == FTPConnection.IMPLICIT_SSL_FTP_CONNECTION)
+                connectionType == FTPConnection.IMPLICIT_SSL_FTP_CONNECTION ||
+                connectionType == FTPConnection.IMPLICIT_TLS_FTP_CONNECTION)
         {
             connection = new SecureFTPConnection();
         }
