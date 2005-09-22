@@ -91,9 +91,11 @@ public class SocketProvider {
     
     public boolean needsCrypt()
     {
-       return this.sslMode != FTPConnection.FTP_CONNECTION; 
+       return ((this.sslMode == FTPConnection.AUTH_SSL_FTP_CONNECTION ||
+                this.sslMode == FTPConnection.AUTH_TLS_FTP_CONNECTION) && !isControllConnection()) ||
+                this.sslMode != FTPConnection.FTP_CONNECTION && isControllConnection();
     }
-	
+
 	public void close() throws IOException {
 
         if (needsCrypt())

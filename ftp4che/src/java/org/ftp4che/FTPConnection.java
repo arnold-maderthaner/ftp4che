@@ -523,7 +523,7 @@ public abstract class FTPConnection {
         provider.socket().setReceiveBufferSize(65536);
         provider.socket().setSendBufferSize(65536);
         provider.setSSLMode(getConnectionType());
-        if(connectionType != FTPConnection.FTP_CONNECTION)
+        if(connectionType == FTPConnection.AUTH_TLS_FTP_CONNECTION || connectionType == FTPConnection.AUTH_SSL_FTP_CONNECTION)
             provider.negotiate();
         
         return provider;
@@ -810,7 +810,7 @@ public abstract class FTPConnection {
         commandReply.validate();
 
         
-        if(connectionType != FTPConnection.FTP_CONNECTION)
+        if(connectionType == FTPConnection.AUTH_TLS_FTP_CONNECTION || connectionType == FTPConnection.AUTH_SSL_FTP_CONNECTION)
             provider.negotiate();
         
         return provider;
