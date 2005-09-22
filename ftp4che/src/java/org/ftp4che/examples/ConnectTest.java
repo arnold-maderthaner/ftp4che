@@ -46,6 +46,7 @@ public class ConnectTest {
             
             try {
             	pt.setProperty("connection.type", "IMPLICIT_SSL_FTP_CONNECTION");
+            	pt.setProperty("connection.port","990");
             	connection = FTPConnectionFactory.getInstance(pt);
                 connection.connect();
                 connection.disconnect();
@@ -63,6 +64,7 @@ public class ConnectTest {
             }
             
             try {
+            	pt.setProperty("connection.port","21");
             	pt.setProperty("connection.type", "AUTH_SSL_FTP_CONNECTION");
             	connection = FTPConnectionFactory.getInstance(pt);
                 connection.connect();
