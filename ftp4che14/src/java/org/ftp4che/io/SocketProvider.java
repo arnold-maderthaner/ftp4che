@@ -55,19 +55,38 @@ public class SocketProvider {
         this(socket, isControllConnection, FTPConnection.MAX_DOWNLOAD_BANDWIDTH, FTPConnection.MAX_UPLOAD_BANDWIDTH);
     }
 
-//  public SocketProvider( Socket socket ) throws IOException{
-//  this(socket, true, FTPConnection.MAX_DOWNLOAD_BANDWIDTH, FTPConnection.MAX_UPLOAD_BANDWIDTH);
-//}
+    private void initStreams() throws IOException
+    {
+        if(out == null)
+        {
+            if(maxUpload == FTPConnection.MAX_UPLOAD_BANDWIDTH)
+            {
+                out = socket.getOutputStream();
+            }
+            else
+            {
+                out = new BandwidthControlledOutputStream(socket.getOutputStream(), maxUpload);
+            }
+        }
+        if(in == null)
+        {
+            if(maxDownload == FTPConnection.MAX_DOWNLOAD_BANDWIDTH)
+            {
+                in = socket.getInputStream();
+            }
+            else
+            {
+                in = new BandwidthControlledInputStream(socket.getInputStream(), maxDownload);
+            }
+        }
+    }
     
     public SocketProvider( Socket socket, boolean isControllConnection, int maxDownload, int maxUpload ) throws IOException{
         setControllConnection(isControllConnection);
         this.maxDownload = maxDownload;
         this.maxUpload = maxUpload;
         this.socket = socket;
-        if(out == null)
-            out = new BandwidthControlledOutputStream(socket.getOutputStream(), maxUpload);
-        if(in == null)
-            in = new BandwidthControlledInputStream(socket.getInputStream(), maxDownload);
+        initStreams();
     }
     
 //  public void connect( SocketAddress remote ) throws IOException {
@@ -78,8 +97,7 @@ public class SocketProvider {
         socket.connect(remote);
         this.maxDownload = maxDownload;
         this.maxUpload = maxUpload;
-        out = new BandwidthControlledOutputStream(socket.getOutputStream(), maxUpload);
-        in = new BandwidthControlledInputStream(socket.getInputStream(), maxDownload);
+        initStreams();
     }
 	
 	public Socket socket() {

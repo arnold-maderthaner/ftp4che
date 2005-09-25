@@ -61,7 +61,7 @@ public class SSLSupport {
 	
 	public void initEngineAndBuffers() throws NoSuchAlgorithmException,KeyStoreException,KeyManagementException,SSLException,IOException
 	{
-		if(mode == FTPConnection.AUTH_SSL_FTP_CONNECTION)
+		if(mode == FTPConnection.AUTH_SSL_FTP_CONNECTION || mode == FTPConnection.IMPLICIT_SSL_FTP_CONNECTION)
 		  context = SSLContext.getInstance("SSL");
 		else
 		  context = SSLContext.getInstance("TLS");
@@ -72,8 +72,22 @@ public class SSLSupport {
 	    context.init(null, trustManagers , null);        
 	    SSLSocketFactory sslFact = context.getSocketFactory();
 	    sslSocket = (SSLSocket)sslFact.createSocket(socket,socket.getInetAddress().getHostAddress(),socket.getPort(),true);
-        out = new BandwidthControlledOutputStream(sslSocket.getOutputStream(),maxUpload);
-        in = new BandwidthControlledInputStream(sslSocket.getInputStream(),maxDownload);
+        if(maxUpload == FTPConnection.MAX_UPLOAD_BANDWIDTH)
+        {
+            out = sslSocket.getOutputStream();
+        }
+        else
+        {
+            out = new BandwidthControlledOutputStream(sslSocket.getOutputStream(),maxUpload);
+        }
+        if(maxDownload == FTPConnection.MAX_DOWNLOAD_BANDWIDTH)
+        {
+            in = sslSocket.getInputStream();    
+        }
+        else
+        {
+            in = new BandwidthControlledInputStream(sslSocket.getInputStream(),maxDownload);
+        }
 	    sslSocket.setEnableSessionCreation(true);
 	    sslSocket.setUseClientMode(true);
 	}
