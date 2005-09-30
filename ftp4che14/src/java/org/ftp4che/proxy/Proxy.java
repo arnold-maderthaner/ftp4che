@@ -9,5 +9,5 @@ import org.ftp4che.exception.ProxyConnectionException;
 public interface Proxy {
 
     public Socket connect(String host, int port) throws ProxyConnectionException;
-    public void bind(InetSocketAddress isa) throws IOException;
+    public Socket bind(InetSocketAddress isa) throws IOException;
 }

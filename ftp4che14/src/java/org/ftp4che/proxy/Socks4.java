@@ -1,16 +1,20 @@
 package org.ftp4che.proxy;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
-import java.net.SocketException;
 
+import org.apache.log4j.Logger;
 import org.ftp4che.exception.ProxyConnectionException;
 
 public class Socks4 implements Proxy {
     
+	public static final Logger log = Logger.getLogger(Socks4.class.getName());
+	
     private String host;
     private String user;
     private int port;
@@ -75,8 +79,10 @@ public class Socks4 implements Proxy {
             throw new ProxyConnectionException(-2, "SOCK4 - IOException: " + ioe.getMessage());
         }
         
-        ProxyConnectionException pce;
+        ProxyConnectionException pce = null;
         switch (response[1]) {
+            case 90:
+                break; // connect successfull
             case 91:
                 pce = new ProxyConnectionException(91, "SOCKS4 request rejected or failed");
                 break;
@@ -103,11 +109,12 @@ public class Socks4 implements Proxy {
     
     private void connectToProxy() throws IOException {
         this.socket = new Socket();
-        this.socket.setSoTimeout(20000);
+        this.socket.setSoTimeout(Integer.MAX_VALUE);
         this.socket.connect((SocketAddress) new InetSocketAddress( InetAddress.getByName(getHost()), getPort()), 20000);
     } 
     
-    public void bind(InetSocketAddress isa) throws IOException {
+    public Socket bind(InetSocketAddress isa) throws IOException {
+        
         InetAddress addr = isa.getAddress();
         byte[] hostbytes = addr.getAddress();
         byte[] requestPacket = new byte[300];
@@ -125,6 +132,43 @@ public class Socks4 implements Proxy {
         
         // terminate the packet
         requestPacket[9 + getUser().length()] = 0;
+        
+        byte[] response = new byte[8];
+        // connect the socket
+        try {
+            connectToProxy();
+            
+            this.socket.getOutputStream().write(requestPacket, 0, 9 + getUser().length());
+            this.socket.getInputStream().read(response, 0, 8);
+        }catch(IOException ioe) {
+            throw new ProxyConnectionException(-2, "SOCK4 - IOException: " + ioe.getMessage());
+        }
+        
+        ProxyConnectionException pce = null;
+        switch (response[1]) {
+            case 90:
+                break; // bind successfull
+            case 91:
+                pce = new ProxyConnectionException(91, "SOCKS4 request rejected or failed");
+                break;
+            case 92:
+                pce = new ProxyConnectionException(92, "SOCKS4 request rejected becasue SOCKS server cannot connect to identd on the client");
+                break;
+            case 93:
+                pce = new ProxyConnectionException(93, "SOCKS4 request rejected because the client program and identd report different user-ids.");
+                break;
+            default:
+                pce = new ProxyConnectionException(-1, "SOCKS4 unknown proxy response");
+                break;
+        }
+     
+        int bindPort = ((int) response[2]) & ((int) response[3]);
+        byte[] bindAddr = { response[4] ,response[5], response[6], response[7] };
+        InetAddress inetAddress = InetAddress.getByAddress(bindAddr);
+        
+        log.debug("Binding to: " + inetAddress.getHostAddress() + ":" + bindPort);
+        
+        return this.socket;
     }
 
 
@@ -189,12 +233,22 @@ public class Socks4 implements Proxy {
         this.primaryConnectionPort = primaryConnectionPort;
     }
     
-    public static void main (String args[]) {
-        Socks4 proxy = new Socks4("201.252.3.145",1080, "anonymous");
+    public static void main (String args[]) throws Exception {
+        Socks4 proxy = new Socks4("211.250.81.252",1080, "anonymous");
+        Socket socket = null;
+        
         try {
-            proxy.connect("195.58.170.125", 21);
+            socket = proxy.connect("195.58.170.125", 21);
         }catch(Exception e) {
             e.printStackTrace();
+        }
+        
+        System.out.println("looks like we are connected to the proxy ...");
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        String line;
+        while ( (line = in.readLine()) != null) {
+            System.out.println(line);
         }
     }
 }
