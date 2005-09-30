@@ -2,6 +2,7 @@ package org.ftp4che.proxy;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -31,6 +32,7 @@ public class Socks5 implements Proxy {
         setHost(proxyHost);
         setPort(proxyPort);
         setUser(proxyUser);
+        setPass(proxyPass);
     }
 
     /**
@@ -58,9 +60,10 @@ public class Socks5 implements Proxy {
         byte[] hostbytes = addr.getAddress();
         byte[] requestPacket = new byte[300];
         byte[] response = new byte[2];
+        byte methodCount = 2;
         
         requestPacket[0] = 5; // means socks5 (field VN)
-        requestPacket[1] = 3; // methods count (field NMETHODS)
+        requestPacket[1] = methodCount; // methods count (field NMETHODS)
         requestPacket[2] = 0; // X'00' NO AUTHENTICATION REQUIRED
 //        requestPacket[3] = 1; // X'01' GSSAPI
         if (getUser() != null && getPass() != null)
@@ -69,7 +72,7 @@ public class Socks5 implements Proxy {
         try {
             connectToProxy();
             
-            this.socket.getOutputStream().write(requestPacket, 0, 9 + getUser().length());
+            this.socket.getOutputStream().write(requestPacket, 0, methodCount + 2);
             this.socket.getInputStream().read(response, 0, 2);
         }catch(IOException ioe) {
             throw new ProxyConnectionException(-2, "SOCK4 - IOException: " + ioe.getMessage());
@@ -160,11 +163,10 @@ public class Socks5 implements Proxy {
     	requestPacket[0] = 1;
     	requestPacket[1] = userLen;
     	// adding the username to the packet
-        System.arraycopy(hostbytes, 0, requestPacket, 2, userLen);
+        System.arraycopy(getUser().getBytes(), 0, requestPacket, 2, userLen);
         requestPacket[2 + userLen] = passLen;
     	// adding the password to the packet
-        System.arraycopy(hostbytes, 0, requestPacket, 3 + userLen, passLen);
-        
+        System.arraycopy(getPass().getBytes(), 0, requestPacket, 3 + userLen, passLen);
         
         try {
             this.socket.getOutputStream().write(requestPacket, 0, 3 + userLen + passLen);
@@ -300,11 +302,11 @@ public class Socks5 implements Proxy {
     }
     
     public static void main (String args[]) throws Exception {
-        Socks5 proxy = new Socks5("211.250.81.252",1080, "anonymous","test@test.at");
+        Socks5 proxy = new Socks5("127.0.0.1",1080, "anonymous","test");
         Socket socket = null;
         
         try {
-            socket = proxy.connect("195.58.170.125", 21);
+            socket = proxy.connect("172.25.12.195", 23);
         }catch(Exception e) {
             e.printStackTrace();
         }
