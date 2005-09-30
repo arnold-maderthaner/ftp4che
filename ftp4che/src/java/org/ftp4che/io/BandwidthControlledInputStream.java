@@ -22,101 +22,83 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class BandwidthControlledInputStream extends InputStream {
-
-    private InputStream in;
-    private static long MAXIMUM_TIME = 1000;
-    private static int MINIMUM_BYTES = 512;
-    private int maximumBytes;
-    private int bytesRead;
-    private long startTime = System.currentTimeMillis();
-
-    public BandwidthControlledInputStream(InputStream in, int maximumBytes) {
-        this.in = in;
-        //TO PREFENT PROBLEMS IF SOMEONES SETS TO 0
-        if(maximumBytes > MINIMUM_BYTES)
-            this.maximumBytes = maximumBytes;
-        else
-            this.maximumBytes = MINIMUM_BYTES;
-    }
-    
-    public int available() {
-        long readTime = System.currentTimeMillis() - startTime;
-        if (readTime > MAXIMUM_TIME) resetStartTime();
-
-        return ((maximumBytes - bytesRead) < 0 ? 0 : maximumBytes - bytesRead);
-    }
-
-    public boolean markSupported() {
-        return in.markSupported();
-    }
-
-    public void mark(int readlimit) {
-        in.mark(readlimit);
-    }
-
-    public long skip(long n) throws IOException {
-        return in.skip(n);
-    }
-    
-    public void reset() throws IOException {
-        in.reset();
-    }
-    
-    public void close() throws IOException {
-        in.close();
-        in = null;
-    }
-
-    public int read() throws IOException {
-        int b = in.read();
-        waitBytes(1);
-        bytesRead++;
-        return b;
-    }
-
-    public int read(byte b[]) throws IOException {
-        int r = in.read(b);
-        if (r != -1)
-            waitBytes(r);
-        bytesRead += r;
-        return r;
-    }
-
-    public int read(byte b[], int off, int len) throws IOException {
-        int r = in.read(b, off, len);
-        if (r != -1)
-            waitBytes(r);
-        bytesRead += r;
-        return r;
-    }
-
-    private void resetStartTime() {
-        startTime = System.currentTimeMillis();
-        bytesRead = 0;
-    }
-    
-    private int getReadDuration(int byteCount) {
-        long remaining = 0;
-        int waitingCount = byteCount - available();
-        
-        if (waitingCount < 0) waitingCount = 0;
-        else {
-            remaining = MAXIMUM_TIME - (System.currentTimeMillis() - startTime);
-            remaining = ( remaining < 0 ? 0 : remaining );
-            waitingCount = ( (waitingCount - maximumBytes) < 0 ? 0 : waitingCount - maximumBytes );
+        private int bandwidth = 512;
+        private InputStream in;
+        private static int SLEEP_TIME = 1000;
+        private int bytesRead;
+        private long startTime;
+        private static final int CHECKS = 4;
+        private int lastSum;
+           
+        public BandwidthControlledInputStream(InputStream in,int bandwidth)
+        {
+            if(bandwidth > this.bandwidth)
+                this.bandwidth = bandwidth / CHECKS;
+            this.in = in;
+            startTime = System.currentTimeMillis();
         }
         
-        return (int) (MAXIMUM_TIME * waitingCount / maximumBytes + remaining);
-    }
-
-    private void waitBytes(int byteCount) {
-        long endTime = System.currentTimeMillis() + getReadDuration(byteCount);
+        public int read() throws IOException {
+            int bytes = in.read();
+            bytesRead++;
+            return bytes;
+        }
         
-        while (endTime > System.currentTimeMillis()) {
-            try {
-                Thread.sleep(endTime - System.currentTimeMillis());
-            } catch (Exception e) {
+        public int read(byte b[]) throws IOException {
+            return read(b, 0, b.length);
+        }
+        
+        public int read(byte b[], int off, int len) throws IOException {
+            int sum = 0;
+            int bytes2read;
+            if((len - off) > bandwidth)
+                 bytes2read= bandwidth;
+            else
+                 bytes2read = len - off;
+            int newBytes = in.read(b,off,bytes2read);
+            sum += newBytes;
+            if(newBytes == -1)
+            {
+            	try
+            	{
+            		Thread.sleep(1000 * CHECKS / (bandwidth/lastSum));
+            	}catch (InterruptedException ie) {}
+            	return -1;
+            }
+            bytesRead += bytes2read;
+             
+//                System.out.println("bytes2read: " + bytes2read);
+//                System.out.println("bytesRead: " + bytesRead);
+//                System.out.println("sum: " + sum);
+//                System.out.println("newBytes: " + newBytes);
+            sleep();
+            lastSum = sum;
+            return sum;
+        }
+        
+        public void close() throws IOException
+        {
+            if(in != null)
+            {
+                in.close();
+                in = null;
             }
         }
-    }
+        
+    	private void sleep()
+    	{
+    		if(bytesRead >= bandwidth)
+    		{
+    			long duration=System.currentTimeMillis()-startTime;
+    			if (duration<1000/CHECKS)
+    			{
+    				try
+    				{
+    					Thread.sleep(1000/CHECKS-duration);
+    				} catch (InterruptedException ignore){}
+    			}
+    			startTime=System.currentTimeMillis();
+    			bytesRead=0;
+    		}
+    	}
 }
