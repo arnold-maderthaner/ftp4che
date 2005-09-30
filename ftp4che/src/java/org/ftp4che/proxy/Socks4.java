@@ -9,10 +9,14 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 
+import org.apache.log4j.Logger;
 import org.ftp4che.exception.ProxyConnectionException;
+import org.ftp4che.io.ReplyWorker;
 
 public class Socks4 implements Proxy {
     
+	public static final Logger log = Logger.getLogger(Socks4.class.getName());
+	
     private String host;
     private String user;
     private int port;
@@ -72,9 +76,7 @@ public class Socks4 implements Proxy {
             connectToProxy();
             
             this.socket.getOutputStream().write(requestPacket, 0, 9 + getUser().length());
-            InputStream in = this.socket.getInputStream();
-            in.read(response, 0, 8);
-
+            this.socket.getInputStream().read(response, 0, 8);
         }catch(IOException ioe) {
             throw new ProxyConnectionException(-2, "SOCK4 - IOException: " + ioe.getMessage());
         }
@@ -143,6 +145,30 @@ public class Socks4 implements Proxy {
         }catch(IOException ioe) {
             throw new ProxyConnectionException(-2, "SOCK4 - IOException: " + ioe.getMessage());
         }
+        
+        ProxyConnectionException pce = null;
+        switch (response[1]) {
+            case 90:
+                break; // bind successfull
+            case 91:
+                pce = new ProxyConnectionException(91, "SOCKS4 request rejected or failed");
+                break;
+            case 92:
+                pce = new ProxyConnectionException(92, "SOCKS4 request rejected becasue SOCKS server cannot connect to identd on the client");
+                break;
+            case 93:
+                pce = new ProxyConnectionException(93, "SOCKS4 request rejected because the client program and identd report different user-ids.");
+                break;
+            default:
+                pce = new ProxyConnectionException(-1, "SOCKS4 unknown proxy response");
+                break;
+        }
+     
+        int bindPort = ((int) response[2]) & ((int) response[3]);
+        byte[] bindAddr = { response[4] ,response[5], response[6], response[7] };
+        InetAddress inetAddress = InetAddress.getByAddress(bindAddr);
+        
+        log.debug("Binding to: " + inetAddress.getHostAddress() + ":" + bindPort);
         
         return this.socket;
     }
