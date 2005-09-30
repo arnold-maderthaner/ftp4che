@@ -59,7 +59,7 @@ public class SocketProvider {
     {
         if(out == null)
         {
-            if(maxUpload == FTPConnection.MAX_UPLOAD_BANDWIDTH)
+            if(maxUpload == FTPConnection.MAX_UPLOAD_BANDWIDTH || isControllConnection())
             {
                 out = socket.getOutputStream();
             }
@@ -70,7 +70,7 @@ public class SocketProvider {
         }
         if(in == null)
         {
-            if(maxDownload == FTPConnection.MAX_DOWNLOAD_BANDWIDTH)
+            if(maxDownload == FTPConnection.MAX_DOWNLOAD_BANDWIDTH || isControllConnection())
             {
                 in = socket.getInputStream();
             }

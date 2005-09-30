@@ -72,7 +72,7 @@ public class SSLSupport {
 	    context.init(null, trustManagers , null);        
 	    SSLSocketFactory sslFact = context.getSocketFactory();
 	    sslSocket = (SSLSocket)sslFact.createSocket(socket,socket.getInetAddress().getHostAddress(),socket.getPort(),true);
-        if(maxUpload == FTPConnection.MAX_UPLOAD_BANDWIDTH)
+        if(maxUpload == FTPConnection.MAX_UPLOAD_BANDWIDTH || isControllConnection())
         {
             out = sslSocket.getOutputStream();
         }
@@ -80,7 +80,7 @@ public class SSLSupport {
         {
             out = new BandwidthControlledOutputStream(sslSocket.getOutputStream(),maxUpload);
         }
-        if(maxDownload == FTPConnection.MAX_DOWNLOAD_BANDWIDTH)
+        if(maxDownload == FTPConnection.MAX_DOWNLOAD_BANDWIDTH || isControllConnection())
         {
             in = sslSocket.getInputStream();    
         }
