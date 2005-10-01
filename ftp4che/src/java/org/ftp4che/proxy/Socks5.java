@@ -274,10 +274,102 @@ public class Socks5 implements Proxy {
         this.socket.connect((SocketAddress) new InetSocketAddress( InetAddress.getByName(getHost()), getPort()), getTimeout());
     } 
     
-    public Socket bind(InetSocketAddress isa) throws IOException {
-    	return null;
-    }
+    public Socket bind(InetSocketAddress isa) throws ProxyConnectionException {
+        setPrimaryConnectionPort(port);
+        
+        InetAddress addr = isa.getAddress();
+        byte[] hostbytes = addr.getAddress();
+        byte[] requestPacket = new byte[300];
+        byte[] response = new byte[2];
+        byte methodCount = 2;
+        
+        requestPacket[0] = PROTOCOL_VERSION; // means socks5 (field VN)
+        requestPacket[1] = methodCount; // methods count (field NMETHODS)
+        requestPacket[2] = NO_AUTH; // X'00' NO AUTHENTICATION REQUIRED
+//        requestPacket[3] = GSSAPI; // X'01' GSSAPI
+        if (getUser() != null && getPass() != null)
+            requestPacket[3] = USER_PASS; // X'02' USERNAME/PASSWORD
 
+        try {
+            connectToProxy();
+            
+            this.socket.getOutputStream().write(requestPacket, 0, methodCount + 2);
+            this.socket.getInputStream().read(response, 0, 2);
+        }catch(IOException ioe) {
+            throw new ProxyConnectionException(-2, "SOCK4 - IOException: " + ioe.getMessage());
+        }
+        
+        requestPacket = new byte[1024];
+        requestPacket[0] = PROTOCOL_VERSION; // means socks5 (field VN)
+        requestPacket[1] = BIND; // connect (field CMD)
+        requestPacket[2] = 0; // reserved (field RSV)
+        requestPacket[3] = IPV4; // IPv4 (field ATYP)  
+        
+        // adding the host adress bytes to the packet (field DST.ADDR)
+        System.arraycopy(hostbytes, 0, requestPacket, 4, 4);
+
+        requestPacket[8] = (byte) ( getPrimaryConnectionPort() >> 8 ); // (field DST.PORT)
+        requestPacket[9] = (byte) ( getPrimaryConnectionPort() & 0x00ff ); // (field DST.PORT)
+        
+        
+        response = new byte[10];
+        OutputStream out = null;
+        InputStream in = null;
+        try {
+            out = socket.getOutputStream();
+            in = socket.getInputStream();
+            
+            out.write(requestPacket, 0, 10);
+            in.read(response, 0, 10);
+        }catch(IOException ioe) {
+            throw new ProxyConnectionException(-2, "SOCK5 - IOException: " + ioe.getMessage());
+        }        
+        
+        ProxyConnectionException pce = null;
+        switch (response[1]) {
+            case REQUEST_OK:
+                break; // request successfull
+            case GENERAL_FAILURE:
+                pce = new ProxyConnectionException(GENERAL_FAILURE, "SOCKS5 general SOCKS server failure");
+                break;
+            case NOT_ALLOWED:
+                pce = new ProxyConnectionException(NOT_ALLOWED, "SOCKS5 connection not allowed by ruleset");
+                break;
+            case NET_UNREACHABLE:
+                pce = new ProxyConnectionException(NET_UNREACHABLE, "SOCKS5 Network unreachable");
+                break;
+            case HOST_UNREACHABLE:
+                pce = new ProxyConnectionException(HOST_UNREACHABLE, "SOCKS5 Host unreachable");
+                break;
+            case CONNECTION_REFUSED:
+                pce = new ProxyConnectionException(CONNECTION_REFUSED, "SOCKS5 Connection refused");
+                break;
+            case TTL_EXPIRED:
+                pce = new ProxyConnectionException(TTL_EXPIRED, "SOCKS5 TTL expired");
+                break;
+            case CMD_NOT_SUPPORTED:
+                pce = new ProxyConnectionException(CMD_NOT_SUPPORTED, "SOCKS5 Command not supported");
+                break;
+            case ADDR_TYPE_NOT_SUPPORTED:
+                pce = new ProxyConnectionException(ADDR_TYPE_NOT_SUPPORTED, "SOCKS5 Address type not supported");
+                break;
+            default:
+                pce = new ProxyConnectionException(-1, "SOCKS5 unknown proxy response");
+                break;
+        }
+        
+        if (pce != null) {
+            try {
+                out.close();
+                in.close();
+                this.socket.close();
+            }catch(IOException ioe) {}
+            throw pce;
+        }
+        
+        return socket;
+    }
+    
 
     /**
      * @return Returns the host.
