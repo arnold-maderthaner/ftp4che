@@ -68,7 +68,7 @@ public class Socks5 implements Proxy {
     /**
      * public Socket connect(String host, int port) throws IOException
      *
-     * establishing connection to the given host, over the socks4 server
+     * establishing connection to the given host, over the socks5 server
      * 
      * @param host       the wanted hostname / ip for connection 
      * @param port       the connection port
@@ -83,7 +83,7 @@ public class Socks5 implements Proxy {
         try {
             isa = new InetSocketAddress( InetAddress.getByName(host), port );
         }catch(IOException ioe) {
-            throw new ProxyConnectionException(-2, "SOCK4 - IOException: " + ioe.getMessage());
+            throw new ProxyConnectionException(-2, "SOCK5 - IOException: " + ioe.getMessage());
         }
         
         InetAddress addr = isa.getAddress();
@@ -105,7 +105,7 @@ public class Socks5 implements Proxy {
             this.socket.getOutputStream().write(requestPacket, 0, methodCount + 2);
             this.socket.getInputStream().read(response, 0, 2);
         }catch(IOException ioe) {
-            throw new ProxyConnectionException(-2, "SOCK4 - IOException: " + ioe.getMessage());
+            throw new ProxyConnectionException(-2, "SOCK5 - IOException: " + ioe.getMessage());
         }
         
         // negotiation for connect method completed
