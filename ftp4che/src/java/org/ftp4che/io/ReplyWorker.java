@@ -153,8 +153,8 @@ public class ReplyWorker extends Thread {
             RetrieveCommand retrieveCommand = (RetrieveCommand) getCommand();
             
             //TODO: Add handling for TYPE A
-            if ( retrieveCommand.getFromFile().getType().intern() == Command.TYPE_I || 
-                 retrieveCommand.getFromFile().getType().intern() == Command.TYPE_A) 
+            if ( retrieveCommand.getFromFile().getTransferType().intern() == Command.TYPE_I || 
+                 retrieveCommand.getFromFile().getTransferType().intern() == Command.TYPE_A) 
             {
                 try
                 {
@@ -201,8 +201,8 @@ public class ReplyWorker extends Thread {
         {
             StoreCommand storeCommand = (StoreCommand) getCommand();
 //          TODO: Add handling for TYPE A
-            if ( storeCommand.getToFile().getType().intern() == Command.TYPE_I||
-                 storeCommand.getToFile().getType().intern() == Command.TYPE_A)
+            if ( storeCommand.getToFile().getTransferType().intern() == Command.TYPE_I||
+                 storeCommand.getToFile().getTransferType().intern() == Command.TYPE_A)
             {
                 try
                 {

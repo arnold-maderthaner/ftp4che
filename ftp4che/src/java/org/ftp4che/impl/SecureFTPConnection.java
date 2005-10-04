@@ -79,6 +79,7 @@ public class SecureFTPConnection extends FTPConnection {
           
           this.setConnectionStatus(FTPConnection.CONNECTED);
           fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(), null));
+          checkSystem();
     }
     
     private void negotiateAndLogin(String authCommand) throws IOException,AuthenticationNotSupportedException,FtpWorkflowException,FtpIOException

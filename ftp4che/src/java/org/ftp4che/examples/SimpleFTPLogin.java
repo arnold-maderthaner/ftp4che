@@ -16,7 +16,7 @@ import org.ftp4che.FTPConnection;
 import org.ftp4che.FTPConnectionFactory;
 import org.ftp4che.exception.ConfigurationException;
 import org.ftp4che.exception.NotConnectedException;
-import org.ftp4che.util.FTPFile;
+import org.ftp4che.util.ftpfile.FTPFile;
 
 /**
  * @author arnold
@@ -35,7 +35,7 @@ public class SimpleFTPLogin {
         pt.setProperty("connection.port","21");
         pt.setProperty("user.login","ftpuser");
         pt.setProperty("user.password","ftp4che");
-        pt.setProperty("connection.type", "FTP_CONNECTION");
+        pt.setProperty("connection.type", "AUTH_TLS_FTP_CONNECTION");
         pt.setProperty("connection.timeout", "10000");
         pt.setProperty("connection.passive", "true");
 //        pt.setProperty("connection.downloadbw", "100000"); // 30KB/s
@@ -73,22 +73,22 @@ public class SimpleFTPLogin {
 //                connection.getWorkDirectory();
 //                log.debug("Working Directory: " + connection.getWorkDirectory());    
 //                
-//
-//                List<FTPFile> fileList = connection.getDirectoryListing();
-//                for(int i = 0; i < fileList.size(); i++)
-//                    log.info("Name:" + fileList.get(i).getName() + " Mode:" + fileList.get(i).getMode() + " Date:" + fileList.get(i).getDate() + " Size:" + fileList.get(i).getSize());
-//                log.debug("List Size:" + fileList.size());
+
+                List<FTPFile> fileList = connection.getDirectoryListing();
+                for(int i = 0; i < fileList.size(); i++)
+                    log.info("Path: " + fileList.get(i).getPath() + " Name:" + fileList.get(i).getName() + " Mode:" + fileList.get(i).getMode() + " Date:" + fileList.get(i).getDate() + " Size:" + fileList.get(i).getSize());
+                log.debug("List Size:" + fileList.size());
 
 
-                connection.changeDirectory("/home/ftpuser");
-                FTPFile toFile = new FTPFile("/home/ftpuser/","test.bin");
-                FTPFile fromFile = new FTPFile(new File("/home/ftpuser/download/", "1mb"));
-                log.debug("From File size: " + fromFile.getSize());
-                long start = System.currentTimeMillis();
-                connection.uploadFile(fromFile,toFile);
-                log.debug("kb/sec: " + ((double)1024000 / (System.currentTimeMillis() - start)));
-                log.debug("milli sec: "  + (System.currentTimeMillis() - start));
-//                connection.changeDirectory("/home/ftpuser/upload");
+//                connection.changeDirectory("/home/ftpuser");
+//                FTPFile toFile = new FTPFile("/home/ftpuser/","test.bin");
+//                FTPFile fromFile = new FTPFile(new File("/home/ftpuser/download/", "1mb"));
+//                log.debug("From File size: " + fromFile.getSize());
+//                long start = System.currentTimeMillis();
+//                connection.uploadFile(fromFile,toFile);
+//                log.debug("kb/sec: " + ((double)1024000 / (System.currentTimeMillis() - start)));
+//                log.debug("milli sec: "  + (System.currentTimeMillis() - start));
+////                connection.changeDirectory("/home/ftpuser/upload");
 //                connection.uploadFile(new File("/home/ftpuser/download" + File.separator + "testfile1.doc"),new FTPFile("testfile1.doc"));
 //                connection.changeDirectory("/home/ftpuser/download");
                 
@@ -112,19 +112,19 @@ public class SimpleFTPLogin {
 //                connection2.disconnect();
             }catch (NotConnectedException nce)
             {
-                log.error(nce);
+                log.error(nce,nce);
             }
             catch (IOException ioe)
             {
-                log.error(ioe);
+                log.error(ioe,ioe);
             }
             catch (Exception e)
             {
-                log.error(e);
+                log.error(e,e);
             }
         }catch(ConfigurationException ce)
         {
-            log.error(ce);
+            log.error(ce,ce);
         }
     }
 }

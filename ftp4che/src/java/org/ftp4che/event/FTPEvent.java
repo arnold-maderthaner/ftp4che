@@ -21,7 +21,7 @@ package org.ftp4che.event;
 import java.util.EventObject;
 
 import org.ftp4che.reply.Reply;
-import org.ftp4che.util.FTPFile;
+import org.ftp4che.util.ftpfile.FTPFile;
 
 public class FTPEvent extends EventObject {
 

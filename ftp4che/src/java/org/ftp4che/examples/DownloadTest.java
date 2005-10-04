@@ -8,7 +8,7 @@ import org.ftp4che.FTPConnection;
 import org.ftp4che.FTPConnectionFactory;
 import org.ftp4che.exception.ConfigurationException;
 import org.ftp4che.exception.NotConnectedException;
-import org.ftp4che.util.FTPFile;
+import org.ftp4che.util.ftpfile.FTPFile;
 
 public class DownloadTest {
     public static void main(String args[])

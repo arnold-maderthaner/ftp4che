@@ -38,19 +38,6 @@ public class ReplyFormatter {
         //LINE: 257 "/" is current directory.
         return line.substring(line.indexOf('"') + 1,line.lastIndexOf('"'));     
     }
-
-    public static List<FTPFile> parseListReply(Reply listReply) 
-    {
-        List<String> lines = listReply.getLines();
-        List<FTPFile> parsedLines = new ArrayList<FTPFile>(lines.size());
-        for(String line : lines)
-        {
-        	FTPFile file = FTPFile.parseLine(line);
-        	if(file != null)
-        		parsedLines.add(file);
-        }
-        return parsedLines;
-    }
     
     public static InetSocketAddress parsePASVCommand(Reply pasvReply) throws UnkownReplyStateException
     {

@@ -82,5 +82,6 @@ public class NormalFTPConnection extends FTPConnection {
         }
         this.setConnectionStatus(FTPConnection.CONNECTED);
         fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(), null));
+        checkSystem();
     }
 }

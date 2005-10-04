@@ -25,6 +25,7 @@ import java.net.ServerSocket;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -52,8 +53,9 @@ import org.ftp4che.io.ReplyWorker;
 import org.ftp4che.io.SocketProvider;
 import org.ftp4che.proxy.Proxy;
 import org.ftp4che.reply.Reply;
-import org.ftp4che.util.FTPFile;
 import org.ftp4che.util.ReplyFormatter;
+import org.ftp4che.util.ftpfile.FTPFile;
+import org.ftp4che.util.ftpfile.FTPFileFactory;
 
 
 /**
@@ -139,6 +141,8 @@ public abstract class FTPConnection {
     protected SocketProvider socketProvider = null;
     private int connectionStatus = UNKNOWN;
     private Proxy proxy = null;
+    protected FTPFileFactory factory;
+    private String workingDirectory = null;
     
     /**
      * @author arnold,kurt
@@ -307,6 +311,7 @@ public abstract class FTPConnection {
         Reply reply = sendCommand(command);
         reply.dumpReply();
         reply.validate();
+        workingDirectory = null;
     }
     
     /**
@@ -319,11 +324,15 @@ public abstract class FTPConnection {
      */
     public String getWorkDirectory() throws IOException,UnkownReplyStateException,FtpWorkflowException,FtpIOException
     {
-        Command command = new Command(Command.PWD);
-        Reply reply = sendCommand(command);
-        reply.dumpReply();
-        reply.validate();
-        return ReplyFormatter.parsePWDReply(reply);
+        if(workingDirectory == null)
+        {
+            Command command = new Command(Command.PWD);
+            Reply reply = sendCommand(command);
+            reply.dumpReply();
+            reply.validate();
+            workingDirectory = ReplyFormatter.parsePWDReply(reply);
+        }
+        return workingDirectory;
     }
     
     /**
@@ -339,6 +348,7 @@ public abstract class FTPConnection {
         Reply reply = sendCommand(command);
         reply.dumpReply();
         reply.validate();
+        workingDirectory = null;
     }
     
     /**
@@ -440,17 +450,18 @@ public abstract class FTPConnection {
      * @throws FtpWorkflowException will be thrown if there was a ftp reply class 4xx. this should indicate some secific problems on the server
      */
     
-    public List<FTPFile> getDirectoryListing() throws IOException,FtpWorkflowException,FtpIOException
+    public List<FTPFile> getDirectoryListing() throws IOException,FtpWorkflowException,FtpIOException,ParseException
     {
        return getDirectoryListing(".");
     }
     
-    public List<FTPFile> getFastDirectoryListing() throws IOException,FtpWorkflowException,FtpIOException
+    public List<FTPFile> getFastDirectoryListing() throws IOException,FtpWorkflowException,FtpIOException,ParseException
     {
+        String workDirectory = getWorkDirectory();
         Command command = new Command(Command.STAT,"-LA");
         Reply reply = sendCommand(command);
         reply.validate();
-        return ReplyFormatter.parseListReply(reply);
+        return factory.parse(reply.getLines(),workDirectory);
     }
 
     /**
@@ -462,11 +473,11 @@ public abstract class FTPConnection {
      * @throws FtpWorkflowException will be thrown if there was a ftp reply class 4xx. this should indicate some secific problems on the server
      */
     
-    public List<FTPFile> getDirectoryListing(String directory) throws IOException,FtpWorkflowException,FtpIOException
+    public List<FTPFile> getDirectoryListing(String directory) throws IOException,FtpWorkflowException,FtpIOException,ParseException
     {
     	ListCommand command = new ListCommand(directory);
     	SocketProvider provider = null;
-        
+        String workDirectory = getWorkDirectory();
     	  if ( getConnectionType() == FTPConnection.AUTH_SSL_FTP_CONNECTION ||
     	       getConnectionType() == FTPConnection.AUTH_TLS_FTP_CONNECTION ) {
             Command pbsz = new Command(Command.PBSZ,"0");
@@ -486,7 +497,7 @@ public abstract class FTPConnection {
       
         command.setDataSocket(provider);
         //INFO response from ControllConnection is ignored
-        List<FTPFile> parsedList = ReplyFormatter.parseListReply(command.fetchDataConnectionReply());
+        List<FTPFile> parsedList = factory.parse(command.fetchDataConnectionReply().getLines(),workDirectory);
         if(commandReply.getLines().size() == 1)
         {
             (ReplyWorker.readReply(socketProvider)).dumpReply();
@@ -592,7 +603,7 @@ public abstract class FTPConnection {
      * @throws FtpWorkflowException will be thrown if there was a ftp reply class 4xx. this should indicate some secific problems on the server
      * @throws FtpFileNotFountException will be thrown if the specified fromFile is not found on the server
      */
-    public void downloadDirectory(FTPFile srcDir, FTPFile dstDir) throws IOException,FtpWorkflowException,FtpIOException {
+    public void downloadDirectory(FTPFile srcDir, FTPFile dstDir) throws IOException,FtpWorkflowException,FtpIOException,ParseException {
     	if ( !srcDir.isDirectory() )
     		throw new FtpFileNotFoundException("Downloading: " + srcDir.getName() + " is not possible, it's not a directory!");
 
@@ -604,11 +615,11 @@ public abstract class FTPConnection {
     	
     	for(FTPFile file : files) {
     		file.setPath( srcDir.toString() );
-    		if ( file.isFile() ) {
-    			downloadFile(file, new FTPFile(dstDir.toString() + "/" + srcDir.getName(), file.getName()));
-    		}else {
-    			downloadDirectory( file, new FTPFile(dstDir  + "/" + srcDir.getName()));
-    		}
+            if ( !file.isDirectory() ) {
+                downloadFile(file, new FTPFile(dstDir.toString() + "/" + srcDir.getName(), file.getName()));
+            }else {
+                downloadDirectory( file, new FTPFile(dstDir.getPath(), srcDir.getName(),true));
+            }
     	}
     }
     
@@ -684,11 +695,11 @@ public abstract class FTPConnection {
     	Collections.sort( ftpFiles );
     	
     	for ( FTPFile file : ftpFiles ) {
-    		if ( file.isFile() ) {
-    			uploadFile( file, new FTPFile(dstDir.toString() + "/" + file.getName()) );
-    		}else {
-    			uploadDirectory( file, new FTPFile(dstDir + "/" + file.getName()));
-    		}
+            if ( !file.isDirectory() ) {
+                uploadFile( file, new FTPFile(dstDir.toString(),file.getName()) );
+            }else {
+                uploadDirectory( file, new FTPFile(dstDir.getPath(),file.getName(),true));
+            }
     	}
     }
     
@@ -772,7 +783,7 @@ public abstract class FTPConnection {
      * @throws FtpWorkflowException will be thrown if there was a ftp reply class 4xx. this should indicate some secific problems on the server
      * @throws FtpFileNotFountException will be thrown if the specified fromFile is not found on the server
      */
-    public void fxpDirectory(FTPConnection destination, FTPFile srcDir, FTPFile dstDir) throws IOException,FtpWorkflowException,FtpIOException {
+    public void fxpDirectory(FTPConnection destination, FTPFile srcDir, FTPFile dstDir) throws IOException,FtpWorkflowException,FtpIOException,ParseException {
     	if ( !srcDir.isDirectory() )
     		throw new FtpFileNotFoundException("Downloading: " + srcDir.getName() + " is not possible, it's not a directory!");
 
@@ -792,11 +803,11 @@ public abstract class FTPConnection {
     	
     	for(FTPFile file : files) {
     		file.setPath( srcDir.toString() );
-    		if ( file.isFile() ) {
-    			fxpFile(destination, file, new FTPFile(dstDir.toString() + "/" + srcDir.getName(), file.getName()));
-    		}else {
-    			fxpDirectory(destination, file, new FTPFile(dstDir  + "/" + srcDir.getName()));
-    		}
+            if ( !file.isDirectory() ) {
+                fxpFile(destination, file, new FTPFile(dstDir.toString() + "/" + srcDir.getName(), file.getName()));
+            }else {
+                fxpDirectory(destination, file, new FTPFile(dstDir.getPath(), srcDir.getName(),true));
+            }
     	}
         
         if (connectionSSCNActive && getConnectionSSCNType() == FTPConnection.SSCN_ON) {
@@ -1033,7 +1044,7 @@ public abstract class FTPConnection {
      * @throws FtpIOException
      * @throws FtpWorkflowException
      */
-    public void deleteDirectory(FTPFile directory) throws IOException, FtpIOException, FtpWorkflowException {
+    public void deleteDirectory(FTPFile directory) throws IOException, FtpIOException, FtpWorkflowException,ParseException {
         if ( !directory.isDirectory() )
             throw new FtpFileNotFoundException("Deleting: " + directory.getName() + " is not possible, it's not a directory!");
 
@@ -1043,7 +1054,7 @@ public abstract class FTPConnection {
         
         for(FTPFile file : files) {
             file.setPath( directory.toString() );
-            if ( file.isFile() ) {
+            if ( !file.isDirectory() ) {
                 deleteFile( file );
             }else {
                 deleteDirectory( file );
@@ -1099,5 +1110,21 @@ public abstract class FTPConnection {
      */
     public void setProxy(Proxy proxy) {
         this.proxy = proxy;
+    }
+    
+    public void checkSystem() throws IOException,FtpIOException
+    {
+        try
+        {
+            Command system = new Command(Command.SYST);
+            Reply reply = sendCommand(system);
+            reply.dumpReply();
+            reply.validate();
+            factory = new FTPFileFactory(reply.getLines().get(0));
+        }catch(FtpWorkflowException fwe)
+        {
+            //ignore
+            factory = new FTPFileFactory("UNKNOWN");
+        }
     }
 }

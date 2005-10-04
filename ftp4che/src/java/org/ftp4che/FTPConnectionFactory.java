@@ -190,10 +190,13 @@ public class FTPConnectionFactory {
         connection.setUploadBandwidth(maxUploadBandwidth);
         
         Proxy proxy = null;
-        if (proxyType.equalsIgnoreCase("SOCKS4")) {
-            proxy = new Socks4(proxyHost, proxyPort, proxyTimeout, proxyUser);
-        }else if (proxyType.equalsIgnoreCase("SOCKS5")) {
-            proxy = new Socks5(proxyHost, proxyPort, proxyUser, proxyPass);
+        if(proxyType != null)
+        {
+            if (proxyType.equalsIgnoreCase("SOCKS4")) {
+                proxy = new Socks4(proxyHost, proxyPort, proxyTimeout, proxyUser);
+            }else if (proxyType.equalsIgnoreCase("SOCKS5")) {
+                proxy = new Socks5(proxyHost, proxyPort, proxyUser, proxyPass);
+            }
         }
         
         connection.setProxy(proxy);

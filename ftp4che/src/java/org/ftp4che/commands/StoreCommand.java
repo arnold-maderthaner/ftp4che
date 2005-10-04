@@ -24,7 +24,7 @@ import java.io.IOException;
 
 import org.ftp4che.io.ReplyWorker;
 import org.ftp4che.reply.Reply;
-import org.ftp4che.util.FTPFile;
+import org.ftp4che.util.ftpfile.FTPFile;
 
 public class StoreCommand extends DataConnectionCommand {
     
