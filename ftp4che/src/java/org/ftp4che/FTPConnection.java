@@ -779,9 +779,12 @@ public abstract class FTPConnection {
             connectionSSCNActive = true;
         }
         
-    	makeDirectory(dstDir.toString() + "/" + srcDir.getName());
+        destination.makeDirectory(dstDir.toString() + "/" + srcDir.getName());
 
-    	List<FTPFile> files = getDirectoryListing( srcDir.toString() );
+    	
+        String listDir = srcDir.toString();
+        listDir = (listDir.endsWith("/") ? listDir.substring(0, listDir.length() -1) : listDir);
+        List<FTPFile> files = getDirectoryListing( listDir );
     	
     	Collections.sort( files );
     	

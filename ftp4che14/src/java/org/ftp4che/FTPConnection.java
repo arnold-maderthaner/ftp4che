@@ -775,10 +775,12 @@ public abstract class FTPConnection {
             connectionSSCNActive = true;
         }
         
-    	makeDirectory(dstDir.toString() + "/" + srcDir.getName());
-
-    	List files = getDirectoryListing( srcDir.toString() );
+        destination.makeDirectory(dstDir.toString() + "/" + srcDir.getName());
     	
+        String listDir = srcDir.toString();
+        listDir = (listDir.endsWith("/") ? listDir.substring(0, listDir.length() -1) : listDir);
+        List files = getDirectoryListing( listDir );
+        
     	Collections.sort( files );
     	
     	for(int i=0; i<files.size(); i++) {
