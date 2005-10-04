@@ -8,6 +8,8 @@ import org.ftp4che.exception.ProxyConnectionException;
 
 public interface Proxy {
 
-    public Socket connect(String host, int port) throws ProxyConnectionException;
+    public Socket connect(String host, int port)
+            throws ProxyConnectionException;
+
     public Socket bind(InetSocketAddress isa) throws IOException;
 }

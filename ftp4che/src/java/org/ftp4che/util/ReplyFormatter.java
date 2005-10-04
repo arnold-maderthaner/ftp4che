@@ -51,8 +51,7 @@ public class ReplyFormatter {
         String line = lines.get(0);
         line = line.substring(line.indexOf('(') + 1, line.lastIndexOf(')'));
         String[] host = line.split(",");
-        log
-                .debug("Parsed host:"
+        log.debug("Parsed host:"
                         + host[0]
                         + "."
                         + host[1]

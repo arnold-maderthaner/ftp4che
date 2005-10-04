@@ -6,8 +6,8 @@
  */
 package org.ftp4che.examples;
 
-import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
@@ -16,57 +16,120 @@ import org.ftp4che.FTPConnection;
 import org.ftp4che.FTPConnectionFactory;
 import org.ftp4che.exception.ConfigurationException;
 import org.ftp4che.exception.NotConnectedException;
-import org.ftp4che.util.FTPFile;
+import org.ftp4che.util.ftpfile.FTPFile;
 
 /**
  * @author arnold
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * 
+ * TODO To change the template for this generated type comment go to Window -
+ * Preferences - Java - Code Style - Code Templates
  */
 
 public class SimpleFTPLogin {
-    public static void main(String args[])
-    {
+    public static void main(String args[]) {
         Logger log = Logger.getLogger("MAIN");
-        
+
         Properties pt = new Properties();
-        pt.setProperty("connection.host","172.25.13.149");
-        pt.setProperty("connection.port","21");
-        pt.setProperty("user.login","ftpuser");
-        pt.setProperty("user.password","ftp4che");
-        pt.setProperty("connection.type", "FTP_CONNECTION");
+        pt.setProperty("connection.host", "127.0.0.1");
+        pt.setProperty("connection.port", "21");
+        pt.setProperty("user.login", "ftpuser");
+        pt.setProperty("user.password", "ftp4che");
+        pt.setProperty("connection.type", "AUTH_TLS_FTP_CONNECTION");
         pt.setProperty("connection.timeout", "10000");
         pt.setProperty("connection.passive", "true");
-        pt.setProperty("connection.proxy_type", "SOCKS4");
-        pt.setProperty("connection.proxy_host", "127.0.0.1");
-        pt.setProperty("connection.proxy_port", "1080");
-        pt.setProperty("connection.proxy_user", "kurt");
-        
-        try
-        {
+        // pt.setProperty("connection.downloadbw", "100000"); // 30KB/s
+        pt.setProperty("connection.uploadbw", "100000"); // 30KB/s
+        //        
+        try {
             FTPConnection connection = FTPConnectionFactory.getInstance(pt);
+            // FTPConnection connection2 = FTPConnectionFactory.getInstance(pt);
             log.debug("user:" + connection.getUser());
-            try
-            {
+            try {
                 connection.connect();
-                
+                // connection2.connect();
+                // List<String> list = connection.getFastDirectoryListing();
+                // for(String s : list)
+                // {
+                // log.debug("FastList: " + s);
+                // }
+                // connection.getWorkDirectory();
+                // connection.getDirectoryListing();
+                // connection.makeDirectory("testdir");
+                // connection.changeDirectory("testdir");
+                // log.debug("Working Directory: " +
+                // connection.getWorkDirectory());
+                //              
+                // connection.changeToParentDirectory();
+                //                
+                // connection.removeDirectory("testdir");
+                //                
+                // log.debug("Working Directory: " +
+                // connection.getWorkDirectory());
+                //               
+                // connection.noOperation();
+                // connection.changeDirectory("/home/ftpuser/download");
+                //
+                // connection.getWorkDirectory();
+                // log.debug("Working Directory: " +
+                // connection.getWorkDirectory());
+                //                
+
+                List fileList = connection.getDirectoryListing();
+                for (Iterator it = fileList.iterator(); it.hasNext();)
+                {
+                    FTPFile file = (FTPFile)it.next();
+                    log.info("Path: " + file.getPath() + " Name:"
+                            + file.getName() + " Mode:"
+                            + file.getMode() + " Date:"
+                            + file.getDate() + " Size:"
+                            + file.getSize());
+                }
+                log.debug("List Size:" + fileList.size());
+
+                // connection.changeDirectory("/home/ftpuser");
+                // FTPFile toFile = new FTPFile("/home/ftpuser/","test.bin");
+                // FTPFile fromFile = new FTPFile(new
+                // File("/home/ftpuser/download/", "1mb"));
+                // log.debug("From File size: " + fromFile.getSize());
+                // long start = System.currentTimeMillis();
+                // connection.uploadFile(fromFile,toFile);
+                // log.debug("kb/sec: " + ((double)1024000 /
+                // (System.currentTimeMillis() - start)));
+                // log.debug("milli sec: " + (System.currentTimeMillis() -
+                // start));
+                // // connection.changeDirectory("/home/ftpuser/upload");
+                // connection.uploadFile(new File("/home/ftpuser/download" +
+                // File.separator + "testfile1.doc"),new
+                // FTPFile("testfile1.doc"));
+                // connection.changeDirectory("/home/ftpuser/download");
+
+                // FTPFile fromFile = new FTPFile();
+                // fromFile.setPath("/home/ftpuser/download/");
+                // fromFile.setName("1mb");
+                //              
+                // FTPFile toFile = new FTPFile();
+                // toFile.setPath("/home/ftpuser/upload/");
+                // toFile.setName("1mb_1");
+
+                // connection.changeDirectory("/home/ftpuser/download/");
+                // connection2.changeDirectory("/home/ftpuser/upload/");
+
+                // connection.getWorkDirectory();
+                // connection2.getWorkDirectory();
+
+                // connection.fxpFile(connection2, fromFile, toFile);
+
                 connection.disconnect();
-            }catch (NotConnectedException nce)
-            {
-                log.error(nce);
+                // connection2.disconnect();
+            } catch (NotConnectedException nce) {
+                log.error(nce, nce);
+            } catch (IOException ioe) {
+                log.error(ioe, ioe);
+            } catch (Exception e) {
+                log.error(e, e);
             }
-            catch (IOException ioe)
-            {
-                log.error(ioe);
-            }
-            catch (Exception e)
-            {
-                log.error(e);
-            }
-        }catch(ConfigurationException ce)
-        {
-            log.error(ce);
+        } catch (ConfigurationException ce) {
+            log.error(ce, ce);
         }
     }
 }
