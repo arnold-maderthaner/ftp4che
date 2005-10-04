@@ -22,69 +22,62 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 public class BandwidthControlledOutputStream extends OutputStream {
-    
+
     private int bandwidth = 512;
+
     private OutputStream out;
+
     private static int SLEEP_TIME = 1000;
+
     private int bytesWritten;
-       
-    public BandwidthControlledOutputStream(OutputStream out,int bandwidth)
-    {
-        if(bandwidth > this.bandwidth)
+
+    public BandwidthControlledOutputStream(OutputStream out, int bandwidth) {
+        if (bandwidth > this.bandwidth)
             this.bandwidth = bandwidth;
         this.out = out;
     }
-    
+
     public void write(int b) throws IOException {
         bytesWritten++;
         out.write(b);
         sleep();
     }
-    
-    public void write(byte[] bytes) throws IOException
-    {
-          write(bytes,0,bytes.length);
+
+    public void write(byte[] bytes) throws IOException {
+        write(bytes, 0, bytes.length);
     }
-    
-    public void write(byte[] bytes,int off, int len) throws IOException
-    {
+
+    public void write(byte[] bytes, int off, int len) throws IOException {
         int position = off;
         int capacity = len;
-        
-        while(position < capacity)
-        {
+
+        while (position < capacity) {
             int bytes2write;
-            if((capacity - position) > bandwidth)
-                bytes2write= bandwidth;
+            if ((capacity - position) > bandwidth)
+                bytes2write = bandwidth;
             else
-                bytes2write = capacity-position;
-            out.write(bytes,position,bytes2write);
+                bytes2write = capacity - position;
+            out.write(bytes, position, bytes2write);
             position += bytes2write;
             bytesWritten += bytes2write;
             sleep();
         }
     }
-    
-    private void sleep()
-    {
-        if(bytesWritten >= bandwidth)
-        {
-            try
-            {
-//                System.out.println("sleeping");
+
+    private void sleep() {
+        if (bytesWritten >= bandwidth) {
+            try {
+                // System.out.println("sleeping");
                 Thread.sleep(SLEEP_TIME);
                 bytesWritten = 0;
-            }catch (InterruptedException ie) 
-            {
+            } catch (InterruptedException ie) {
                 ie.printStackTrace();
             }
         }
     }
-    
-    public void close() throws IOException
-    {
-        if(out != null)
-        {
+
+    public void close() throws IOException {
+        if (out != null) {
             out.close();
             out = null;
         }

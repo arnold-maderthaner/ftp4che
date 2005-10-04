@@ -1,21 +1,21 @@
 /**                                                                         *
-*  This file is part of ftp4che.                                            *
-*                                                                           *
-*  This library is free software; you can redistribute it and/or modify it  *
-*  under the terms of the GNU General Public License as published    		*
-*  by the Free Software Foundation; either version 2 of the License, or     *
-*  (at your option) any later version.                                      *
-*                                                                           *
-*  This library is distributed in the hope that it will be useful, but      *
-*  WITHOUT ANY WARRANTY; without even the implied warranty of               *
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        *
-*  General Public License for more details.                          		*
-*                                                                           *
-*  You should have received a copy of the GNU General Public		        *
-*  License along with this library; if not, write to the Free Software      *
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
-*                                                                           *
-*****************************************************************************/
+ *  This file is part of ftp4che.                                            *
+ *                                                                           *
+ *  This library is free software; you can redistribute it and/or modify it  *
+ *  under the terms of the GNU General Public License as published    		*
+ *  by the Free Software Foundation; either version 2 of the License, or     *
+ *  (at your option) any later version.                                      *
+ *                                                                           *
+ *  This library is distributed in the hope that it will be useful, but      *
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of               *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        *
+ *  General Public License for more details.                          		*
+ *                                                                           *
+ *  You should have received a copy of the GNU General Public		        *
+ *  License along with this library; if not, write to the Free Software      *
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
+ *                                                                           *
+ *****************************************************************************/
 package org.ftp4che.io;
 
 import java.io.FileInputStream;
@@ -39,41 +39,54 @@ import org.ftp4che.commands.RetrieveCommand;
 import org.ftp4che.commands.StoreCommand;
 import org.ftp4che.reply.Reply;
 
-
 public class ReplyWorker extends Thread {
-	public static final Logger log = Logger.getLogger(ReplyWorker.class.getName());
+    public static final Logger log = Logger.getLogger(ReplyWorker.class
+            .getName());
+
     public static final int FINISHED = 1;
+
     public static final int ERROR_FILE_NOT_FOUND = 2;
+
     public static final int ERROR_IO_EXCEPTION = 3;
+
     public static final int UNKNOWN = -1;
-    
+
     private Exception caughtException = null;
+
     private SocketProvider socketProvider;
+
     private Command command;
-    private Charset charset = Charset.forName( "ISO8859-1" );
+
+    private Charset charset = Charset.forName("ISO8859-1");
+
     private CharsetDecoder charDecoder = charset.newDecoder();
+
     private ByteBuffer buffer = ByteBuffer.allocate(16384);
-    
+
     private int status = ReplyWorker.UNKNOWN;
+
     private Reply reply;
-    
-    public ReplyWorker ( SocketProvider sc, Command command ) {
-        setSocketProvider( sc );
-        setCommand ( command );
+
+    public ReplyWorker(SocketProvider sc, Command command) {
+        setSocketProvider(sc);
+        setCommand(command);
     }
-    public static Reply readReply ( SocketProvider socketProvider) {
-        return ReplyWorker.readReply(socketProvider,false);
+
+    public static Reply readReply(SocketProvider socketProvider) {
+        return ReplyWorker.readReply(socketProvider, false);
     }
-    public static Reply readReply ( SocketProvider socketProvider, boolean isListReply ) {
+
+    public static Reply readReply(SocketProvider socketProvider,
+            boolean isListReply) {
         List<String> lines = new ArrayList<String>();
-        Charset charset = Charset.forName( "ISO8859-1" );
+        Charset charset = Charset.forName("ISO8859-1");
         CharsetDecoder charDecoder = charset.newDecoder();
         Logger log = Logger.getLogger(ReplyWorker.class.getName());
         try {
             String output = "";
             String out = "";
             ByteBuffer buf = null;
-            if(!isListReply)
+            if (!isListReply)
                 buf = ByteBuffer.allocateDirect(1024);
             else
                 buf = ByteBuffer.allocateDirect(16384);
@@ -81,12 +94,12 @@ public class ReplyWorker extends Thread {
             buf.clear();
             socketProvider.socket().setKeepAlive(true);
             boolean read = true;
-            while (read && (amount = socketProvider.read(buf)) >= 0) 
-            {
+            while (read && (amount = socketProvider.read(buf)) >= 0) {
                 if (amount == 0) {
                     try {
                         sleep(50);
-                    } catch (InterruptedException ie) {}
+                    } catch (InterruptedException ie) {
+                    }
                     continue;
                 }
 
@@ -96,14 +109,16 @@ public class ReplyWorker extends Thread {
                 buf.clear();
                 String[] tmp = output.split("\n");
 
-                if (!isListReply && tmp.length > 0 && tmp[tmp.length - 1].length() > 3 
+                if (!isListReply
+                        && tmp.length > 0
+                        && tmp[tmp.length - 1].length() > 3
                         && tmp[tmp.length - 1].endsWith("\r")
-                         && tmp[tmp.length - 1].charAt(3) == ' '
-                         && Pattern.matches("[0-9]+", tmp[tmp.length - 1].substring(0, 3))) 
-                {
+                        && tmp[tmp.length - 1].charAt(3) == ' '
+                        && Pattern.matches("[0-9]+", tmp[tmp.length - 1]
+                                .substring(0, 3))) {
                     String[] stringLines = output.split("\n");
-                    
-                    for (int i=0; i < stringLines.length; i++ )
+
+                    for (int i = 0; i < stringLines.length; i++)
                         lines.add(stringLines[i]);
                     read = false;
                     output = "";
@@ -111,14 +126,14 @@ public class ReplyWorker extends Thread {
                 }
                 try {
                     sleep(50);
-                } catch (InterruptedException ie) {}
+                } catch (InterruptedException ie) {
+                }
             }
-            if(isListReply)
-            {
+            if (isListReply) {
                 String[] stringLines = output.split("\r\n");
-                
-                for (int i=0; i < stringLines.length; i++ ) {
-                    // Empty lines cause NoSuchElementException in 
+
+                for (int i = 0; i < stringLines.length; i++) {
+                    // Empty lines cause NoSuchElementException in
                     // FTPFile org.ftp4che.util.FTPFile.parseLine(String line)
                     // (unsave use of StringTokenizer.nextToken
                     if (stringLines[i].length() > 0) {
@@ -130,55 +145,51 @@ public class ReplyWorker extends Thread {
                 socketProvider.close();
             }
         } catch (Exception e) {
-          log.error("Exception in reading Reply! Exception was: " + e.getMessage(),e);
+            log.error("Exception in reading Reply! Exception was: "
+                    + e.getMessage(), e);
         }
-        
-        return new Reply( lines );
+
+        return new Reply(lines);
     }
-    
-    public void run () {
-        if ( getCommand() == null )
+
+    public void run() {
+        if (getCommand() == null)
             throw new IllegalArgumentException("Given command is null!");
-        if ( getSocketProvider() == null )
+        if (getSocketProvider() == null)
             throw new IllegalArgumentException("Given connection is not open!");
-        
-        if ( getCommand() instanceof ListCommand ) 
-        {
-          setReply(ReplyWorker.readReply(getSocketProvider(),true));
-          setStatus(ReplyWorker.FINISHED);
-          return;
-        }
-        else if ( getCommand() instanceof RetrieveCommand ) 
-        {
+
+        if (getCommand() instanceof ListCommand) {
+            setReply(ReplyWorker.readReply(getSocketProvider(), true));
+            setStatus(ReplyWorker.FINISHED);
+            return;
+        } else if (getCommand() instanceof RetrieveCommand) {
             RetrieveCommand retrieveCommand = (RetrieveCommand) getCommand();
-            
-            //TODO: Add handling for TYPE A
-            if ( retrieveCommand.getFromFile().getTransferType().intern() == Command.TYPE_I || 
-                 retrieveCommand.getFromFile().getTransferType().intern() == Command.TYPE_A) 
-            {
-                try
-                {
-                    FileOutputStream out = new FileOutputStream(retrieveCommand.getToFile().getFile());
+
+            // TODO: Add handling for TYPE A
+            if (retrieveCommand.getFromFile().getTransferType().intern() == Command.TYPE_I
+                    || retrieveCommand.getFromFile().getTransferType().intern() == Command.TYPE_A) {
+                try {
+                    FileOutputStream out = new FileOutputStream(retrieveCommand
+                            .getToFile().getFile());
                     FileChannel channel = out.getChannel();
                     int amount;
                     try {
-                        while ((amount = getSocketProvider().read(buffer)) != -1) 
-                        {
-                            if (amount == 0) 
-                            {
+                        while ((amount = getSocketProvider().read(buffer)) != -1) {
+                            if (amount == 0) {
                                 try {
-                                   Thread.sleep(4);
-                                } catch (InterruptedException e) {}
-                            } 
+                                    Thread.sleep(4);
+                                } catch (InterruptedException e) {
+                                }
+                            }
                             buffer.flip();
-                            while(buffer.hasRemaining())
-                            	channel.write(buffer);
-                            
+                            while (buffer.hasRemaining())
+                                channel.write(buffer);
+
                             buffer.clear();
                         }
                         buffer.flip();
-                        while(buffer.hasRemaining())
-                        	channel.write(buffer);
+                        while (buffer.hasRemaining())
+                            channel.write(buffer);
                         buffer.clear();
                         setStatus(ReplyWorker.FINISHED);
                         channel.close();
@@ -187,27 +198,25 @@ public class ReplyWorker extends Thread {
                         setCaughtException(ioe);
                         setStatus(ReplyWorker.ERROR_IO_EXCEPTION);
                     }
-                   
-                }catch (FileNotFoundException fnfe)
-                {
+
+                } catch (FileNotFoundException fnfe) {
                     setCaughtException(fnfe);
                     setStatus(ReplyWorker.ERROR_FILE_NOT_FOUND);
                 }
-            }else
-                throw new IllegalArgumentException("Unknown file transfer type for download!"); 
+            } else
+                throw new IllegalArgumentException(
+                        "Unknown file transfer type for download!");
             return;
-        }
-        else if ( getCommand() instanceof StoreCommand ) 
-        {
+        } else if (getCommand() instanceof StoreCommand) {
             StoreCommand storeCommand = (StoreCommand) getCommand();
-//          TODO: Add handling for TYPE A
-            if ( storeCommand.getToFile().getTransferType().intern() == Command.TYPE_I||
-                 storeCommand.getToFile().getTransferType().intern() == Command.TYPE_A)
-            {
-                try
-                {
-                	log.debug("Upload file: " + storeCommand.getFromFile().toString());
-                    FileInputStream in = new FileInputStream(storeCommand.getFromFile().getFile());
+            // TODO: Add handling for TYPE A
+            if (storeCommand.getToFile().getTransferType().intern() == Command.TYPE_I
+                    || storeCommand.getToFile().getTransferType().intern() == Command.TYPE_A) {
+                try {
+                    log.debug("Upload file: "
+                            + storeCommand.getFromFile().toString());
+                    FileInputStream in = new FileInputStream(storeCommand
+                            .getFromFile().getFile());
                     FileChannel channel = in.getChannel();
                     int amount;
                     int socketWrite;
@@ -216,24 +225,24 @@ public class ReplyWorker extends Thread {
                         while ((amount = channel.read(buffer)) != -1) {
                             buffer.flip();
                             socketWrite = 0;
-                            while ((socketWrite = getSocketProvider().write(buffer)) != -1) 
-                            {
+                            while ((socketWrite = getSocketProvider().write(
+                                    buffer)) != -1) {
                                 socketAmount += socketWrite;
                                 if (amount <= socketAmount) {
                                     break;
                                 }
-                                if (socketWrite == 0) 
-                                {
-                                   try {
-                                         Thread.sleep(4);
-                                   } catch (InterruptedException e) {}
+                                if (socketWrite == 0) {
+                                    try {
+                                        Thread.sleep(4);
+                                    } catch (InterruptedException e) {
+                                    }
                                 }
                             }
                             if (socketWrite == -1) {
                                 break;
                             }
                             socketAmount = 0;
-                            buffer.clear();        
+                            buffer.clear();
                         }
                         setStatus(ReplyWorker.FINISHED);
                         channel.close();
@@ -242,22 +251,23 @@ public class ReplyWorker extends Thread {
                         setCaughtException(ioe);
                         setStatus(ReplyWorker.ERROR_IO_EXCEPTION);
                     }
-                    
-                }catch (FileNotFoundException fnfe)
-                {
+
+                } catch (FileNotFoundException fnfe) {
                     setCaughtException(fnfe);
                     setStatus(ReplyWorker.ERROR_FILE_NOT_FOUND);
                 }
-            }
-            else
-                throw new IllegalArgumentException("Unknown file transfer type for upload!");
-            
-        }else
-            throw new IllegalArgumentException("Given command is not supported!");
+            } else
+                throw new IllegalArgumentException(
+                        "Unknown file transfer type for upload!");
+
+        } else
+            throw new IllegalArgumentException(
+                    "Given command is not supported!");
     }
 
     /**
-     * @param socketProvider The socketProvider to set.
+     * @param socketProvider
+     *            The socketProvider to set.
      */
     public void setSocketProvider(SocketProvider socketProvider) {
         this.socketProvider = socketProvider;
@@ -271,7 +281,8 @@ public class ReplyWorker extends Thread {
     }
 
     /**
-     * @param command The command to set.
+     * @param command
+     *            The command to set.
      */
     public void setCommand(Command command) {
         this.command = command;
@@ -292,7 +303,8 @@ public class ReplyWorker extends Thread {
     }
 
     /**
-     * @param status The status to set.
+     * @param status
+     *            The status to set.
      */
     public void setStatus(int status) {
         this.status = status;
@@ -306,17 +318,18 @@ public class ReplyWorker extends Thread {
     }
 
     /**
-     * @param caughtException The caughtException to set.
+     * @param caughtException
+     *            The caughtException to set.
      */
     public void setCaughtException(Exception caughtException) {
         this.caughtException = caughtException;
     }
 
-	public Reply getReply() {
-		return reply;
-	}
+    public Reply getReply() {
+        return reply;
+    }
 
-	public void setReply(Reply reply) {
-		this.reply = reply;
-	}
+    public void setReply(Reply reply) {
+        this.reply = reply;
+    }
 }

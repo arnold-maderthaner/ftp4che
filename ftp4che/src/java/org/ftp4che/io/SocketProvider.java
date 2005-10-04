@@ -1,21 +1,21 @@
 /**                                                                         *
-*  This file is part of ftp4che.                                            *
-*                                                                           *
-*  This library is free software; you can redistribute it and/or modify it  *
-*  under the terms of the GNU General Public License as published    		*
-*  by the Free Software Foundation; either version 2 of the License, or     *
-*  (at your option) any later version.                                      *
-*                                                                           *
-*  This library is distributed in the hope that it will be useful, but      *
-*  WITHOUT ANY WARRANTY; without even the implied warranty of               *
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        *
-*  General Public License for more details.                          		*
-*                                                                           *
-*  You should have received a copy of the GNU General Public		        *
-*  License along with this library; if not, write to the Free Software      *
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
-*                                                                           *
-*****************************************************************************/
+ *  This file is part of ftp4che.                                            *
+ *                                                                           *
+ *  This library is free software; you can redistribute it and/or modify it  *
+ *  under the terms of the GNU General Public License as published    		*
+ *  by the Free Software Foundation; either version 2 of the License, or     *
+ *  (at your option) any later version.                                      *
+ *                                                                           *
+ *  This library is distributed in the hope that it will be useful, but      *
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of               *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        *
+ *  General Public License for more details.                          		*
+ *                                                                           *
+ *  You should have received a copy of the GNU General Public		        *
+ *  License along with this library; if not, write to the Free Software      *
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
+ *                                                                           *
+ *****************************************************************************/
 package org.ftp4che.io;
 
 import java.io.IOException;
@@ -32,151 +32,152 @@ import org.ftp4che.proxy.Proxy;
 public class SocketProvider {
 
     private SSLSupport supporter;
-	private int sslMode = FTPConnection.FTP_CONNECTION;
-	private Socket socket = null;
-	private static final Logger log = Logger.getLogger(SocketProvider.class.getName());
-	private boolean isControllConnection = true;
-	private OutputStream out = null;
-	private InputStream in = null;
-	private byte[] readArray = new byte[16384];
-    int maxDownload,maxUpload;
-    
-	public SocketProvider() {
-		socket = new Socket();
-	}
-    
+
+    private int sslMode = FTPConnection.FTP_CONNECTION;
+
+    private Socket socket = null;
+
+    private static final Logger log = Logger.getLogger(SocketProvider.class
+            .getName());
+
+    private boolean isControllConnection = true;
+
+    private OutputStream out = null;
+
+    private InputStream in = null;
+
+    private byte[] readArray = new byte[16384];
+
+    int maxDownload, maxUpload;
+
+    public SocketProvider() {
+        socket = new Socket();
+    }
+
     public SocketProvider(boolean isControllConnection) throws IOException {
         this();
         setControllConnection(isControllConnection);
     }
 
-    public SocketProvider(Socket socket, boolean isControllConnection ) throws IOException
-    {
-        this(socket, isControllConnection, FTPConnection.MAX_DOWNLOAD_BANDWIDTH, FTPConnection.MAX_UPLOAD_BANDWIDTH);
+    public SocketProvider(Socket socket, boolean isControllConnection)
+            throws IOException {
+        this(socket, isControllConnection,
+                FTPConnection.MAX_DOWNLOAD_BANDWIDTH,
+                FTPConnection.MAX_UPLOAD_BANDWIDTH);
     }
-    
-//	public SocketProvider( Socket socket ) throws IOException{
-//		this(socket, true, FTPConnection.MAX_DOWNLOAD_BANDWIDTH, FTPConnection.MAX_UPLOAD_BANDWIDTH);
-//	}
-    
-    public SocketProvider( Socket socket, boolean isControllConnection, int maxDownload, int maxUpload ) throws IOException{
+
+    // public SocketProvider( Socket socket ) throws IOException{
+    // this(socket, true, FTPConnection.MAX_DOWNLOAD_BANDWIDTH,
+    // FTPConnection.MAX_UPLOAD_BANDWIDTH);
+    // }
+
+    public SocketProvider(Socket socket, boolean isControllConnection,
+            int maxDownload, int maxUpload) throws IOException {
         setControllConnection(isControllConnection);
         this.maxDownload = maxDownload;
         this.maxUpload = maxUpload;
         this.socket = socket;
         initStreams();
     }
-    
-    private void initStreams() throws IOException
-    {
-        if(out == null)
-        {
-            if(maxUpload == FTPConnection.MAX_UPLOAD_BANDWIDTH || isControllConnection())
-            {
+
+    private void initStreams() throws IOException {
+        if (out == null) {
+            if (maxUpload == FTPConnection.MAX_UPLOAD_BANDWIDTH
+                    || isControllConnection()) {
                 out = socket.getOutputStream();
-            }
-            else
-            {
-                out = new BandwidthControlledOutputStream(socket.getOutputStream(), maxUpload);
+            } else {
+                out = new BandwidthControlledOutputStream(socket
+                        .getOutputStream(), maxUpload);
             }
         }
-        if(in == null)
-        {
-            if(maxDownload == FTPConnection.MAX_DOWNLOAD_BANDWIDTH || isControllConnection())
-            {
+        if (in == null) {
+            if (maxDownload == FTPConnection.MAX_DOWNLOAD_BANDWIDTH
+                    || isControllConnection()) {
                 in = socket.getInputStream();
-            }
-            else
-            {
-                in = new BandwidthControlledInputStream(socket.getInputStream(), maxDownload);
+            } else {
+                in = new BandwidthControlledInputStream(
+                        socket.getInputStream(), maxDownload);
             }
         }
     }
-    
-    
-//	public void connect( SocketAddress remote ) throws IOException {
-//	    connect(remote, FTPConnection.MAX_DOWNLOAD_BANDWIDTH, FTPConnection.MAX_UPLOAD_BANDWIDTH);
-//	}
-    
-    public void connect( SocketAddress remote, Proxy proxy, int maxDownload, int maxUpload ) throws IOException {
-        
+
+    // public void connect( SocketAddress remote ) throws IOException {
+    // connect(remote, FTPConnection.MAX_DOWNLOAD_BANDWIDTH,
+    // FTPConnection.MAX_UPLOAD_BANDWIDTH);
+    // }
+
+    public void connect(SocketAddress remote, Proxy proxy, int maxDownload,
+            int maxUpload) throws IOException {
+
         if (proxy == null) {
             socket.connect(remote);
         } else if (proxy != null && isControllConnection() == true) {
             InetSocketAddress isa = (InetSocketAddress) remote;
-            socket = proxy.connect(isa.getAddress().getHostAddress(), isa.getPort());
+            socket = proxy.connect(isa.getAddress().getHostAddress(), isa
+                    .getPort());
         } else if (proxy != null && isControllConnection == false) {
             socket = proxy.bind((InetSocketAddress) remote);
         }
-        
+
         this.maxDownload = maxDownload;
         this.maxUpload = maxUpload;
         initStreams();
     }
-	
-	public Socket socket() {
-		return socket;
-	}
-	
-	
-	public boolean isConnected() {
-		return socket.isConnected();
-	}
-    
-    public boolean needsCrypt()
-    {
-       return ((this.sslMode == FTPConnection.AUTH_SSL_FTP_CONNECTION ||
-                this.sslMode == FTPConnection.AUTH_TLS_FTP_CONNECTION) && !isControllConnection()) ||
-                this.sslMode != FTPConnection.FTP_CONNECTION && isControllConnection();
+
+    public Socket socket() {
+        return socket;
     }
 
-	public void close() throws IOException {
+    public boolean isConnected() {
+        return socket.isConnected();
+    }
 
-        if (needsCrypt())
-        {
-            if ( supporter != null )
-                 supporter.close();
-        }        
+    public boolean needsCrypt() {
+        return ((this.sslMode == FTPConnection.AUTH_SSL_FTP_CONNECTION || this.sslMode == FTPConnection.AUTH_TLS_FTP_CONNECTION) && !isControllConnection())
+                || this.sslMode != FTPConnection.FTP_CONNECTION
+                && isControllConnection();
+    }
+
+    public void close() throws IOException {
+
+        if (needsCrypt()) {
+            if (supporter != null)
+                supporter.close();
+        }
         socket.close();
-	}	
+    }
 
-	public int write(ByteBuffer src) throws IOException 
-	{
-        if (needsCrypt())
-        {
-        	return supporter.write(src);
-        	//throw new IOException("SSL NOT IMPLEMENTED YET");
+    public int write(ByteBuffer src) throws IOException {
+        if (needsCrypt()) {
+            return supporter.write(src);
+            // throw new IOException("SSL NOT IMPLEMENTED YET");
         }
         int byteCount = src.remaining();
-        out.write(src.array(),0,byteCount);
-		return byteCount;
-	}
-	
-	public int read( ByteBuffer dst ) throws IOException {
-        if (needsCrypt())
-        {
+        out.write(src.array(), 0, byteCount);
+        return byteCount;
+    }
+
+    public int read(ByteBuffer dst) throws IOException {
+        if (needsCrypt()) {
             return supporter.read(dst);
         }
         int byteCount = 0;
-        if(isControllConnection())
-        {
-            byteCount = in.read(readArray,0,dst.remaining());
-        }
-        else
-        {
+        if (isControllConnection()) {
+            byteCount = in.read(readArray, 0, dst.remaining());
+        } else {
             byteCount = in.read(readArray);
         }
-        
-        if(byteCount <= 0)
-        	return byteCount;
-        dst.put(readArray,dst.position(),byteCount);
+
+        if (byteCount <= 0)
+            return byteCount;
+        dst.put(readArray, dst.position(), byteCount);
         return byteCount;
-	}
-	
-	
-	public String toString() {
-		return socket.getInetAddress().getHostAddress() + ":" + socket.getPort();
-	}
+    }
+
+    public String toString() {
+        return socket.getInetAddress().getHostAddress() + ":"
+                + socket.getPort();
+    }
 
     /**
      * @return Returns the sslMode.
@@ -186,12 +187,13 @@ public class SocketProvider {
     }
 
     /**
-     * @param sslMode The sslMode to set.
+     * @param sslMode
+     *            The sslMode to set.
      */
     public void setSSLMode(int sslMode) {
         this.sslMode = sslMode;
     }
-    
+
     /**
      * @return Returns the isControllConnection.
      */
@@ -200,21 +202,23 @@ public class SocketProvider {
     }
 
     /**
-     * @param isControllConnection The isControllConnection to set.
+     * @param isControllConnection
+     *            The isControllConnection to set.
      */
     public void setControllConnection(boolean isControllConnection) {
         this.isControllConnection = isControllConnection;
     }
-    
+
     public void negotiate() {
         try {
-            supporter = new SSLSupport(socket, getSSLMode(),isControllConnection(),maxDownload,maxUpload);
+            supporter = new SSLSupport(socket, getSSLMode(),
+                    isControllConnection(), maxDownload, maxUpload);
             supporter.initEngineAndBuffers();
             supporter.handshake();
-            //TODO: throw exception and handle it !!
-        }catch (Exception e) {
-            log.fatal(e,e);
+            // TODO: throw exception and handle it !!
+        } catch (Exception e) {
+            log.fatal(e, e);
         }
     }
-    
+
 }

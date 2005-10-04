@@ -1,21 +1,21 @@
 /**                                                                         *
-*  This file is part of ftp4che.                                            *
-*                                                                           *
-*  This library is free software; you can redistribute it and/or modify it  *
-*  under the terms of the GNU General Public License as published    		*
-*  by the Free Software Foundation; either version 2 of the License, or     *
-*  (at your option) any later version.                                      *
-*                                                                           *
-*  This library is distributed in the hope that it will be useful, but      *
-*  WITHOUT ANY WARRANTY; without even the implied warranty of               *
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        *
-*  General Public License for more details.                          		*
-*                                                                           *
-*  You should have received a copy of the GNU General Public		        *
-*  License along with this library; if not, write to the Free Software      *
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
-*                                                                           *
-*****************************************************************************/
+ *  This file is part of ftp4che.                                            *
+ *                                                                           *
+ *  This library is free software; you can redistribute it and/or modify it  *
+ *  under the terms of the GNU General Public License as published    		*
+ *  by the Free Software Foundation; either version 2 of the License, or     *
+ *  (at your option) any later version.                                      *
+ *                                                                           *
+ *  This library is distributed in the hope that it will be useful, but      *
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of               *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        *
+ *  General Public License for more details.                          		*
+ *                                                                           *
+ *  You should have received a copy of the GNU General Public		        *
+ *  License along with this library; if not, write to the Free Software      *
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
+ *                                                                           *
+ *****************************************************************************/
 package org.ftp4che.impl;
 
 import java.io.IOException;
@@ -33,55 +33,54 @@ import org.ftp4che.reply.Reply;
 
 /**
  * @author arnold
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * 
+ * TODO To change the template for this generated type comment go to Window -
+ * Preferences - Java - Code Style - Code Templates
  */
 public class NormalFTPConnection extends FTPConnection {
-    
+
     Logger log = Logger.getLogger(NormalFTPConnection.class.getName());
-    
-    public NormalFTPConnection()
-    {
+
+    public NormalFTPConnection() {
         super();
     }
-    
+
     @Override
-    public void connect() throws NotConnectedException,IOException,AuthenticationNotSupportedException,FtpIOException,FtpWorkflowException
-    {
+    public void connect() throws NotConnectedException, IOException,
+            AuthenticationNotSupportedException, FtpIOException,
+            FtpWorkflowException {
         socketProvider = new SocketProvider();
         // Only for logging
-        String hostAndPort = getAddress().getHostName() + ":" + getAddress().getPort();
-        try
-        {
-            socketProvider.connect(getAddress(), getProxy(), getDownloadBandwidth(), getUploadBandwidth());
+        String hostAndPort = getAddress().getHostName() + ":"
+                + getAddress().getPort();
+        try {
+            socketProvider.connect(getAddress(), getProxy(),
+                    getDownloadBandwidth(), getUploadBandwidth());
             log.debug("connected to:" + hostAndPort);
             socketProvider.socket().setSoTimeout(getTimeout());
             socketProvider.socket().setKeepAlive(true);
-        }catch (IOException ioe)
-        {
+        } catch (IOException ioe) {
             String error = "Error connection to:" + hostAndPort;
-            log.error(error,ioe);
+            log.error(error, ioe);
             throw new NotConnectedException(error);
         }
         (ReplyWorker.readReply(socketProvider)).dumpReply();
-        Reply reply = sendCommand(new Command(Command.USER,getUser()));
+        Reply reply = sendCommand(new Command(Command.USER, getUser()));
         reply.dumpReply();
         reply.validate();
-        if (getPassword() != null && getPassword().length() > 0)
-        {
+        if (getPassword() != null && getPassword().length() > 0) {
             reply = sendCommand(new Command(Command.PASS, getPassword()));
             reply.dumpReply();
             reply.validate();
         }
-        if (getAccount() != null && getAccount().length() > 0)
-        {
+        if (getAccount() != null && getAccount().length() > 0) {
             reply = sendCommand(new Command(Command.ACCT, getAccount()));
             reply.dumpReply();
             reply.validate();
         }
         this.setConnectionStatus(FTPConnection.CONNECTED);
-        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(), null));
+        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(),
+                null));
         checkSystem();
     }
 }
