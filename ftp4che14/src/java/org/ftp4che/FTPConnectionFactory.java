@@ -90,18 +90,18 @@ public class FTPConnectionFactory {
             downloadBandwidth = Integer.parseInt(pt.getProperty("connection.downloadbw"));
         if(pt.getProperty("connection.uploadbw") != null)
             uploadBandwidth = Integer.parseInt(pt.getProperty("connection.uploadbw"));
-        if(pt.getProperty("connection.proxy_type") != null)
-        	proxyType = pt.getProperty("connection.proxy_type");
-        if(pt.getProperty("connection.proxy_host") != null)
-        	proxyHost = pt.getProperty("connection.proxy_host");
-        if(pt.getProperty("connection.proxy_port") != null)
-        	proxyPort = Integer.parseInt(pt.getProperty("connection.proxy_port"));
-        if(pt.getProperty("connection.proxy_user") != null)
-        	proxyUser = pt.getProperty("connection.proxy_user");
-        if(pt.getProperty("connection.proxy_pass") != null)
-        	proxyPass = pt.getProperty("connection.proxy_pass");
-        if(pt.getProperty("connection.proxy_timeout") != null)
-        	proxyTimeout = Integer.parseInt(pt.getProperty("connection.proxy_timeout"));
+        if(pt.getProperty("proxy.type") != null)
+        	proxyType = pt.getProperty("proxy.type");
+        if(pt.getProperty("proxy.host") != null)
+        	proxyHost = pt.getProperty("proxy.host");
+        if(pt.getProperty("proxy.port") != null)
+        	proxyPort = Integer.parseInt(pt.getProperty("proxy.port"));
+        if(pt.getProperty("proxy.user") != null)
+        	proxyUser = pt.getProperty("proxy.user");
+        if(pt.getProperty("proxy.pass") != null)
+        	proxyPass = pt.getProperty("proxy.pass");
+        if(pt.getProperty("proxy.timeout") != null)
+        	proxyTimeout = Integer.parseInt(pt.getProperty("proxy.timeout"));
 
         
         return FTPConnectionFactory.getInstance(pt.getProperty("connection.host"),
