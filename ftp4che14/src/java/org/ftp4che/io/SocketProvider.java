@@ -25,6 +25,10 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
+
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.TrustManager;
+
 import org.apache.log4j.Logger;
 import org.ftp4che.FTPConnection;
 import org.ftp4che.proxy.Proxy;
@@ -209,10 +213,12 @@ public class SocketProvider {
         this.isControllConnection = isControllConnection;
     }
 
-    public void negotiate() {
+    public void negotiate(TrustManager[] trustManagers,KeyManager[] keyManagers) {
         try {
             supporter = new SSLSupport(socket, getSSLMode(),
                     isControllConnection(), maxDownload, maxUpload);
+            supporter.setTrustManagers(trustManagers);
+            supporter.setKeyManagers(keyManagers);
             supporter.initEngineAndBuffers();
             supporter.handshake();
             // TODO: throw exception and handle it !!

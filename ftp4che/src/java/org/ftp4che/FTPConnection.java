@@ -31,6 +31,8 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.net.ServerSocketFactory;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.TrustManager;
 import javax.swing.event.EventListenerList;
 
 import org.apache.log4j.Logger;
@@ -173,6 +175,10 @@ public abstract class FTPConnection {
     protected FTPFileFactory factory;
 
     private String workingDirectory = null;
+    
+    private TrustManager[] trustManagers = {};
+    
+    private KeyManager[] keyManagers = {};
 
     /**
      * @author arnold,kurt
@@ -702,7 +708,7 @@ public abstract class FTPConnection {
         provider.setSSLMode(getConnectionType());
         if (connectionType == FTPConnection.AUTH_TLS_FTP_CONNECTION
                 || connectionType == FTPConnection.AUTH_SSL_FTP_CONNECTION)
-            provider.negotiate();
+            provider.negotiate(this.getTrustManagers(),this.getKeyManagers());
 
         return provider;
 
@@ -1090,7 +1096,7 @@ public abstract class FTPConnection {
 
         if (connectionType == FTPConnection.AUTH_TLS_FTP_CONNECTION
                 || connectionType == FTPConnection.AUTH_SSL_FTP_CONNECTION)
-            provider.negotiate();
+            provider.negotiate(this.getTrustManagers(),this.getKeyManagers());
 
         return provider;
     }
@@ -1413,5 +1419,33 @@ public abstract class FTPConnection {
             // ignore
             factory = new FTPFileFactory("UNKNOWN");
         }
+    }
+
+    /**
+     * @return Returns the trustManagers.
+     */
+    public TrustManager[] getTrustManagers() {
+        return trustManagers;
+    }
+
+    /**
+     * @param trustManagers The trustManagers to set.
+     */
+    public void setTrustManagers(TrustManager[] trustManagers) {
+        this.trustManagers = trustManagers;
+    }
+
+    /**
+     * @return Returns the keyManagers.
+     */
+    public KeyManager[] getKeyManagers() {
+        return keyManagers;
+    }
+
+    /**
+     * @param keyManagers The keyManagers to set.
+     */
+    public void setKeyManagers(KeyManager[] keyManagers) {
+        this.keyManagers = keyManagers;
     }
 }

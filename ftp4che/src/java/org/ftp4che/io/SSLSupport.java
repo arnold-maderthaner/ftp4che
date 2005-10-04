@@ -27,6 +27,7 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 
+import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSocket;
@@ -59,6 +60,9 @@ public class SSLSupport {
 
     private int maxDownload, maxUpload;
 
+    private TrustManager[] trustManagers = null;
+    private KeyManager[] keyManagers = null;
+    
     public SSLSupport(Socket socket, int mode, boolean controllConnection,
             int maxDownload, int maxUpload) {
         setMode(mode);
@@ -76,7 +80,8 @@ public class SSLSupport {
             context = SSLContext.getInstance("SSL");
         else
             context = SSLContext.getInstance("TLS");
-        TrustManager[] trustManagers = new TrustManager[] { new EasyX509TrustManager(
+        if(trustManagers == null || trustManagers.length == 0)
+            trustManagers = new TrustManager[] { new EasyX509TrustManager(
                 null) };
         context.init(null, trustManagers, null);
         SSLSocketFactory sslFact = context.getSocketFactory();
@@ -160,5 +165,19 @@ public class SSLSupport {
      */
     public void setControllConnection(boolean controllConnection) {
         this.controllConnection = controllConnection;
+    }
+
+    /**
+     * @param keyManagers The keyManagers to set.
+     */
+    public void setKeyManagers(KeyManager[] keyManagers) {
+        this.keyManagers = keyManagers;
+    }
+
+    /**
+     * @param trustManagers The trustManagers to set.
+     */
+    public void setTrustManagers(TrustManager[] trustManagers) {
+        this.trustManagers = trustManagers;
     }
 }

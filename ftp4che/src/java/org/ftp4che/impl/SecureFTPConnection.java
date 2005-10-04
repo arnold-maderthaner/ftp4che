@@ -94,7 +94,7 @@ public class SecureFTPConnection extends FTPConnection {
         if (authCommand == null || ReplyCode.isPositiveCompletionReply(reply)) {
             try {
                 socketProvider.setSSLMode(getConnectionType());
-                socketProvider.negotiate();
+                socketProvider.negotiate(this.getTrustManagers(),this.getKeyManagers());
                 if (authCommand == null) {
                     // We are in implicit mode and must read the initial reply
                     (ReplyWorker.readReply(socketProvider)).dumpReply();
