@@ -24,6 +24,9 @@ import java.util.Properties;
 import org.ftp4che.exception.ConfigurationException;
 import org.ftp4che.impl.SecureFTPConnection;
 import org.ftp4che.impl.NormalFTPConnection;
+import org.ftp4che.proxy.Proxy;
+import org.ftp4che.proxy.Socks4;
+import org.ftp4che.proxy.Socks5;
 
 /**
  * @author arnold
@@ -60,6 +63,9 @@ public class FTPConnectionFactory {
         boolean passive = true;
         int downloadBandwidth = Integer.MAX_VALUE;
         int uploadBandwidth = Integer.MAX_VALUE;
+        String proxyType = null, proxyHost = null, proxyUser = null, proxyPass = null;
+        int proxyPort = -1, proxyTimeout = -1;
+        
         if(pt.getProperty("connection.port") != null)
             port = Integer.parseInt(pt.getProperty("connection.port"));
         if(pt.getProperty("connection.timeout") != null)
@@ -84,6 +90,22 @@ public class FTPConnectionFactory {
             downloadBandwidth = Integer.parseInt(pt.getProperty("connection.downloadbw"));
         if(pt.getProperty("connection.uploadbw") != null)
             uploadBandwidth = Integer.parseInt(pt.getProperty("connection.uploadbw"));
+        if(pt.getProperty("connection.downloadbw") != null)
+            downloadBandwidth = Integer.parseInt(pt.getProperty("connection.downloadbw"));
+        if(pt.getProperty("connection.uploadbw") != null)
+            uploadBandwidth = Integer.parseInt(pt.getProperty("connection.uploadbw"));
+        if(pt.getProperty("proxy.type") != null)
+            proxyType = pt.getProperty("proxy.type");
+        if(pt.getProperty("proxy.host") != null)
+            proxyHost = pt.getProperty("proxy.host");
+        if(pt.getProperty("proxy.port") != null)
+            proxyPort = Integer.parseInt(pt.getProperty("proxy.port"));
+        if(pt.getProperty("proxy.user") != null)
+            proxyUser = pt.getProperty("proxy.user");
+        if(pt.getProperty("proxy.pass") != null)
+            proxyPass = pt.getProperty("proxy.pass");
+        if(pt.getProperty("proxy.timeout") != null)
+            proxyTimeout = Integer.parseInt(pt.getProperty("proxy.timeout"));
         
         return FTPConnectionFactory.getInstance(pt.getProperty("connection.host"),
                                                 port,
@@ -94,7 +116,13 @@ public class FTPConnectionFactory {
                                                 connectionType,
                                                 passive,
                                                 downloadBandwidth,
-                                                uploadBandwidth);
+                                                uploadBandwidth,
+                                                proxyType,
+                                                proxyHost,
+                                                proxyPort,
+                                                proxyUser,
+                                                proxyPass,
+                                                proxyTimeout);
     
     }
 
@@ -116,7 +144,7 @@ public class FTPConnectionFactory {
      */
     public static FTPConnection getInstance(String host,int port,String user,String password,String account,int timeout,int connectionType,boolean passiveMode) throws ConfigurationException
     {
-        return FTPConnectionFactory.getInstance(host,port,user,password,null,10000,connectionType,passiveMode,FTPConnection.MAX_DOWNLOAD_BANDWIDTH, FTPConnection.MAX_UPLOAD_BANDWIDTH);
+        return FTPConnectionFactory.getInstance(host,port,user,password,null,10000,connectionType,passiveMode,FTPConnection.MAX_DOWNLOAD_BANDWIDTH, FTPConnection.MAX_UPLOAD_BANDWIDTH, null, null, -1, null, null, -1);
     }
     
     /**
@@ -133,7 +161,7 @@ public class FTPConnectionFactory {
      * @throws ConfigurationException will be thrown if a parameter is missing or invalid
      * @author arnold,kurt
      */
-    public static FTPConnection getInstance(String host,int port,String user,String password,String account,int timeout,int connectionType,boolean passiveMode,int maxDownloadBandwidth, int maxUploadBandwidth) throws ConfigurationException
+    public static FTPConnection getInstance(String host,int port,String user,String password,String account,int timeout,int connectionType,boolean passiveMode,int maxDownloadBandwidth, int maxUploadBandwidth, String proxyType, String proxyHost, int proxyPort, String proxyUser, String proxyPass, int proxyTimeout) throws ConfigurationException
     {
         FTPConnection connection = null;
         if(connectionType == FTPConnection.FTP_CONNECTION)
@@ -160,6 +188,15 @@ public class FTPConnectionFactory {
         connection.setPassiveMode(passiveMode);
         connection.setDownloadBandwidth(maxDownloadBandwidth);
         connection.setUploadBandwidth(maxUploadBandwidth);
+        
+        Proxy proxy = null;
+        if (proxyType.equalsIgnoreCase("SOCKS4")) {
+            proxy = new Socks4(proxyHost, proxyPort, proxyTimeout, proxyUser);
+        }else if (proxyType.equalsIgnoreCase("SOCKS5")) {
+            proxy = new Socks5(proxyHost, proxyPort, proxyUser, proxyPass);
+        }
+        
+        connection.setProxy(proxy);
         
         return connection;
     }

@@ -21,11 +21,13 @@ package org.ftp4che.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import org.apache.log4j.Logger;
 import org.ftp4che.FTPConnection;
+import org.ftp4che.proxy.Proxy;
 
 public class SocketProvider {
 
@@ -96,8 +98,17 @@ public class SocketProvider {
 //	    connect(remote, FTPConnection.MAX_DOWNLOAD_BANDWIDTH, FTPConnection.MAX_UPLOAD_BANDWIDTH);
 //	}
     
-    public void connect( SocketAddress remote, int maxDownload, int maxUpload ) throws IOException {
-        socket.connect(remote);
+    public void connect( SocketAddress remote, Proxy proxy, int maxDownload, int maxUpload ) throws IOException {
+        
+        if (proxy == null) {
+            socket.connect(remote);
+        } else if (proxy != null && isControllConnection() == true) {
+            InetSocketAddress isa = (InetSocketAddress) remote;
+            socket = proxy.connect(isa.getAddress().getHostAddress(), isa.getPort());
+        } else if (proxy != null && isControllConnection == false) {
+            socket = proxy.bind((InetSocketAddress) remote);
+        }
+        
         this.maxDownload = maxDownload;
         this.maxUpload = maxUpload;
         initStreams();

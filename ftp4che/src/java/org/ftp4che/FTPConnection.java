@@ -50,6 +50,7 @@ import org.ftp4che.exception.NotConnectedException;
 import org.ftp4che.exception.UnkownReplyStateException;
 import org.ftp4che.io.ReplyWorker;
 import org.ftp4che.io.SocketProvider;
+import org.ftp4che.proxy.Proxy;
 import org.ftp4che.reply.Reply;
 import org.ftp4che.util.FTPFile;
 import org.ftp4che.util.ReplyFormatter;
@@ -137,6 +138,7 @@ public abstract class FTPConnection {
     private CharBuffer controlBuffer = CharBuffer.allocate(1024);
     protected SocketProvider socketProvider = null;
     private int connectionStatus = UNKNOWN;
+    private Proxy proxy = null;
     
     /**
      * @author arnold,kurt
@@ -807,7 +809,7 @@ public abstract class FTPConnection {
     {
         InetSocketAddress dataSocket = sendPassiveMode();
         SocketProvider provider = new SocketProvider(false);
-        provider.connect(dataSocket, getDownloadBandwidth(), getUploadBandwidth());
+        provider.connect(dataSocket, getProxy(), getDownloadBandwidth(), getUploadBandwidth());
         provider.setSSLMode(getConnectionType());
         
         commandReply.setLines(sendCommand(command).getLines());
@@ -1085,5 +1087,17 @@ public abstract class FTPConnection {
         Reply reply = sendCommand(command);
         reply.dumpReply();
         reply.validate();
+    }
+    /**
+     * @return Returns the proxy.
+     */
+    public Proxy getProxy() {
+        return proxy;
+    }
+    /**
+     * @param proxy The proxy to set.
+     */
+    public void setProxy(Proxy proxy) {
+        this.proxy = proxy;
     }
 }
