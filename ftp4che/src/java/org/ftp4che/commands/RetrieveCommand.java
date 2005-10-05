@@ -31,6 +31,8 @@ public class RetrieveCommand extends DataConnectionCommand {
     private FTPFile fromFile;
 
     private FTPFile toFile;
+    
+    private long resumePosition = -1;
 
     // TODO: throw Exception if fromFile not Exists
 
@@ -94,5 +96,13 @@ public class RetrieveCommand extends DataConnectionCommand {
     public void setToFile(FTPFile toFile) {
         this.toFile = toFile;
     }
+
+	public long getResumePosition() {
+		return resumePosition;
+	}
+
+	public void setResumePosition(long resumePosition) {
+		this.resumePosition = resumePosition;
+	}
 
 }

@@ -172,6 +172,22 @@ public class ReplyWorker extends Thread {
                     FileOutputStream out = new FileOutputStream(retrieveCommand
                             .getToFile().getFile());
                     FileChannel channel = out.getChannel();
+                    if(retrieveCommand.getResumePosition() != -1)
+                    {
+                    	try
+                    	{
+                    		channel.position(retrieveCommand.getResumePosition());
+                    	}catch (IOException ioe)
+                    	{
+                    		 setCaughtException(ioe);
+                             setStatus(ReplyWorker.ERROR_IO_EXCEPTION);
+                             try
+                     		 {
+                     			channel.close();
+                     		 }catch (IOException ioe2) {}
+                     		 return;
+                    	}
+                    }
                     int amount;
                     try {
                         while ((amount = getSocketProvider().read(buffer)) != -1) {
@@ -197,6 +213,13 @@ public class ReplyWorker extends Thread {
                     } catch (IOException ioe) {
                         setCaughtException(ioe);
                         setStatus(ReplyWorker.ERROR_IO_EXCEPTION);
+                    }finally
+                    {
+                    	try
+                    	{
+                    		channel.close();
+                            getSocketProvider().close();
+                    	}catch (Exception e) {}
                     }
 
                 } catch (FileNotFoundException fnfe) {
@@ -218,6 +241,22 @@ public class ReplyWorker extends Thread {
                     FileInputStream in = new FileInputStream(storeCommand
                             .getFromFile().getFile());
                     FileChannel channel = in.getChannel();
+                    if(storeCommand.getResumePosition() != -1)
+                    {
+                    	try
+                    	{
+                    		channel.position(storeCommand.getResumePosition());
+                    	}catch (IOException ioe)
+                    	{
+                    		 setCaughtException(ioe);
+                             setStatus(ReplyWorker.ERROR_IO_EXCEPTION);
+                             try
+                     		 {
+                     			channel.close();
+                     		 }catch (IOException ioe2) {}
+                     		 return;
+                    	}
+                    }
                     int amount;
                     int socketWrite;
                     int socketAmount = 0;
@@ -250,6 +289,13 @@ public class ReplyWorker extends Thread {
                     } catch (IOException ioe) {
                         setCaughtException(ioe);
                         setStatus(ReplyWorker.ERROR_IO_EXCEPTION);
+                    }finally
+                    {
+                    	try
+                    	{
+                    		channel.close();
+                            getSocketProvider().close();
+                    	}catch (Exception e) {}
                     }
 
                 } catch (FileNotFoundException fnfe) {

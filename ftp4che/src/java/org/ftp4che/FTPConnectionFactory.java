@@ -28,6 +28,7 @@ import org.ftp4che.proxy.Proxy;
 import org.ftp4che.proxy.Socks4;
 import org.ftp4che.proxy.Socks5;
 
+
 /**
  * @author arnold
  * 
@@ -129,14 +130,16 @@ public class FTPConnectionFactory {
             proxyPass = pt.getProperty("proxy.pass");
         if (pt.getProperty("proxy.timeout") != null)
             proxyTimeout = Integer.parseInt(pt.getProperty("proxy.timeout"));
-
+        boolean tryResume = false;
+        if (pt.getProperty("connection.resume") != null && pt.getProperty("connection.resume").equals("true"))
+        	tryResume = true;
         return FTPConnectionFactory.getInstance(pt
                 .getProperty("connection.host"), port, pt
                 .getProperty("user.login"), pt.getProperty("user.password"), pt
                 .getProperty("user.account"), connectionTimeout,
                 connectionType, passive, downloadBandwidth, uploadBandwidth,
                 proxyType, proxyHost, proxyPort, proxyUser, proxyPass,
-                proxyTimeout);
+                proxyTimeout,tryResume);
 
     }
 
@@ -178,7 +181,7 @@ public class FTPConnectionFactory {
                 null, 10000, connectionType, passiveMode,
                 FTPConnection.MAX_DOWNLOAD_BANDWIDTH,
                 FTPConnection.MAX_UPLOAD_BANDWIDTH, null, null, -1, null, null,
-                -1);
+                -1,false);
     }
 
     /**
@@ -212,7 +215,7 @@ public class FTPConnectionFactory {
             String password, String account, int timeout, int connectionType,
             boolean passiveMode, int maxDownloadBandwidth,
             int maxUploadBandwidth, String proxyType, String proxyHost,
-            int proxyPort, String proxyUser, String proxyPass, int proxyTimeout)
+            int proxyPort, String proxyUser, String proxyPass, int proxyTimeout,boolean tryResume)
             throws ConfigurationException {
         FTPConnection connection = null;
         if (connectionType == FTPConnection.FTP_CONNECTION) {
@@ -235,7 +238,8 @@ public class FTPConnectionFactory {
         connection.setPassiveMode(passiveMode);
         connection.setDownloadBandwidth(maxDownloadBandwidth);
         connection.setUploadBandwidth(maxUploadBandwidth);
-
+        connection.setTryResume(tryResume);
+        
         Proxy proxy = null;
         if (proxyType != null) {
             if (proxyType.equalsIgnoreCase("SOCKS4")) {
