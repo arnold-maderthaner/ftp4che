@@ -26,17 +26,16 @@ public class UnixFileParser implements FileParser {
 
     private static final int MIN_COUNT = 8;
 
-    private SimpleDateFormat formatter1;
+    private SimpleDateFormat formatter;
+    private Locale locale;
 
-    private SimpleDateFormat formatter2;
 
     public UnixFileParser() {
-        generateDateParsers(Locale.getDefault());
+        setLocale(Locale.getDefault());
     }
 
-    public void generateDateParsers(Locale locale) {
-        formatter1 = new SimpleDateFormat(DATE_FORMAT_STRING1, locale);
-        formatter2 = new SimpleDateFormat(DATE_FORMAT_STRING2, locale);
+    public void setLocale(Locale locale) {
+        this.locale = locale;
     }
 
     public static boolean isValidLine(String serverLine) {
@@ -70,31 +69,27 @@ public class UnixFileParser implements FileParser {
 
         String mode = fields[index++];
         char ch = mode.charAt(0);
-        boolean directory = false;
-        boolean link = false;
-        if (ch == NORMAL_DIRECTORY_IDENTIFICATION)
-            directory = true;
-        else if (ch == SYMBOLIC_LINK_IDENTIFICATION)
-            link = true;
-
+        boolean directory = (ch == NORMAL_DIRECTORY_IDENTIFICATION);
+        boolean link = (ch == SYMBOLIC_LINK_IDENTIFICATION);
+       
         // lookup for the linkCount
         int linkCount = 0;
         if (Character.isDigit(fields[index].charAt(0))) {
             try {
                 linkCount = Integer.parseInt(fields[index++]);
             } catch (NumberFormatException ignore) {
+            	
             }
-        }
+        } else if(fields[index].charAt(0) == '[')
+    		throw new ParseException("Unknown field found: " + fields[index],0);
 
         // owners and groups
         String owner = fields[index++];
         String group = fields[index++];
 
         // size
-        long size = 0L;
+        long size = -1;
         String sizeString = fields[index];
-        // some listings don't have group - make group -> size in
-        // this case, and use the sizeStr for the start of the date
         if (!Character.isDigit(sizeString.charAt(0))
                 && Character.isDigit(group.charAt(0))) {
             sizeString = group;
@@ -119,12 +114,13 @@ public class UnixFileParser implements FileParser {
             int year = cal.get(Calendar.YEAR);
             dateTime.append(year).append('-').append(field);
             try {
-                date = formatter2.parse(dateTime.toString());
+            	formatter = new SimpleDateFormat(DATE_FORMAT_STRING2,locale);
+                date = formatter.parse(dateTime.toString());
             } catch (ParseException pe) {
-                // Workaround if your locale is != ENGLISH
-                formatter2 = new SimpleDateFormat(DATE_FORMAT_STRING2,
+                formatter = new SimpleDateFormat(DATE_FORMAT_STRING2,
                         Locale.ENGLISH);
-                date = formatter2.parse(dateTime.toString());
+                date = formatter.parse(dateTime.toString());
+                setLocale(Locale.ENGLISH);
             }
 
             if (date.after(cal.getTime())) {
@@ -134,7 +130,8 @@ public class UnixFileParser implements FileParser {
             }
         } else {
             dateTime.append(field);
-            date = formatter1.parse(dateTime.toString());
+            formatter = new SimpleDateFormat(DATE_FORMAT_STRING1,locale);
+            date = formatter.parse(dateTime.toString());
         }
 
         String name = null;
@@ -163,7 +160,7 @@ public class UnixFileParser implements FileParser {
                     int len = SYMBOLIC_LINK_NAME.length();
                     name = remainder.substring(0, pos).trim();
                     if (pos + len < remainder.length())
-                        linkedname = remainder.substring(pos + len);
+                        linkedname = remainder.substring(pos + len + 1);
                 }
             }
         } else {

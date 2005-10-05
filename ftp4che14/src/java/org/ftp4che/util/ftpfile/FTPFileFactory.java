@@ -28,7 +28,7 @@ public class FTPFileFactory {
     }
 
     public void generateDateParsers(Locale locale) {
-        parser.generateDateParsers(locale);
+        parser.setLocale(locale);
     }
 
     public String getSystem() {
@@ -36,15 +36,22 @@ public class FTPFileFactory {
     }
 
     public FileParser getParserInstance() {
-        if (system.indexOf(UNIX_IDENTIFICATION) > 0)
+        if (system.indexOf(UNIX_IDENTIFICATION) >= 0)
+        {
+        	log.debug("Found UNIX identification, try to use UNIX file parser");
             return new UnixFileParser();
-        else if (system.indexOf(WINDOWS_IDENTIFICATION) > 0)
+        }
+        else if (system.indexOf(WINDOWS_IDENTIFICATION) >= 0)
+        {
+        	log.debug("Found WINDOWS identification, try to use WINDOWS file parser");
             return new WindowsFileParser();
-        else if (system.indexOf(VMS_IDENTIFICATION) > 0) {
+        }
+        else if (system.indexOf(VMS_IDENTIFICATION) >= 0) {
+        	log.debug("Found VMS identifictionat, try to use VMS file parser");
             return new VMSFileParser();
         } else {
-            log.warn("Unknown SYST '" + system + "', using UnknownFileParser");
-            return new UnknownFileParser();
+            log.warn("Unknown SYST '" + system + "', trying UnixFileParsers");
+            return new UnixFileParser();
         }
     }
 

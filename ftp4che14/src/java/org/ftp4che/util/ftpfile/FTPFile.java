@@ -15,6 +15,8 @@ public class FTPFile implements Comparable {
     public static final int WINDOWS = 1;
 
     public final static int VMS = 2;
+    
+    public final static int NETWARE = 3;
 
     private int fileType;
 

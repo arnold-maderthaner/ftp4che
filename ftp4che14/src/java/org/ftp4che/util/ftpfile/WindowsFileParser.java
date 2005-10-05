@@ -14,69 +14,58 @@ public class WindowsFileParser implements FileParser {
     private static final int MIN_COUNT = 4;
 
     private static final String DATE_FORMAT_STRING1 = "MM-dd-yy hh:mma";
-
+    
+    private Locale locale;
+    
     public WindowsFileParser() {
-        generateDateParsers(Locale.getDefault());
+        setLocale(Locale.getDefault());
     }
 
-    public void generateDateParsers(Locale locale) {
-        formatter = new SimpleDateFormat(DATE_FORMAT_STRING1, locale);
+    public void setLocale(Locale locale) {
+        this.locale = locale;
     }
 
     public FTPFile parse(String serverLine, String parentDirectory)
             throws ParseException {
         StringTokenizer st = new StringTokenizer(serverLine, " ");
-        String[] fields = new String[st.countTokens()];
-        int k = 0;
-        while (st.hasMoreTokens()) {
-            fields[k++] = st.nextToken();
-        }
 
-        if (MIN_COUNT > fields.length)
-            throw new ParseException("Wrong number of fields: " + fields.length
+        if (MIN_COUNT > st.countTokens())
+            throw new ParseException("Wrong number of fields: " + st.countTokens()
                     + " expected minimum:" + MIN_COUNT, 0);
-
-        Date date = formatter.parse(fields[0] + " " + fields[1]);
+        Date date = null;
+        String dateToken = st.nextToken();
+        String timeToken = st.nextToken();
+        try
+        {
+        	formatter = new SimpleDateFormat(DATE_FORMAT_STRING1, locale);
+        	date = formatter.parse(dateToken + " " + timeToken);
+        }catch (ParseException pe)
+        {
+        	formatter = new SimpleDateFormat(DATE_FORMAT_STRING1, Locale.ENGLISH);
+        	date = formatter.parse(dateToken + " " + timeToken);
+        	setLocale(Locale.ENGLISH);
+        }
         boolean directory = false;
-        long size = 0L;
-        if (fields[2].equalsIgnoreCase(DIR))
+        long size = -1;
+        String dirSizeToken = st.nextToken();
+        if (dirSizeToken.equalsIgnoreCase(DIR))
             directory = true;
         else {
             try {
-                size = Long.parseLong(fields[2]);
+                size = Long.parseLong(dirSizeToken);
             } catch (NumberFormatException ex) {
-                throw new ParseException("Failed to parse size: " + fields[2],
+                throw new ParseException("Failed to parse size: " + dirSizeToken,
                         0);
             }
         }
 
-        // we've got to find the starting point of the name. We
-        // do this by finding the pos of all the date/time fields, then
-        // the name - to ensure we don't get tricked up by a date or dir the
-        // same as the filename, for example
-        int pos = 0;
-        boolean ok = true;
-        for (int i = 0; i < 3; i++) {
-            pos = serverLine.indexOf(fields[i], pos);
-            if (pos < 0) {
-                ok = false;
-                break;
-            } else { // move on the length of the field
-                pos += fields[i].length();
-            }
-        }
-        if (ok) {
-            String name = serverLine.substring(pos).trim();
-            FTPFile file = new FTPFile(FTPFile.WINDOWS, parentDirectory, name,
-                    serverLine);
-            file.setSize(size);
-            file.setDate(date);
-            file.setDirectory(directory);
-            return file;
-        } else {
-            throw new ParseException("Failed to retrieve name: " + serverLine,
-                    0);
-        }
+        String name = st.nextToken();
+		FTPFile file = new FTPFile(FTPFile.WINDOWS, parentDirectory, name,
+				serverLine);
+		file.setSize(size);
+		file.setDate(date);
+		file.setDirectory(directory);
+		return file;
     }
 
 }

@@ -21,25 +21,17 @@ public class VMSFileParser implements FileParser {
 
     private final static String DATE_FORMAT_STRING2 = "dd-MMM-yyyy HH:mm";
 
-    private SimpleDateFormat formatter1;
-
-    private SimpleDateFormat formatter2;
+    private SimpleDateFormat formatter;
+    
+    private Locale locale;
 
     public VMSFileParser() {
-        generateDateParsers(Locale.getDefault());
+        setLocale(Locale.getDefault());
     }
 
     /**
-     * Parse server supplied string
-     * 
-     * OUTPUT: <begin>
-     * 
-     * Directory <dir>
-     * 
-     * <filename> used/allocated dd-MMM-yyyy HH:mm:ss [unknown] (PERMS)
-     * <filename> used/allocated dd-MMM-yyyy HH:mm:ss [unknown] (PERMS) ...
-     * 
-     * Total of <> files, <>/<> blocks
+     *00README.TXT;1      2 30-DEC-1996 17:44 [SYSTEM] (RWED,RWED,RE,RE)
+     *CORE.DIR;1          1  8-SEP-1996 16:09 [SYSTEM] (RWE,RWE,RE,RE)
      * 
      */
     public FTPFile parse(String serverLine, String parentDirectory)
@@ -76,25 +68,14 @@ public class VMSFileParser implements FileParser {
         }
         name = name.substring(0, semiPos);
 
-        // check for version after ;
         String afterSemi = fields[0].substring(semiPos + 1);
-        try {
-            Integer.parseInt(afterSemi);
-            // didn't throw exception yet, must be number
-            // we don't use it currently but we might in future
-        } catch (NumberFormatException ex) {
-            // don't worry about version number
-        }
+        Integer.parseInt(afterSemi);
 
-        // test is dir
         boolean directory = false;
         if (semiPos < 0) {
             semiPos = fields[0].length();
         }
-        if (semiPos <= 4) {
-            // string to small to have a .DIR
-        } else {
-            // look for .DIR
+        if (semiPos >= 4) {
             String tstExtnsn = fields[0].substring(semiPos - 4, semiPos);
             if (tstExtnsn.compareTo(DIR) == 0) {
                 directory = true;
@@ -102,22 +83,38 @@ public class VMSFileParser implements FileParser {
             }
         }
 
-        // 2nd field is size USED/ALLOCATED format
         int slashPos = fields[1].indexOf('/');
         String sizeUsed = fields[1];
         if (slashPos > 0)
             sizeUsed = fields[1].substring(0, slashPos);
         long size = Long.parseLong(sizeUsed) * BLOCKSIZE;
 
-        // 3 & 4 fields are date time
         Date date = null;
         try {
-            date = formatter1.parse(fields[2] + " " + fields[3]);
+        	formatter = new SimpleDateFormat(DATE_FORMAT_STRING1,locale);
+            date = formatter.parse(fields[2] + " " + fields[3]);
         } catch (ParseException ex) {
-            date = formatter2.parse(fields[2] + " " + fields[3]);
+        	try
+        	{
+        		formatter = new SimpleDateFormat(DATE_FORMAT_STRING1,Locale.ENGLISH);
+        		date = formatter.parse(fields[2] + " " + fields[3]);
+        		setLocale(Locale.ENGLISH);
+        	}catch(ParseException ex2)
+        	{
+        		try
+        		{
+        			formatter = new SimpleDateFormat(DATE_FORMAT_STRING2,locale);
+        			date = formatter.parse(fields[2] + " " + fields[3]);
+        		}catch(ParseException ex3)
+        		{
+        			formatter = new SimpleDateFormat(DATE_FORMAT_STRING2,Locale.ENGLISH);
+        			date = formatter.parse(fields[2] + " " + fields[3]);
+        			setLocale(Locale.ENGLISH);
+        		}
+        	}
+        	
         }
 
-        // 5th field is [group,owner]
         String group = null;
         String owner = null;
         if (fields.length >= 5) {
@@ -125,17 +122,17 @@ public class VMSFileParser implements FileParser {
                     && fields[4].charAt(fields[4].length() - 1) == ']') {
                 int commaPos = fields[4].indexOf(',');
                 if (commaPos < 0) {
-                    throw new ParseException(
-                            "Unable to parse [group,owner] field '" + fields[4]
-                                    + "'", 0);
+                    group = fields[4].substring(1,fields[4].length()-1);
                 }
-                group = fields[4].substring(1, commaPos);
-                owner = fields[4].substring(commaPos + 1,
-                        fields[4].length() - 1);
+                else
+                {
+                	group = fields[4].substring(1, commaPos);
+                	owner = fields[4].substring(commaPos + 1,
+                			fields[4].length() - 1);
+                }
             }
         }
 
-        // 6th field is permissions e.g. (RWED,RWED,RE,)
         String mode = null;
         if (fields.length >= 6) {
             if (fields[5].charAt(0) == '('
@@ -155,9 +152,8 @@ public class VMSFileParser implements FileParser {
         return file;
     }
 
-    public void generateDateParsers(Locale locale) {
-        formatter1 = new SimpleDateFormat(DATE_FORMAT_STRING1, locale);
-        formatter2 = new SimpleDateFormat(DATE_FORMAT_STRING2, locale);
+    public void setLocale(Locale locale) {
+        this.locale = locale;
     }
 
 }
