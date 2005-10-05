@@ -5,6 +5,8 @@ import java.text.ParseException;
 import java.util.Locale;
 
 public class LastChanceFileParser implements FileParser {
+	
+	private Locale locale;
 
 	public FTPFile parse(String serverString, String parentDirectory)
 			throws ParseException {
@@ -13,7 +15,7 @@ public class LastChanceFileParser implements FileParser {
 	}
 
 	public void setLocale(Locale locale) {
-		// TODO Auto-generated method stub
+		this.locale = locale;
 
 	}
 
