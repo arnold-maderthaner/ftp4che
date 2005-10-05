@@ -6,13 +6,6 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
-/**
- * Represents a remote OpenVMS file parser. Thanks to Jason Schultz for
- * contributing significantly to this class
- * 
- * @author Bruce Blackshaw
- * @version $Revision: 1.2 $
- */
 public class VMSFileParser implements FileParser {
     private final static String DIR = ".DIR";
 
