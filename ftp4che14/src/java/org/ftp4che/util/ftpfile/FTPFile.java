@@ -67,8 +67,10 @@ public class FTPFile implements Comparable {
 
         if (file.isFile())
             mode += "-";
-        else
+        else {
             mode += "d";
+            setDirectory(true);
+        }
         if (file.canRead())
             mode += "r";
         else
