@@ -66,3 +66,18 @@ STAT -LA
   /* "total 14786" (UNIX) */
   /* "DISK$ANONFTP:[ANONYMOUS]" (VMS) */
   /* "Directory DISK$PCSA:[ANONYM]" (VMS) */
+  
+  
+  
+  
+dir scheiss
+------------
+drwxr-xr-x  2 7        21            512 Nov 21  1988 .forward
+-rw-rw-r--  1 7        11              0 Jun 23  1988 .hushlogin
+drwxrwxr-x  2 0        21            512 Jun  4  1990 Census
+drwxrwxr-x  2 0        120           512 Jan  8 09:36 ClariNet
+... @rm{etc etc} ...
+-rw-rw-r--  1 7        14          42390 May 20 02:24 newthisweek.Z
+... @rm{etc etc} ...
+-rw-rw-r--  1 7        14        2018887 May 21 01:01 uumap.tar.Z
+drwxrwxr-x  2 7        6            1024 May 11 10:58 uunet-info
