@@ -179,6 +179,8 @@ public abstract class FTPConnection {
     private TrustManager[] trustManagers = {};
     
     private KeyManager[] keyManagers = {};
+    
+    private boolean tryResume = false;
 
     /**
      * @author arnold,kurt
@@ -722,6 +724,9 @@ public abstract class FTPConnection {
      * @param toFile
      *            the file object where the file should be stored (on the local
      *            computer)
+     * @param resume
+     * 			  set to true if you want the methode to look for an existing file on the server
+     *            and if size differes, start a resume transfer
      * @throws IOException
      *             will be thrown if there was a communication problem with the
      *             server
@@ -735,7 +740,13 @@ public abstract class FTPConnection {
      *             will be thrown if the specified fromFile is not found on the
      *             server
      */
+    
     public void downloadFile(FTPFile fromFile, FTPFile toFile)
+    throws IOException, FtpWorkflowException, FtpIOException {
+    	downloadFile(fromFile,toFile,false);
+    }
+    
+    public void downloadFile(FTPFile fromFile, FTPFile toFile,boolean resume)
             throws IOException, FtpWorkflowException, FtpIOException {
         setConnectionStatus(RECEIVING_FILE_STARTED);
         fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(),
@@ -753,7 +764,40 @@ public abstract class FTPConnection {
             Command prot = new Command(Command.PROT, "P");
             (sendCommand(prot)).dumpReply();
         }
-
+        if(resume || tryResume)
+        {
+        	if(fromFile.getSize() <= 0)
+        	{
+        		List list = getDirectoryListing(fromFile.getPath());
+        		for(Iterator it = list.iterator(); it.hasNext();)
+        		{
+        			FTPFile file = (FTPFile)it.next();
+        			if(file.getName().equals(fromFile.getName()))
+        				fromFile.setSize(file.getSize());
+        		}
+        	}
+        	if(fromFile.getSize() != toFile.getSize())
+        	{
+        		command.setResumePosition(toFile.getSize());
+        		Command resumeCommand = new Command(Command.REST,""+toFile.getSize());
+        		Reply resumeReply = sendCommand(resumeCommand);
+        		resumeReply.dumpReply();
+        		try
+        		{
+        			resumeReply.validate();
+        		}catch(FtpWorkflowException fwe)
+        		{
+        			log.error("Couldn't resume file, error was: " + fwe.getMessage());
+        		}
+        		catch(FtpIOException fioe)
+        		{
+        			log.error("Couldn't resume file, error was: " + fioe.getMessage());
+        		}
+        	}
+        }
+        //Send TYPE I
+        Command commandType = new Command(Command.TYPE_I);
+        (sendCommand(commandType)).dumpReply();
         Reply commandReply = new Reply();
         if (isPassiveMode()) {
             provider = initDataSocket(command, commandReply);
@@ -843,6 +887,11 @@ public abstract class FTPConnection {
      *             local computer
      */
     public void uploadFile(FTPFile fromFile, FTPFile toFile)
+    throws IOException, FtpWorkflowException, FtpIOException {
+    	uploadFile(fromFile,toFile,false);
+    }
+    
+    public void uploadFile(FTPFile fromFile, FTPFile toFile,boolean resume)
             throws IOException, FtpWorkflowException, FtpIOException {
         setConnectionStatus(SENDING_FILE_STARTED);
         fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(),
@@ -859,6 +908,40 @@ public abstract class FTPConnection {
             Command prot = new Command(Command.PROT, "P");
             (sendCommand(prot)).dumpReply();
         }
+        if(resume || tryResume)
+        {
+        	if(toFile.getSize() <= 0)
+        	{
+        		List list = getDirectoryListing(toFile.getPath());
+        		for(Iterator it = list.iterator(); it.hasNext();)
+        		{
+        			FTPFile file = (FTPFile)it.next();
+        			if(file.getName().equals(toFile.getName()))
+        				toFile.setSize(file.getSize());
+        		}
+        	}
+        	if(fromFile.getSize() != toFile.getSize())
+        	{
+        		command.setResumePosition(toFile.getSize());
+        		Command resumeCommand = new Command(Command.REST,""+toFile.getSize());
+        		Reply resumeReply = sendCommand(resumeCommand);
+        		resumeReply.dumpReply();
+        		try
+        		{
+        			resumeReply.validate();
+        		}catch(FtpWorkflowException fwe)
+        		{
+        			log.error("Couldn't resume file, error was: " + fwe.getMessage());
+        		}
+        		catch(FtpIOException fioe)
+        		{
+        			log.error("Couldn't resume file, error was: " + fioe.getMessage());
+        		}
+        	}
+        }
+        //Send TYPE I
+        Command commandType = new Command(Command.TYPE_I);
+        (sendCommand(commandType)).dumpReply();
 
         Reply commandReply = new Reply();
         if (isPassiveMode()) {
@@ -1452,4 +1535,12 @@ public abstract class FTPConnection {
     public void setKeyManagers(KeyManager[] keyManagers) {
         this.keyManagers = keyManagers;
     }
+
+	public boolean isTryResume() {
+		return tryResume;
+	}
+
+	public void setTryResume(boolean tryResume) {
+		this.tryResume = tryResume;
+	}
 }
