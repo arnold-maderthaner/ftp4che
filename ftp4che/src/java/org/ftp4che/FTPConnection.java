@@ -25,7 +25,6 @@ import java.net.ServerSocket;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -599,12 +598,12 @@ public abstract class FTPConnection {
      */
 
     public List<FTPFile> getDirectoryListing() throws IOException,
-            FtpWorkflowException, FtpIOException, ParseException {
+            FtpWorkflowException, FtpIOException {
         return getDirectoryListing(".");
     }
 
     public List<FTPFile> getFastDirectoryListing() throws IOException,
-            FtpWorkflowException, FtpIOException, ParseException {
+            FtpWorkflowException, FtpIOException {
         String workDirectory = getWorkDirectory();
         Command command = new Command(Command.STAT, "-LA");
         Reply reply = sendCommand(command);
@@ -631,8 +630,7 @@ public abstract class FTPConnection {
      */
 
     public List<FTPFile> getDirectoryListing(String directory)
-            throws IOException, FtpWorkflowException, FtpIOException,
-            ParseException {
+            throws IOException, FtpWorkflowException, FtpIOException {
         ListCommand command = new ListCommand(directory);
         SocketProvider provider = null;
         String workDirectory = getWorkDirectory();
@@ -797,8 +795,7 @@ public abstract class FTPConnection {
      *             server
      */
     public void downloadDirectory(FTPFile srcDir, FTPFile dstDir)
-            throws IOException, FtpWorkflowException, FtpIOException,
-            ParseException {
+            throws IOException, FtpWorkflowException, FtpIOException {
         if (!srcDir.isDirectory())
             throw new FtpFileNotFoundException("Downloading: "
                     + srcDir.getName()
@@ -1043,7 +1040,7 @@ public abstract class FTPConnection {
      */
     public void fxpDirectory(FTPConnection destination, FTPFile srcDir,
             FTPFile dstDir) throws IOException, FtpWorkflowException,
-            FtpIOException, ParseException {
+            FtpIOException {
         if (!srcDir.isDirectory())
             throw new FtpFileNotFoundException("Downloading: "
                     + srcDir.getName()
@@ -1331,7 +1328,7 @@ public abstract class FTPConnection {
      * @throws FtpWorkflowException
      */
     public void deleteDirectory(FTPFile directory) throws IOException,
-            FtpIOException, FtpWorkflowException, ParseException {
+            FtpIOException, FtpWorkflowException {
         if (!directory.isDirectory())
             throw new FtpFileNotFoundException("Deleting: "
                     + directory.getName()

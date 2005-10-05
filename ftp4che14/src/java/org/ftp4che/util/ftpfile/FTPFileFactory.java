@@ -10,130 +10,132 @@ import org.apache.log4j.Logger;
 
 public class FTPFileFactory {
 
-    private static Logger log = Logger.getLogger(FTPFileFactory.class);
+	 private static Logger log = Logger.getLogger(FTPFileFactory.class);
 
-    public static final String UNIX_IDENTIFICATION = "UNIX";
+	    public static final String UNIX_IDENTIFICATION = "UNIX";
 
-    public static final String WINDOWS_IDENTIFICATION = "WINDOWS";
+	    public static final String WINDOWS_IDENTIFICATION = "WINDOWS";
 
-    public static final String VMS_IDENTIFICATION = "VMS";
+	    public static final String VMS_IDENTIFICATION = "VMS";
 
-    private String system;
+	    private String system;
 
-    private FileParser parser = null;
+	    private FileParser parser = null;
 
-    public FTPFileFactory(String system) {
-        this.system = system.toUpperCase();
-        parser = getParserInstance();
-    }
+	    public FTPFileFactory(String system) {
+	        this.system = system.toUpperCase();
+	        parser = getParserInstance();
+	    }
 
-    public void generateDateParsers(Locale locale) {
-        parser.setLocale(locale);
-    }
+	    public void generateDateParsers(Locale locale) {
+	        parser.setLocale(locale);
+	    }
 
-    public String getSystem() {
-        return system;
-    }
+	    public String getSystem() {
+	        return system;
+	    }
 
-    public FileParser getParserInstance() {
-        if (system.indexOf(UNIX_IDENTIFICATION) >= 0)
-        {
-        	log.debug("Found UNIX identification, try to use UNIX file parser");
-            return new UnixFileParser();
-        }
-        else if (system.indexOf(WINDOWS_IDENTIFICATION) >= 0)
-        {
-        	log.debug("Found WINDOWS identification, try to use WINDOWS file parser");
-            return new WindowsFileParser();
-        }
-        else if (system.indexOf(VMS_IDENTIFICATION) >= 0) {
-        	log.debug("Found VMS identifictionat, try to use VMS file parser");
-            return new VMSFileParser();
-        } else {
-            log.warn("Unknown SYST '" + system + "', trying UnixFileParsers");
-            return new UnixFileParser();
-        }
-    }
+	    public FileParser getParserInstance() {
+	        if (system.indexOf(UNIX_IDENTIFICATION) >= 0)
+	        {
+	        	log.debug("Found UNIX identification, try to use UNIX file parser");
+	            return new UnixFileParser();
+	        }
+	        else if (system.indexOf(WINDOWS_IDENTIFICATION) >= 0)
+	        {
+	        	log.debug("Found WINDOWS identification, try to use WINDOWS file parser");
+	            return new WindowsFileParser();
+	        }
+	        else if (system.indexOf(VMS_IDENTIFICATION) >= 0) {
+	        	log.debug("Found VMS identifictionat, try to use VMS file parser");
+	            return new VMSFileParser();
+	        } else {
+	            log.warn("Unknown SYST '" + system + "', trying UnixFileParsers");
+	            return new UnixFileParser();
+	        }
+	    }
 
-    public List parse(List serverLines, String parentPath)
-            throws ParseException {
-        List files = new ArrayList(serverLines.size());
-        for (Iterator it = serverLines.iterator(); it.hasNext();) {
-            String line = (String)it.next();
-            FTPFile file = parser.parse(line, parentPath);
-            if (file != null)
-                files.add(file);
-        }
-        return files;
-    }
+	    public List parse(List serverLines, String parentPath)
+	    {
+	        List files = new ArrayList(serverLines.size());
+	        for (Iterator it = serverLines.iterator(); it.hasNext(); ) {
+	        	String line = (String)it.next();
+	        	FTPFile file = null;
+	        	try
+	        	{
+	        		file = parser.parse(line, parentPath);
+	        	}catch (ParseException pe)
+	        	{
+	        		// Expected parser couldn't parse trying other parsers
+	        		try
+	        		{
+	        			log.debug("Previous file parser couldn't parse listing. Trying a UNIX file parser");
+	        			parser = new UnixFileParser();
+	        			file = parser.parse(line, parentPath);
+	        		}catch (ParseException pe2)
+	        		{
+	        			try
+	            		{
+	        				log.debug("Previous file parser couldn't parse listing. Trying a netware file parser");
+	            			parser = new NetwareFileParser();
+	            			file = parser.parse(line, parentPath);
+	            		}catch (ParseException pe3)
+	            		{
+	            			log.debug("Last chance!!! calling LastChanceFileParser");
+	            			parser = new LastChanceFileParser();
+	            			try
+	            			{
+	            				file = parser.parse(line, parentPath);
+	            			}catch (ParseException pe4)
+	            			{
+	            				//ignored because this was the last chances
+	            			}
+	            		}
+	        		}
+	        	}
+	            if (file != null)
+	                files.add(file);
+	        }
+	        return files;
+	    }
 
-    // /**
-    // * Parse an array of raw file information returned from the
-    // * FTP server
-    // *
-    // * @param files array of strings
-    // * @return array of FTPFile objects
-    // */
-    // public FTPFile[] parse(String[] files) throws ParseException {
-    //               
-    // FTPFile[] temp = new FTPFile[files.length];
-    //        
-    // // quick check if no files returned
-    // if (files.length == 0)
-    // return temp;
-    //                
-    // int count = 0;
-    // boolean checkedUnix = false;
-    // for (int i = 0; i < files.length; i++) {
-    // try {
-    // if (files[i] == null || files[i].trim().length() == 0)
-    // continue;
-    //                
-    // // swap to Unix if looks like Unix listing
-    // if (!checkedUnix && parser != unix && UnixFileParser.isUnix(files[i])) {
-    // parser = unix;
-    // checkedUnix = true;
-    // log.info("Swapping Windows parser to Unix");
-    // }
-    //                
-    // FTPFile file = null;
-    // if(usingVMS) {
-    // // vms uses 2 lines for some file listings. send 2 just in case
-    // if (files[i].indexOf(';') > 0) {
-    // if (i+1 < files.length && files[i+1].indexOf(';') < 0) {
-    // file = parser.parse(files[i] + " " + files[i+1]);
-    // i++; // skip over second part for next iteration
-    // }
-    // else
-    // file = parser.parse(files[i]);
-    // }
-    // }
-    // else {
-    // file = parser.parse(files[i]);
-    // }
-    // // we skip null returns - these are duff lines we know about and don't
-    // // really want to throw an exception
-    // if (file != null) {
-    // temp[count++] = file;
-    // }
-    // }
-    // catch (ParseException ex) {
-    // log.info("Failed to parse listing '" + files[i] + "': " +
-    // ex.getMessage());
-    // if (rotateParsers) { // first error, let's try swapping parsers
-    // rotateParsers = false; // only do once
-    // rotateParsers();
-    // FTPFile file = parser.parse(files[i]);
-    // if (file != null)
-    // temp[count++] = file;
-    // }
-    // else // rethrow
-    // throw ex;
-    // }
-    // }
-    // FTPFile[] result = new FTPFile[count];
-    // System.arraycopy(temp, 0, result, 0, count);
-    // return result;
-    // }
+	    
+	    public static void main(String args[])
+	    {
+	    	FTPFileFactory factory = new FTPFileFactory("UNIX");
+	    	List list = new ArrayList();
+//	    	list.add("lrwxrwxrwx   1 root     root           11 Aug 18  2000 HEADER -> welcome.msg");
+//	 		list.add("drwxr-xr-x   2 root     wheel        4096 Nov 27  2000 bin");
+//	 		list.add("drwxr-xr-x   2 root     wheel        4096 Sep 18 20:00 pub");
+//	 		list.add("-rw-r--r--   1 root     root          312 Aug  1  1994 welcome.msg");
+//	 		list.add("d [R----F--] supervisor            512       Jan 16 18:53    login");
+//	 		list.add("213-Status follows:");
+//	 		list.add("total 28");
+//	 		list.add("drwx------    5 503      503          4096 Oct 04 08:12 .");
+//	 		list.add("drwxr-xr-x    5 0        0            4096 Aug 22 09:16 ..");
+//	 		list.add("-rw-------    1 503      503          2626 Aug 26 08:39 .bash_history");
+//	 		list.add("213 End of status");
+//	    	list.add("00README.TXT;1      2 30-DEC-1996 17:44 [SYSTEM] (RWED,RWED,RE,RE)");
+//	    	list.add("CORE.DIR;1          1  8-SEP-1996 16:09 [SYSTEM] (RWE,RWE,RE,RE)");
+//	    	list.add("CII-MANUAL.TEX;1  213/216  29-JAN-1996 03:33:12  [ANONYMOUS,ANONYMOUS]   (RWED,RWED,,)");
+//	    	list.add("02-13-01  08:02PM       <DIR>          bussys");
+//	    	list.add("11-27-00  11:28AM                    456 dirmap.htm");
+//	    	list.add("-------r--         326  1391972  1392298 Nov 22  1995 MegaPhone.sit");
+	 		List files = new ArrayList();
+	 		
+	 		files = factory.parse(list,"/tmp");
+	 		for(Iterator it = files.iterator(); it.hasNext();)
+	 		{
+	 			FTPFile file = (FTPFile)it.next();
+	 			log.debug("Name: " + file.getName());
+	 			log.debug("Size: " + file.getSize());
+	 			log.debug("Group: " + file.getGroup());
+	 			log.debug("isLink: " + file.isLink);
+	 			log.debug("isDir: " + file.isDirectory());
+	 			log.debug("Modes:  " + file.getMode());
+	 			log.debug("points to:" + file.getLinkedname());
+	 			log.debug("------------------------------");
+	 		}
+	    }
 
 }
