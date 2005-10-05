@@ -73,6 +73,13 @@ public class FTPFileFactory {
         		}catch (ParseException pe2)
         		{
         			try
+        			{
+        				log.debug("Previous file parser couldn't parse listing. Trying a EPLF file parser");
+        				parser = new EPLFFileParser();
+        				file = parser.parse(line, parentPath);
+        			}catch (ParseException pe5)
+        			{
+        			try
             		{
         				log.debug("Previous file parser couldn't parse listing. Trying a netware file parser");
             			parser = new NetwareFileParser();
@@ -89,6 +96,7 @@ public class FTPFileFactory {
             				//ignored because this was the last chances
             			}
             		}
+        		}
         		}
         	}
             if (file != null)
@@ -119,6 +127,9 @@ public class FTPFileFactory {
 //    	list.add("02-13-01  08:02PM       <DIR>          bussys");
 //    	list.add("11-27-00  11:28AM                    456 dirmap.htm");
 //    	list.add("-------r--         326  1391972  1392298 Nov 22  1995 MegaPhone.sit");
+    	list.add("+i8388621.48594,m825718503,r,s280,	djb.html");
+    	list.add("+i8388621.50690,m824255907,/,	514");
+    	list.add("+i8388621.48598,m824253270,r,s612,	514.html");
  		List<FTPFile> files = new ArrayList<FTPFile>();
  		
  		files = factory.parse(list,"/tmp");

@@ -75,6 +75,13 @@ public class FTPFileFactory {
 	        		}catch (ParseException pe2)
 	        		{
 	        			try
+	        			{
+	        				log.debug("Previous file parser couldn't parse listing. Trying a EPLF file parser");
+	        				parser = new EPLFFileParser();
+	        				file = parser.parse(line, parentPath);
+	        			}catch (ParseException pe5)
+	        			{
+	        			try
 	            		{
 	        				log.debug("Previous file parser couldn't parse listing. Trying a netware file parser");
 	            			parser = new NetwareFileParser();
@@ -91,6 +98,7 @@ public class FTPFileFactory {
 	            				//ignored because this was the last chances
 	            			}
 	            		}
+	        		}
 	        		}
 	        	}
 	            if (file != null)

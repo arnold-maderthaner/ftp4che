@@ -38,12 +38,14 @@ public class UnixFileParser implements FileParser {
         this.locale = locale;
     }
 
-    public static boolean isValidLine(String serverLine) {
+    public static boolean isValidLine(String serverLine) throws ParseException {
         char ch = serverLine.charAt(0);
         if (ch == NORMAL_DIRECTORY_IDENTIFICATION
                 || ch == NORMAL_FILE_IDENTIFICATION
                 || ch == SYMBOLIC_LINK_IDENTIFICATION)
             return true;
+        if(ch == EPLFFileParser.EPLF_START_CHAR)
+        	throw new ParseException("Should be a EPLF Line",0);
         return false;
     }
 
