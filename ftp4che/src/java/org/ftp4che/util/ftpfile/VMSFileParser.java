@@ -24,6 +24,8 @@ public class VMSFileParser implements FileParser {
     private SimpleDateFormat formatter;
     
     private Locale locale;
+    
+    private String cacheLine = "";
 
     public VMSFileParser() {
         setLocale(Locale.getDefault());
@@ -31,11 +33,18 @@ public class VMSFileParser implements FileParser {
 
     /**
      *00README.TXT;1      2 30-DEC-1996 17:44 [SYSTEM] (RWED,RWED,RE,RE)
+     *DSNS_F7BD81.;1           1 31-JAN-2005 17:05 [CTRL_C,ANOMALY] (RWED,RWED,RE,)
      *CORE.DIR;1          1  8-SEP-1996 16:09 [SYSTEM] (RWE,RWE,RE,RE)
      * 
      */
     public FTPFile parse(String serverLine, String parentDirectory)
             throws ParseException {
+        
+        if (cacheLine.length() > 0) {
+            serverLine = cacheLine.concat(serverLine);
+            cacheLine = "";
+        }
+        
         StringTokenizer st = new StringTokenizer(serverLine, " ");
         String[] fields = new String[st.countTokens()];
         int k = 0;
@@ -53,8 +62,10 @@ public class VMSFileParser implements FileParser {
         if (fields.length > 0 && fields[0].compareTo(TOTAL) == 0)
             return null;
         // probably the remainder of a listing on 2nd line
-        if (fields.length < MIN_EXPECTED_FIELD_COUNT)
+        if (fields.length < MIN_EXPECTED_FIELD_COUNT) {
+            cacheLine = serverLine;
             return null;
+        }
 
         // first field is name
         String name = fields[0];
