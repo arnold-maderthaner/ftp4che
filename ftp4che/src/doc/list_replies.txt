@@ -1,0 +1,42 @@
+Microsoft ftp response (SYST = Windows_NT but LS -l response):
+dr-xr-xr-x   1 owner    group               0 Apr 20 15:41 developr
+-r-xr-xr-x   1 owner    group               0 Nov 27  2000 dirmap.htm
+dr-xr-xr-x   1 owner    group               0 Feb 25  2000 peropsys
+
+WUFTP-d server (UNIX response):
+total 28
+lrwxrwxrwx   1 root     root           11 Aug 18  2000 HEADER -> welcome.msg
+drwxr-xr-x   2 root     wheel        4096 Nov 27  2000 bin
+drwxr-xr-x   2 root     wheel        4096 Sep 18 20:00 pub
+-rw-r--r--   1 root     root          312 Aug  1  1994 welcome.msg
+
+MSDOS ftp server:
+02-13-01  08:02PM       <DIR>          bussys
+05-21-01  03:41PM       <DIR>          deskapps
+04-20-01  03:41PM       <DIR>          developr
+11-27-00  11:28AM                    0 dirmap.htm
+
+NetWare:
+d [R----F--] supervisor            512       Jan 16 18:53    login
+- [R----F--] rhesus             214059       Oct 20 15:27    cx.ex
+
+NetPresenz:
+-------r--         326  1391972  1392298 Nov 22  1995 MegaPhone.sit
+drwxrwxr-x               folder        2 May 10  1996 network
+
+MultiNet VMS:
+00README.TXT;1      2 30-DEC-1996 17:44 [SYSTEM] (RWED,RWED,RE,RE)
+CORE.DIR;1          1  8-SEP-1996 16:09 [SYSTEM] (RWE,RWE,RE,RE)
+
+non-MultiNet VMS:
+CII-MANUAL.TEX;1  213/216  29-JAN-1996 03:33:12  [ANONYMOU,ANONYMOUS]   (RWED,RWED,,)
+
+EPLF:
++i8388621.29609,m824255902,/,\tdev
++i8388621.44468,m839956783,r,s10376,\tRFCEPLF
+
+  /* Some useless lines, safely ignored: */
+  /* "Total of 11 Files, 10966 Blocks." (VMS) */
+  /* "total 14786" (UNIX) */
+  /* "DISK$ANONFTP:[ANONYMOUS]" (VMS) */
+  /* "Directory DISK$PCSA:[ANONYM]" (VMS) */
