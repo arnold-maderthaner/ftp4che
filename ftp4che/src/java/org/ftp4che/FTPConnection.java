@@ -601,7 +601,7 @@ public abstract class FTPConnection {
 
     public List<FTPFile> getDirectoryListing() throws IOException,
             FtpWorkflowException, FtpIOException {
-        return getDirectoryListing(".");
+        return getDirectoryListing(getWorkDirectory());
     }
 
     public List<FTPFile> getFastDirectoryListing() throws IOException,
@@ -791,7 +791,8 @@ public abstract class FTPConnection {
         		{
         			log.error("Couldn't resume file, error was: " + fioe.getMessage());
         		}
-        	}
+        	}else
+                return;
         }
         //Send TYPE I
         Command commandType = new Command(Command.TYPE_I);
@@ -844,19 +845,23 @@ public abstract class FTPConnection {
                     + srcDir.getName()
                     + " is not possible, it's not a directory!");
 
-        new File(dstDir.toString() + "/" + srcDir.getName()).mkdir();
+        new File(dstDir.toString()).mkdir();
 
-        List<FTPFile> files = getDirectoryListing(srcDir.toString());
+        
+        String listDir = srcDir.toString();
+        listDir = (listDir.endsWith("/") ? listDir.substring(0, listDir
+                .length() - 1) : listDir);
+        List<FTPFile> files = getDirectoryListing(listDir);
+//        List<FTPFile> files = getDirectoryListing(srcDir.toString());
 
         Collections.sort(files);
 
         for (FTPFile file : files) {
             file.setPath(srcDir.toString());
             if (!file.isDirectory()) {
-                downloadFile(file, new FTPFile(dstDir.toString() + "/"
-                        + srcDir.getName(), file.getName()));
+                downloadFile(file, new FTPFile(dstDir.toString(), file.getName(), false));
             } else {
-                downloadDirectory(file, new FTPFile(dstDir.getPath(), srcDir
+                downloadDirectory(file, new FTPFile(dstDir.toString(), file
                         .getName(), true));
             }
         }
@@ -933,7 +938,8 @@ public abstract class FTPConnection {
         		{
         			log.error("Couldn't resume file, error was: " + fioe.getMessage());
         		}
-        	}
+        	}else
+                return;
         }
         //Send TYPE I
         Command commandType = new Command(Command.TYPE_I);
@@ -1000,7 +1006,7 @@ public abstract class FTPConnection {
             if (!file.isDirectory()) {
                 uploadFile(file, new FTPFile(dstDir.toString(), file.getName()));
             } else {
-                uploadDirectory(file, new FTPFile(dstDir.getPath(), file
+                uploadDirectory(file, new FTPFile(dstDir.toString(), file
                         .getName(), true));
             }
         }

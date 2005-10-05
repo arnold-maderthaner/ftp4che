@@ -602,7 +602,7 @@ public abstract class FTPConnection {
 
     public List getDirectoryListing() throws IOException,
             FtpWorkflowException, FtpIOException {
-        return getDirectoryListing(".");
+        return getDirectoryListing(getWorkDirectory());
     }
 
     public List getFastDirectoryListing() throws IOException,
@@ -793,7 +793,8 @@ public abstract class FTPConnection {
         		{
         			log.error("Couldn't resume file, error was: " + fioe.getMessage());
         		}
-        	}
+        	}else
+                return;
         }
         //Send TYPE I
         Command commandType = new Command(Command.TYPE_I);
@@ -846,9 +847,14 @@ public abstract class FTPConnection {
                     + srcDir.getName()
                     + " is not possible, it's not a directory!");
 
-        new File(dstDir.toString() + "/" + srcDir.getName()).mkdir();
+        new File(dstDir.toString()).mkdir();
 
-        List files = getDirectoryListing(srcDir.toString());
+        
+        String listDir = srcDir.toString();
+        listDir = (listDir.endsWith("/") ? listDir.substring(0, listDir
+                .length() - 1) : listDir);
+        List files = getDirectoryListing(listDir);
+//        List<FTPFile> files = getDirectoryListing(srcDir.toString());
 
         Collections.sort(files);
 
@@ -937,7 +943,8 @@ public abstract class FTPConnection {
         		{
         			log.error("Couldn't resume file, error was: " + fioe.getMessage());
         		}
-        	}
+        	}else
+                return;
         }
         //Send TYPE I
         Command commandType = new Command(Command.TYPE_I);
@@ -1007,7 +1014,7 @@ public abstract class FTPConnection {
             if (!file.isDirectory()) {
                 uploadFile(file, new FTPFile(dstDir.toString(), file.getName()));
             } else {
-                uploadDirectory(file, new FTPFile(dstDir.getPath(), file
+                uploadDirectory(file, new FTPFile(dstDir.toString(), file
                         .getName(), true));
             }
         }
