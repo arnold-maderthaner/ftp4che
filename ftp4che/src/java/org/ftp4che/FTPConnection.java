@@ -1067,8 +1067,8 @@ public abstract class FTPConnection {
                 fxpFile(destination, file, new FTPFile(dstDir.toString() + "/"
                         + srcDir.getName(), file.getName()));
             } else {
-                fxpDirectory(destination, file, new FTPFile(dstDir.getPath(),
-                        srcDir.getName(), true));
+                fxpDirectory(destination, file, new FTPFile(dstDir.toString(),
+                		srcDir.getName(), true));
             }
         }
 
