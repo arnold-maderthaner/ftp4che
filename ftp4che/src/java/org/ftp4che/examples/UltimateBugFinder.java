@@ -79,6 +79,7 @@ public class UltimateBugFinder {
 				conn.deleteFile(new FTPFile(conn.getWorkDirectory(), "5mb_renamed", false));
 				conn.deleteFile(new FTPFile(conn.getWorkDirectory(), "10mb_renamed", false));
 				conn.changeToParentDirectory();
+                conn.removeDirectory("test");
 				
 				conn.uploadDirectory(testdir, new FTPFile(conn.getWorkDirectory(), "testdir", true));
 				conn.changeDirectory("testdir");
@@ -88,8 +89,8 @@ public class UltimateBugFinder {
 				
 				conn.changeToParentDirectory();
 				
-				conn.downloadDirectory(new FTPFile("/tmp", "testdir", true), new FTPFile(new File(homeDirectory.getFile(), "testdir_downloaded")));
-				conn.deleteDirectory(new FTPFile("/tmp", "testdir", true));
+				conn.downloadDirectory(new FTPFile("", "testdir", true), new FTPFile(new File(homeDirectory.getFile(), "testdir_downloaded")));
+				conn.deleteDirectory(new FTPFile("", "testdir", true));
 				
 				conn.sendSiteCommand("HELP");
 				
@@ -121,7 +122,7 @@ public class UltimateBugFinder {
 		ArrayList<Properties> conns = new ArrayList<Properties>();
 		
         Properties pt1 = new Properties();
-        pt1.setProperty("connection.host","172.25.12.197");
+        pt1.setProperty("connection.host","127.0.0.1");
         pt1.setProperty("connection.port","21");
         pt1.setProperty("user.login","ftpuser");
         pt1.setProperty("user.password","ftp4che");
@@ -130,46 +131,46 @@ public class UltimateBugFinder {
         pt1.setProperty("connection.passive", "true");
         
         Properties pt2 = new Properties();
-        pt1.setProperty("connection.host","172.25.12.197");
-        pt1.setProperty("connection.port","23");
-        pt1.setProperty("user.login","ftpuser");
-        pt1.setProperty("user.password","ftp4che");
-        pt1.setProperty("connection.type", "FTP_CONNECTION");
-        pt1.setProperty("connection.timeout", "10000");
-        pt1.setProperty("connection.passive", "true");
+        pt2.setProperty("connection.host","172.25.12.197");
+        pt2.setProperty("connection.port","23");
+        pt2.setProperty("user.login","ftpuser");
+        pt2.setProperty("user.password","ftp4che");
+        pt2.setProperty("connection.type", "FTP_CONNECTION");
+        pt2.setProperty("connection.timeout", "10000");
+        pt2.setProperty("connection.passive", "true");
         
         Properties pt3 = new Properties();
-        pt1.setProperty("connection.host","172.25.12.200");
-        pt1.setProperty("connection.port","21");
-        pt1.setProperty("user.login","ftpuser");
-        pt1.setProperty("user.password","ftp4che");
-        pt1.setProperty("connection.type", "FTP_CONNECTION");
-        pt1.setProperty("connection.timeout", "10000");
-        pt1.setProperty("connection.passive", "true");
+        pt3.setProperty("connection.host","172.25.12.200");
+        pt3.setProperty("connection.port","21");
+        pt3.setProperty("user.login","ftpuser");
+        pt3.setProperty("user.password","ftp4che");
+        pt3.setProperty("connection.type", "FTP_CONNECTION");
+        pt3.setProperty("connection.timeout", "10000");
+        pt3.setProperty("connection.passive", "true");
         
         Properties pt4 = new Properties();
-        pt1.setProperty("connection.host","172.25.13.186");
-        pt1.setProperty("connection.port","21");
-        pt1.setProperty("user.login","ftpuser");
-        pt1.setProperty("user.password","ftp4che");
-        pt1.setProperty("connection.type", "FTP_CONNECTION");
-        pt1.setProperty("connection.timeout", "10000");
-        pt1.setProperty("connection.passive", "true");
+        pt4.setProperty("connection.host","172.25.13.186");
+        pt4.setProperty("connection.port","21");
+        pt4.setProperty("user.login","ftpuser");
+        pt4.setProperty("user.password","ftp4che");
+        pt4.setProperty("connection.type", "FTP_CONNECTION");
+        pt4.setProperty("connection.timeout", "10000");
+        pt4.setProperty("connection.passive", "true");
         
         Properties pt5 = new Properties();
-        pt1.setProperty("connection.host","172.25.13.149");
-        pt1.setProperty("connection.port","21");
-        pt1.setProperty("user.login","ftpuser");
-        pt1.setProperty("user.password","ftp4che");
-        pt1.setProperty("connection.type", "FTP_CONNECTION");
-        pt1.setProperty("connection.timeout", "10000");
-        pt1.setProperty("connection.passive", "true");
+        pt5.setProperty("connection.host","172.25.13.149");
+        pt5.setProperty("connection.port","21");
+        pt5.setProperty("user.login","ftpuser");
+        pt5.setProperty("user.password","ftp4che");
+        pt5.setProperty("connection.type", "FTP_CONNECTION");
+        pt5.setProperty("connection.timeout", "10000");
+        pt5.setProperty("connection.passive", "true");
         
         conns.add(pt1);
-        conns.add(pt2);
-        conns.add(pt3);
-        conns.add(pt4);
-        conns.add(pt5);
+//        conns.add(pt2);
+//        conns.add(pt3);
+//        conns.add(pt4);
+//        conns.add(pt5);
         
         UltimateBugFinder ubf = new UltimateBugFinder(conns);
 		
