@@ -71,6 +71,8 @@ public class Socks5 implements Proxy {
     private int timeout = DEFAULT_TIMEOUT;
 
     private Socket socket = null;
+    
+    private InetSocketAddress bindAddress;
 
     public Socks5(String proxyHost, String proxyUser, String proxyPass) {
         this(proxyHost, -1, -1, proxyUser, proxyPass);
@@ -535,5 +537,10 @@ public class Socks5 implements Proxy {
             this.timeout = timeout;
         else
             this.timeout = DEFAULT_TIMEOUT;
+    }
+
+    public InetSocketAddress getBindAddress() {
+        // @todo Auto-generated method stub
+        return null;
     }
 }

@@ -7,6 +7,8 @@ import java.net.Socket;
 import org.ftp4che.exception.ProxyConnectionException;
 
 public interface Proxy {
+    
+    public InetSocketAddress getBindAddress();
 
     public Socket connect(String host, int port)
             throws ProxyConnectionException;

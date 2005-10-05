@@ -47,6 +47,8 @@ public class Socks4 implements Proxy {
     private int timeout = DEFAULT_TIMEOUT;
 
     private Socket socket = null;
+    
+    private InetSocketAddress bindAddress;
 
     public Socks4(String proxyHost, String proxyUser) {
         this(proxyHost, -1, -1, proxyUser);
@@ -255,9 +257,9 @@ public class Socks4 implements Proxy {
 
         int bindPort = ((int) response[2]) & ((int) response[3]);
         byte[] bindAddr = { response[4], response[5], response[6], response[7] };
-        InetAddress inetAddress = InetAddress.getByAddress(bindAddr);
+        bindAddress = new InetSocketAddress(InetAddress.getByAddress(bindAddr), bindPort);
 
-        log.debug("Binding to: " + inetAddress.getHostAddress() + ":"
+        log.debug("Binding to: " + bindAddress.getAddress().getHostAddress() + ":"
                 + bindPort);
 
         return this.socket;
@@ -342,5 +344,9 @@ public class Socks4 implements Proxy {
             this.timeout = timeout;
         else
             this.timeout = DEFAULT_TIMEOUT;
+    }
+
+    public InetSocketAddress getBindAddress() {
+        return bindAddress;
     }
 }

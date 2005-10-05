@@ -115,12 +115,10 @@ public class SocketProvider {
 
         if (proxy == null) {
             socket.connect(remote);
-        } else if (proxy != null && isControllConnection() == true) {
+        } else {
             InetSocketAddress isa = (InetSocketAddress) remote;
             socket = proxy.connect(isa.getAddress().getHostAddress(), isa
                     .getPort());
-        } else if (proxy != null && isControllConnection == false) {
-            socket = proxy.bind((InetSocketAddress) remote);
         }
 
         this.maxDownload = maxDownload;
