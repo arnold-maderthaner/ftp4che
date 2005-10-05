@@ -132,8 +132,15 @@ public class UnixFileParser implements FileParser {
             }
         } else {
             dateTime.append(field);
-            formatter = new SimpleDateFormat(DATE_FORMAT_STRING1,locale);
-            date = formatter.parse(dateTime.toString());
+            try {
+                formatter = new SimpleDateFormat(DATE_FORMAT_STRING1,locale);
+                date = formatter.parse(dateTime.toString());
+            } catch (ParseException pe) {
+                formatter = new SimpleDateFormat(DATE_FORMAT_STRING1,
+                        Locale.ENGLISH);
+                date = formatter.parse(dateTime.toString());
+                setLocale(Locale.ENGLISH);
+            }
         }
 
         String name = null;
