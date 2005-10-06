@@ -71,8 +71,7 @@ public class SimpleFTPLogin {
                 // log.debug("From File size: " + fromFile.getSize());
                 // long start = System.currentTimeMillis();
                 // connection.uploadFile(fromFile,toFile);
-                // log.debug("kb/sec: " + ((double)1024000 /
-                // (System.currentTimeMillis() - start)));
+                // log.debug("kb/sec: " + ((double)1024000 /                // 
                 // log.debug("milli sec: " + (System.currentTimeMillis() -
                 // start));
                 // // connection.changeDirectory("/home/ftpuser/upload");
