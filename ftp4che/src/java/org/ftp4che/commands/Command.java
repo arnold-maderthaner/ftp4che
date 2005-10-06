@@ -87,7 +87,15 @@ public class Command {
     public final static String PBSZ = "PBSZ";
 
     public final static String SSCN = "SSCN";
+    
+    public final static String MDTM = "MDTM";
+    
+    public final static String CLNT = "CLNT";
 
+    public final static String XCRC = "XCRC";
+    
+    public final static String XMD5 = "XMD5";
+    
     String command;
 
     String[] parameter;

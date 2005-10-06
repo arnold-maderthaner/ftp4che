@@ -19,7 +19,10 @@
 package org.ftp4che.util;
 
 import java.net.InetSocketAddress;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -40,7 +43,41 @@ public class ReplyFormatter {
         // LINE: 257 "/" is current directory.
         return line.substring(line.indexOf('"') + 1, line.lastIndexOf('"'));
     }
+    
+    public static Date parseMDTMReply(Reply mdtmReply) throws ParseException
+    {
+    	  List<String> lines = mdtmReply.getLines();
+          if (lines.size() != 1)
+              throw new UnkownReplyStateException(
+                      "MDTM Reply has to have a size of 1 entry but it has: "
+                              + lines.size());
+          String line = lines.get(0);
+          SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+          return formatter.parse(line.substring(line.indexOf(' ') + 1));
+    }
 
+    public static String parseXCRCReply(Reply crcReply) 
+    {
+  	  List<String> lines = crcReply.getLines();
+      if (lines.size() != 1)
+          throw new UnkownReplyStateException(
+                  "XCRC Reply has to have a size of 1 entry but it has: "
+                          + lines.size());
+      String line = lines.get(0);
+      return line.substring(line.indexOf(' ') + 1);
+    }
+    
+    public static String parseXMD5Reply(Reply md5Reply) 
+    {
+  	  List<String> lines = md5Reply.getLines();
+      if (lines.size() != 1)
+          throw new UnkownReplyStateException(
+                  "XMD5 Reply has to have a size of 1 entry but it has: "
+                          + lines.size());
+      String line = lines.get(0);
+      return line.substring(line.indexOf(' ') + 1);
+    }
+    
     public static InetSocketAddress parsePASVCommand(Reply pasvReply)
             throws UnkownReplyStateException {
         List<String> lines = pasvReply.getLines();

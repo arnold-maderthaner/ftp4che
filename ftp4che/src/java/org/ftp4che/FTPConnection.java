@@ -25,8 +25,11 @@ import java.net.ServerSocket;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import javax.net.ServerSocketFactory;
@@ -1539,5 +1542,60 @@ public abstract class FTPConnection {
 
 	public void setTryResume(boolean tryResume) {
 		this.tryResume = tryResume;
+	}
+	
+	public Date getModificationTime(FTPFile file) throws IOException,FtpIOException,FtpWorkflowException,ParseException
+	{
+		Command mdtm = new Command(Command.MDTM,file.toString());
+		Reply reply = sendCommand(mdtm);
+		reply.dumpReply();
+		reply.validate();
+		return ReplyFormatter.parseMDTMReply(reply);
+	}
+	
+	public void setModificationTime(FTPFile file,Date date) throws IOException,FtpIOException,FtpWorkflowException,ParseException
+	{
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+		String dateString = formatter.format(date);
+		Command mdtm = new Command(Command.MDTM,dateString,file.toString());
+		Reply reply = sendCommand(mdtm);
+		reply.dumpReply();
+		reply.validate();
+	}
+	
+	public void setClientName(String name) throws FtpIOException,FtpWorkflowException,IOException
+	{
+		Command clnt = new Command(Command.CLNT,name);
+		Reply reply = sendCommand(clnt);
+		reply.dumpReply();
+		reply.validate();
+	}
+	
+	public String getCRC(FTPFile file)  throws FtpIOException,FtpWorkflowException,IOException
+	{
+		return getCRC(file,0,-1);
+	}
+	
+	public String getCRC(FTPFile file,long startposition, long endposition)  throws FtpIOException,FtpWorkflowException,IOException
+	{
+		Command crc = new Command(Command.XCRC,"\"" + file.toString() + "\"","" + startposition, "" + endposition);
+		Reply reply = sendCommand(crc);
+		reply.dumpReply();
+		reply.validate();
+		return ReplyFormatter.parseXCRCReply(reply);
+	}
+	
+	public String getMD5(FTPFile file)  throws FtpIOException,FtpWorkflowException,IOException
+	{
+		return getMD5(file,0,-1);
+	}
+	
+	public String getMD5(FTPFile file,long startposition, long endposition)  throws FtpIOException,FtpWorkflowException,IOException
+	{
+		Command md5 = new Command(Command.XMD5,"\"" + file.toString() + "\"","" + startposition, "" + endposition);
+		Reply reply = sendCommand(md5);
+		reply.dumpReply();
+		reply.validate();
+		return ReplyFormatter.parseXMD5Reply(reply);
 	}
 }
