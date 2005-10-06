@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
@@ -682,30 +683,60 @@ public abstract class FTPConnection {
      */
     public SocketProvider sendPortCommand(Command command, Reply commandReply)
             throws IOException, FtpWorkflowException, FtpIOException {
-        ServerSocket server = ServerSocketFactory.getDefault()
+        
+        SocketProvider provider = null;
+        
+        if (getProxy() == null) {
+            ServerSocket server = ServerSocketFactory.getDefault()
                 .createServerSocket();
-        InetSocketAddress isa = new InetSocketAddress(socketProvider.socket()
+            InetSocketAddress isa = new InetSocketAddress(socketProvider.socket()
                 .getLocalAddress(), 0);
-        server.bind(isa);
-        int port = server.getLocalPort();
+        
+            server.bind(isa);
+            int port = server.getLocalPort();
 
-        StringBuffer modifiedHost = new StringBuffer();
-        modifiedHost.append(server.getInetAddress().getHostAddress().replace(
+            StringBuffer modifiedHost = new StringBuffer();
+            modifiedHost.append(server.getInetAddress().getHostAddress().replace(
                 '.', ','));
-        modifiedHost.append(",");
-        modifiedHost.append(port >> 8);
-        modifiedHost.append(",");
-        modifiedHost.append(port & 0x00ff);
+            modifiedHost.append(",");
+            modifiedHost.append(port >> 8);
+            modifiedHost.append(",");
+            modifiedHost.append(port & 0x00ff);
 
-        Command portCommand = new Command(Command.PORT, modifiedHost.toString());
-        Reply portReply = sendCommand(portCommand);
-        portReply.dumpReply();
-        portReply.validate();
-        commandReply.setLines(sendCommand(command).getLines());
-        commandReply.dumpReply();
-        commandReply.validate();
-        SocketProvider provider = new SocketProvider(server.accept(), false,
+            Command portCommand = new Command(Command.PORT, modifiedHost.toString());
+            Reply portReply = sendCommand(portCommand);
+            portReply.dumpReply();
+            portReply.validate();
+            commandReply.setLines(sendCommand(command).getLines());
+            commandReply.dumpReply();
+            commandReply.validate();
+            provider = new SocketProvider(server.accept(), false,
                 getDownloadBandwidth(), getUploadBandwidth());
+        } else {
+            InetSocketAddress portSocketAddress = new InetSocketAddress(socketProvider.socket().getLocalAddress(), 0);
+            Socket proxySocket = getProxy().bind(portSocketAddress);
+            
+            int port = getProxy().getBindAddress().getPort();
+
+            StringBuffer modifiedHost = new StringBuffer();
+            modifiedHost.append(getProxy().getBindAddress().getAddress().getHostAddress().replace(
+                '.', ','));
+            modifiedHost.append(",");
+            modifiedHost.append(port >> 8);
+            modifiedHost.append(",");
+            modifiedHost.append(port & 0x00ff);
+
+            Command portCommand = new Command(Command.PORT, modifiedHost.toString());
+            Reply portReply = sendCommand(portCommand);
+            portReply.dumpReply();
+            portReply.validate();
+            commandReply.setLines(sendCommand(command).getLines());
+            commandReply.dumpReply();
+            commandReply.validate();
+            
+            provider = new SocketProvider(proxySocket, false, getDownloadBandwidth(), getUploadBandwidth());
+        }
+            
         provider.socket().setReceiveBufferSize(65536);
         provider.socket().setSendBufferSize(65536);
         provider.setSSLMode(getConnectionType());
