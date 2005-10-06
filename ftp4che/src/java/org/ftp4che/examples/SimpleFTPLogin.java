@@ -46,26 +46,7 @@ public class SimpleFTPLogin {
             log.debug("user:" + connection.getUser());
             try {
                 connection.connect();
-                // connection2.connect();
-                // List<String> list = connection.getFastDirectoryListing();
-                // for(String s : list)
-                // {
-                // log.debug("FastList: " + s);
-                // }
-                // connection.getWorkDirectory();
-                // connection.getDirectoryListing();
-                // connection.makeDirectory("testdir");
-                // connection.changeDirectory("testdir");
-                // log.debug("Working Directory: " +
-                // connection.getWorkDirectory());
-                //              
-                // connection.changeToParentDirectory();
-                //                
-                // connection.removeDirectory("testdir");
-                //                
-                // log.debug("Working Directory: " +
-                // connection.getWorkDirectory());
-                //               
+                               
                 // connection.noOperation();
                 // connection.changeDirectory("/home/ftpuser/download");
                 //
