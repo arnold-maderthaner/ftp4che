@@ -255,7 +255,13 @@ public class Socks4 implements Proxy {
             throw pce;
         }
 
-        int bindPort = ((int) response[2]) & ((int) response[3]);
+        int aPort = response[2];
+        int bPort = response[3];
+        aPort = (aPort < 0 ? (aPort + 256) : aPort);
+        bPort = (bPort < 0 ? (bPort + 256) : bPort);
+
+        int bindPort = (aPort << 8) + (bPort);
+
         byte[] bindAddr = { response[4], response[5], response[6], response[7] };
         bindAddress = new InetSocketAddress(InetAddress.getByAddress(bindAddr), bindPort);
 

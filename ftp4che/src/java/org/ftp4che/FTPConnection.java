@@ -713,7 +713,7 @@ public abstract class FTPConnection {
             provider = new SocketProvider(server.accept(), false,
                 getDownloadBandwidth(), getUploadBandwidth());
         } else {
-            InetSocketAddress portSocketAddress = new InetSocketAddress(socketProvider.socket().getLocalAddress(), 0);
+            InetSocketAddress portSocketAddress = new InetSocketAddress(socketProvider.socket().getInetAddress(), 0);
             Socket proxySocket = getProxy().bind(portSocketAddress);
             
             int port = getProxy().getBindAddress().getPort();
@@ -734,7 +734,7 @@ public abstract class FTPConnection {
             commandReply.dumpReply();
             commandReply.validate();
             
-            provider = new SocketProvider(proxySocket, false, getDownloadBandwidth(), getUploadBandwidth());
+            provider = new SocketProvider(proxySocket, false, getDownloadBandwidth(), getUploadBandwidth());            
         }
             
         provider.socket().setReceiveBufferSize(65536);
