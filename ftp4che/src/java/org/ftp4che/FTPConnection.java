@@ -61,6 +61,7 @@ import org.ftp4che.util.ftpfile.FTPFile;
 import org.ftp4che.util.ftpfile.FTPFileFactory;
 
 /**
+ * 
  * @author arnold,kurt
  * 
  */
@@ -1629,7 +1630,7 @@ public abstract class FTPConnection {
         this.proxy = proxy;
     }
 
-/**
+    /**
      * This method is used to send the SYST command (will be used to identify the LIST encoding)
      * 
      * @throws IOException
@@ -1657,7 +1658,7 @@ public abstract class FTPConnection {
     }
 
     /**
-     * @param trustManagers The trustManagers to set.
+     * @param trustManagers The trustManagers to set for a ssl connection
      */
     public void setTrustManagers(TrustManager[] trustManagers) {
         this.trustManagers = trustManagers;
@@ -1671,16 +1672,23 @@ public abstract class FTPConnection {
     }
 
     /**
-     * @param keyManagers The keyManagers to set.
+     * @param keyManagers The keyManagers to set for a ssl connection
      */
     public void setKeyManagers(KeyManager[] keyManagers) {
         this.keyManagers = keyManagers;
     }
 
+    /**
+     * @returns the tryResume
+     */
 	public boolean isTryResume() {
 		return tryResume;
 	}
 
+	/**
+	 * 
+	 * @param tryResume automatic resuming
+	 */
 	public void setTryResume(boolean tryResume) {
 		this.tryResume = tryResume;
 	}
