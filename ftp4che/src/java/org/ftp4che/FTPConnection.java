@@ -61,7 +61,6 @@ import org.ftp4che.util.ftpfile.FTPFile;
 import org.ftp4che.util.ftpfile.FTPFileFactory;
 
 /**
- * 
  * @author arnold,kurt
  * 
  */
