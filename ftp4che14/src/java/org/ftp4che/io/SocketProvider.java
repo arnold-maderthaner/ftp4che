@@ -135,7 +135,7 @@ public class SocketProvider {
     }
 
     public boolean needsCrypt() {
-        return ((this.sslMode == FTPConnection.AUTH_SSL_FTP_CONNECTION || this.sslMode == FTPConnection.AUTH_TLS_FTP_CONNECTION) && !isControllConnection())
+        return ((this.sslMode == FTPConnection.AUTH_SSL_FTP_CONNECTION || this.sslMode == FTPConnection.AUTH_TLS_FTP_CONNECTION || this.sslMode == FTPConnection.IMPLICIT_SSL_WITH_CRYPTED_DATA_FTP_CONNECTION || this.sslMode == FTPConnection.IMPLICIT_TLS_WITH_CRYPTED_DATA_FTP_CONNECTION) && !isControllConnection())
                 || this.sslMode != FTPConnection.FTP_CONNECTION
                 && isControllConnection();
     }

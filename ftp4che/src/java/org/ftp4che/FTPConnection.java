@@ -87,6 +87,10 @@ public abstract class FTPConnection {
     public static final int AUTH_TLS_FTP_CONNECTION = 4;
 
     public static final int IMPLICIT_TLS_FTP_CONNECTION = 5;
+    
+    public static final int IMPLICIT_TLS_WITH_CRYPTED_DATA_FTP_CONNECTION = 6;
+    
+    public static final int IMPLICIT_SSL_WITH_CRYPTED_DATA_FTP_CONNECTION = 7;
 
     /**
      * Constants for up-/download bandwidth public static final long
@@ -741,7 +745,9 @@ public abstract class FTPConnection {
         provider.socket().setSendBufferSize(65536);
         provider.setSSLMode(getConnectionType());
         if (connectionType == FTPConnection.AUTH_TLS_FTP_CONNECTION
-                || connectionType == FTPConnection.AUTH_SSL_FTP_CONNECTION)
+                || connectionType == FTPConnection.AUTH_SSL_FTP_CONNECTION
+                || connectionType == FTPConnection.IMPLICIT_SSL_WITH_CRYPTED_DATA_FTP_CONNECTION
+                || connectionType == FTPConnection.IMPLICIT_TLS_WITH_CRYPTED_DATA_FTP_CONNECTION)
             provider.negotiate(this.getTrustManagers(),this.getKeyManagers());
 
         return provider;
@@ -1213,7 +1219,9 @@ public abstract class FTPConnection {
         commandReply.validate();
 
         if (connectionType == FTPConnection.AUTH_TLS_FTP_CONNECTION
-                || connectionType == FTPConnection.AUTH_SSL_FTP_CONNECTION)
+                || connectionType == FTPConnection.AUTH_SSL_FTP_CONNECTION
+                || connectionType == FTPConnection.IMPLICIT_SSL_WITH_CRYPTED_DATA_FTP_CONNECTION
+                || connectionType == FTPConnection.IMPLICIT_TLS_WITH_CRYPTED_DATA_FTP_CONNECTION)
             provider.negotiate(this.getTrustManagers(),this.getKeyManagers());
 
         return provider;

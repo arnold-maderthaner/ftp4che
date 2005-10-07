@@ -96,6 +96,8 @@ public class Command {
     
     public final static String XMD5 = "XMD5";
     
+    public final static String MLSD = "MLSD";
+    
     String command;
 
     String[] parameter;

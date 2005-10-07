@@ -95,6 +95,8 @@ public class Command {
     public final static String XCRC = "XCRC";
     
     public final static String XMD5 = "XMD5";
+  
+    public final static String MLSD = "MLSD";
 
     private static final String[] nullString = {};
     

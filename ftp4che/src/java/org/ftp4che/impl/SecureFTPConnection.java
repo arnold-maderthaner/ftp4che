@@ -58,23 +58,25 @@ public class SecureFTPConnection extends FTPConnection {
         }
         // Till here the connection is not encrypted!!
         if (this.getConnectionType() == FTPConnection.IMPLICIT_SSL_FTP_CONNECTION
-                || this.getConnectionType() == FTPConnection.IMPLICIT_TLS_FTP_CONNECTION) {
+                || this.getConnectionType() == FTPConnection.IMPLICIT_TLS_FTP_CONNECTION
+                || this.getConnectionType() == FTPConnection.IMPLICIT_SSL_WITH_CRYPTED_DATA_FTP_CONNECTION
+                || this.getConnectionType() == FTPConnection.IMPLICIT_TLS_WITH_CRYPTED_DATA_FTP_CONNECTION) {
             negotiateAndLogin(null);
         } else {
             (ReplyWorker.readReply(socketProvider)).dumpReply();
-            Reply reply = sendCommand(new Command(Command.FEAT));
-
-            if (ReplyCode.isPositiveCompletionReply(reply)) {
-                List<String> lines = reply.getLines();
-                for (String s : lines) {
-                    if (s.indexOf(Command.SSCN) > -1) {
-                        setConnectionSSCNType(FTPConnection.SSCN_ON);
-                    }
-                }
-
-            }
             negotiateAndLogin(getAuthString());
         }
+        Reply reply = sendCommand(new Command(Command.FEAT));
+        reply.dumpReply();
+		if (ReplyCode.isPositiveCompletionReply(reply)) {
+			List<String> lines = reply.getLines();
+			for (String s : lines) {
+				if (s.indexOf(Command.SSCN) > -1) {
+					setConnectionSSCNType(FTPConnection.SSCN_ON);
+				}
+			}
+
+		}
 
         this.setConnectionStatus(FTPConnection.CONNECTED);
         fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(),
