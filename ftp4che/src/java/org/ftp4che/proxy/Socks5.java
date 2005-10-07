@@ -543,4 +543,8 @@ public class Socks5 implements Proxy {
         // @todo Auto-generated method stub
         return null;
     }
+
+	public InetSocketAddress getProxyAddress() {
+		return new InetSocketAddress(getHost(), getPort());
+	}
 }

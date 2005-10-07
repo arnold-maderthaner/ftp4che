@@ -265,9 +265,6 @@ public class Socks4 implements Proxy {
         byte[] bindAddr = { response[4], response[5], response[6], response[7] };
         bindAddress = new InetSocketAddress(InetAddress.getByAddress(bindAddr), bindPort);
 
-        log.debug("Binding to: " + bindAddress.getAddress().getHostAddress() + ":"
-                + bindPort);
-
         return this.socket;
     }
 
@@ -355,4 +352,8 @@ public class Socks4 implements Proxy {
     public InetSocketAddress getBindAddress() {
         return bindAddress;
     }
+
+	public InetSocketAddress getProxyAddress() {
+		return new InetSocketAddress(getHost(), getPort());
+	}
 }

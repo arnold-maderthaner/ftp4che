@@ -755,13 +755,13 @@ public abstract class FTPConnection {
             provider = new SocketProvider(server.accept(), false,
                 getDownloadBandwidth(), getUploadBandwidth());
         } else {
-            InetSocketAddress portSocketAddress = new InetSocketAddress(socketProvider.socket().getInetAddress(), 0);
+            InetSocketAddress portSocketAddress = new InetSocketAddress(getAddress().getAddress(), 0);
             Socket proxySocket = getProxy().bind(portSocketAddress);
             
             int port = getProxy().getBindAddress().getPort();
 
             StringBuffer modifiedHost = new StringBuffer();
-            modifiedHost.append(getProxy().getBindAddress().getAddress().getHostAddress().replace(
+            modifiedHost.append(getProxy().getProxyAddress().getAddress().getHostAddress().replace(
                 '.', ','));
             modifiedHost.append(",");
             modifiedHost.append(port >> 8);
