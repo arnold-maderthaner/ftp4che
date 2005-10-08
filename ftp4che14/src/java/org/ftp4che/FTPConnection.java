@@ -1211,7 +1211,7 @@ public abstract class FTPConnection {
             connectionSSCNActive = true;
         }
 
-        destination.makeDirectory(dstDir.toString() + "/" + srcDir.getName());
+        destination.makeDirectory(dstDir.toString());
 
         String listDir = srcDir.toString();
         listDir = (listDir.endsWith("/") ? listDir.substring(0, listDir
@@ -1224,11 +1224,11 @@ public abstract class FTPConnection {
             FTPFile file = (FTPFile)it.next();
             file.setPath(srcDir.toString());
             if (!file.isDirectory()) {
-                fxpFile(destination, file, new FTPFile(dstDir.toString() + "/"
-                        + srcDir.getName(), file.getName()));
+                fxpFile(destination, file, new FTPFile(dstDir.toString()
+                        , file.getName()));
             } else {
                 fxpDirectory(destination, file, new FTPFile(dstDir.toString(),
-                		srcDir.getName(), true));
+                        file.getName(), true));
             }
         }
 
