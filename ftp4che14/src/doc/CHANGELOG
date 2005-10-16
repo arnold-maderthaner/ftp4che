@@ -1,0 +1,10 @@
+changes from version 0.5 to 0.6:
+--------------------------------
+fixed/added implicit ssl and tls support
+new implementation for bandwidth controlling
+new ftpfile implementation (can parse unix,windows,vms,netware,EPLF listings)
+option to set trust/key managers
+up-/download file resume support
+proxy support (socks4/socks5) in a beta version
+added new user functions for non standard ftp functions (mtdm,xcrc,...)
+many, many bug fixes
