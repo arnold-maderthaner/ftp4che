@@ -57,7 +57,7 @@ public class Reply {
 
     public void dumpReply() {
         for (String line : lines) {
-            log.debug(line.substring(0, line.length() - 1));
+            log.info(line.substring(0, line.length() - 1));
         }
     }
 

@@ -59,7 +59,7 @@ public class Reply {
     public void dumpReply() {
         for (Iterator it = lines.iterator(); it.hasNext();) {
             String line = (String)it.next();
-            log.debug(line.substring(0, line.length() - 1));
+            log.info(line.substring(0, line.length() - 1));
         }
     }
 

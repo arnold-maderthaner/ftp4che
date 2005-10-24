@@ -169,7 +169,7 @@ public class SocketProvider {
         } else {
             byteCount = in.read(readArray);
         }
-
+        log.debug("Read -> " + byteCount + " byte");
         if (byteCount <= 0)
             return byteCount;
         dst.put(readArray, dst.position(), byteCount);

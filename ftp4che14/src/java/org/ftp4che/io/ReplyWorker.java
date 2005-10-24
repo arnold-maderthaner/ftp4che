@@ -105,6 +105,7 @@ public class ReplyWorker extends Thread {
 
                 buf.flip();
                 out = charDecoder.decode(buf).toString();
+                log.debug("Read data from server ->" + out);
                 output += out;
                 buf.clear();
                 String[] tmp = output.split("\n");
@@ -119,7 +120,10 @@ public class ReplyWorker extends Thread {
                     String[] stringLines = output.split("\n");
 
                     for (int i = 0; i < stringLines.length; i++)
+                    {
+                        log.debug("Adding line to result list -> " + stringLines[i]);
                         lines.add(stringLines[i]);
+                    }
                     read = false;
                     output = "";
                     buf.clear();
@@ -137,6 +141,7 @@ public class ReplyWorker extends Thread {
                     // FTPFile org.ftp4che.util.FTPFile.parseLine(String line)
                     // (unsave use of StringTokenizer.nextToken
                     if (stringLines[i].length() > 0) {
+                        log.debug("LIST Reply lines -> " + stringLines[i]);
                         lines.add(stringLines[i]);
                     }
                 }
@@ -169,6 +174,8 @@ public class ReplyWorker extends Thread {
             if (retrieveCommand.getFromFile().getTransferType().intern() == Command.TYPE_I
                     || retrieveCommand.getFromFile().getTransferType().intern() == Command.TYPE_A) {
                 try {
+                    log.debug("Download file: "
+                            + retrieveCommand.getFromFile().toString());
                     FileOutputStream out = new FileOutputStream(retrieveCommand
                             .getToFile().getFile());
                     FileChannel channel = out.getChannel();

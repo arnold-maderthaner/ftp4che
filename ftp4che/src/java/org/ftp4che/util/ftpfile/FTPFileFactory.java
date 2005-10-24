@@ -67,33 +67,33 @@ public class FTPFileFactory {
         		// Expected parser couldn't parse trying other parsers
         		try
         		{
-        			log.debug("Previous file parser couldn't parse listing. Trying a UNIX file parser");
+        			log.warn("Previous file parser couldn't parse listing. Trying a UNIX file parser");
         			parser = new UnixFileParser();
         			file = parser.parse(line, parentPath);
         		}catch (ParseException pe2)
         		{
         			try
         			{
-        				log.debug("Previous file parser couldn't parse listing. Trying a EPLF file parser");
+        				log.warn("Previous file parser couldn't parse listing. Trying a EPLF file parser");
         				parser = new EPLFFileParser();
         				file = parser.parse(line, parentPath);
         			}catch (ParseException pe5)
         			{
         			try
             		{
-        				log.debug("Previous file parser couldn't parse listing. Trying a netware file parser");
+        				log.warn("Previous file parser couldn't parse listing. Trying a netware file parser");
             			parser = new NetwareFileParser();
             			file = parser.parse(line, parentPath);
             		}catch (ParseException pe3)
             		{
-            			log.debug("Last chance!!! calling LastChanceFileParser");
+            			log.warn("Last chance!!! calling LastChanceFileParser");
             			parser = new LastChanceFileParser();
             			try
             			{
             				file = parser.parse(line, parentPath);
             			}catch (ParseException pe4)
             			{
-            				//ignored because this was the last chances
+            				log.fatal("Couldn't parse the LIST reply");
             			}
             		}
         		}

@@ -138,6 +138,7 @@ public class SSLSupport {
             byteCount = in.read(readArray, 0, dst.remaining());
         else
             byteCount = in.read(readArray);
+        log.debug("Read -> " + byteCount + " byte");
         if (byteCount <= 0)
             return byteCount;
         dst.put(readArray, dst.position(), byteCount);
