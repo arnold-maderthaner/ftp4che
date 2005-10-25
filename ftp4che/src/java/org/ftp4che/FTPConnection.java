@@ -213,7 +213,7 @@ public abstract class FTPConnection {
      *            Get method for the password the FTPConnection will use if
      *            connect() is called
      */
-    public String getPassword() {
+    protected String getPassword() {
         return password;
     }
 
@@ -223,7 +223,7 @@ public abstract class FTPConnection {
      *            Set method for the password the FTPConnection will use if
      *            connect() is called
      */
-    public void setPassword(String password) {
+    protected void setPassword(String password) {
         this.password = password;
     }
 
@@ -247,7 +247,7 @@ public abstract class FTPConnection {
      * @throws ConfigurationException
      *             will be thrown if a parameter is missing or invalid
      */
-    public void setUser(String user) throws ConfigurationException {
+    protected void setUser(String user) throws ConfigurationException {
         if (user == null || user.length() == 0)
             throw new ConfigurationException(
                     "user must no be null or has a length of 0");
@@ -353,7 +353,7 @@ public abstract class FTPConnection {
      *         your ftp connection
      * @author arnold,kurt
      */
-    public void setConnectionStatus(int connectionStatus) {
+    protected void setConnectionStatus(int connectionStatus) {
         this.connectionStatus = connectionStatus;
     }
 
@@ -366,7 +366,7 @@ public abstract class FTPConnection {
      *            the milliseconds before a timeout will close the connection
      * @author arnold,kurt
      */
-    public void setTimeout(int millis) {
+    protected void setTimeout(int millis) {
         this.timeout = millis;
     }
 
@@ -379,7 +379,7 @@ public abstract class FTPConnection {
      *            the milliseconds before a timeout will close the connection
      * @author arnold,kurt
      */
-    public int getTimeout() {
+    protected int getTimeout() {
         return timeout;
     }
 
@@ -1294,7 +1294,7 @@ public abstract class FTPConnection {
      * @param connectionType
      *            The connectionType to set (FTP_CONNECTION,AUTH_SSL_FTP_CONNETION,...)
      */
-    public void setConnectionType(int connectionType) {
+    protected void setConnectionType(int connectionType) {
         this.connectionType = connectionType;
     }
 
@@ -1324,7 +1324,7 @@ public abstract class FTPConnection {
     /**
      * @return Returns the downloadBandwidth.
      */
-    public int getDownloadBandwidth() {
+    protected int getDownloadBandwidth() {
         return downloadBandwidth;
     }
 
@@ -1332,14 +1332,14 @@ public abstract class FTPConnection {
      * @param downloadBandwidth
      *            The downloadBandwidth to set.
      */
-    public void setDownloadBandwidth(int maxDownloadBandwidth) {
+    protected void setDownloadBandwidth(int maxDownloadBandwidth) {
         this.downloadBandwidth = maxDownloadBandwidth;
     }
 
     /**
      * @return Returns the uploadBandwidth.
      */
-    public int getUploadBandwidth() {
+    protected int getUploadBandwidth() {
         return uploadBandwidth;
     }
 
@@ -1347,7 +1347,7 @@ public abstract class FTPConnection {
      * @param uploadBandwidth
      *            The uploadBandwidth to set.
      */
-    public void setUploadBandwidth(int maxUploadBandwidth) {
+    protected void setUploadBandwidth(int maxUploadBandwidth) {
         this.uploadBandwidth = maxUploadBandwidth;
     }
 
