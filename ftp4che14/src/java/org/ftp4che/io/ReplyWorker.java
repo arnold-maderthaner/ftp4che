@@ -38,6 +38,7 @@ import org.ftp4che.commands.ListCommand;
 import org.ftp4che.commands.RetrieveCommand;
 import org.ftp4che.commands.StoreCommand;
 import org.ftp4che.reply.Reply;
+import org.ftp4che.util.ReplyFormatter;
 
 public class ReplyWorker extends Thread {
     public static final Logger log = Logger.getLogger(ReplyWorker.class
@@ -105,7 +106,8 @@ public class ReplyWorker extends Thread {
 
                 buf.flip();
                 out = charDecoder.decode(buf).toString();
-                log.debug("Read data from server ->" + out);
+                log.debug("Read data from server (String) ->" + out);
+                log.debug("Read data from server (bytes) -> " + ReplyFormatter.displayBytes(out.getBytes()));
                 output += out;
                 buf.clear();
                 String[] tmp = output.split("\n");

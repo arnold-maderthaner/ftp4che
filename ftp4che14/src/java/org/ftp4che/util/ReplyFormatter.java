@@ -21,7 +21,6 @@ package org.ftp4che.util;
 import java.net.InetSocketAddress;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -102,5 +101,22 @@ public static Date parseMDTMReply(Reply mdtmReply) throws ParseException
         return new InetSocketAddress(host[0] + "." + host[1] + "." + host[2]
                 + "." + host[3], (Integer.parseInt(host[4]) << 8)
                 + Integer.parseInt(host[5]));
+    }
+    
+    public static String displayBytes(byte[] bytes)
+    {
+      if (bytes == null || bytes.length == 0)
+           return "[]";
+     
+      StringBuffer buf = new StringBuffer();
+      buf.append('[');
+     
+      for (int i = 0; i < bytes.length; i++) {        
+            buf.append(bytes[i]);
+            buf.append(",");
+      }
+      buf.deleteCharAt(buf.length() - 1);
+      buf.append("]");
+      return buf.toString();
     }
 }

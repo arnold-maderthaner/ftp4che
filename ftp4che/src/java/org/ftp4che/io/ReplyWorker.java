@@ -29,6 +29,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -105,7 +106,9 @@ public class ReplyWorker extends Thread {
 
                 buf.flip();
                 out = charDecoder.decode(buf).toString();
-                log.debug("Read data from server ->" + out);
+                
+                log.debug("Read data from server (String) -> " + out);
+                log.debug("Read data from server (bytes) -> " + Arrays.toString(out.getBytes()));
                 output += out;
                 buf.clear();
                 String[] tmp = output.split("\n");
