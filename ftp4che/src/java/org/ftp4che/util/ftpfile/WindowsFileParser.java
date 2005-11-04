@@ -58,9 +58,12 @@ public class WindowsFileParser implements FileParser {
                         0);
             }
         }
-
-        String name = st.nextToken();
-		FTPFile file = new FTPFile(FTPFile.WINDOWS, parentDirectory, name,
+        String name = "";
+        while(st.hasMoreTokens())
+        {
+        	name += st.nextToken() + " ";
+        }
+		FTPFile file = new FTPFile(FTPFile.WINDOWS, parentDirectory, name.trim(),
 				serverLine);
 		file.setSize(size);
 		file.setDate(date);
