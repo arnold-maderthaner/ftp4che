@@ -926,10 +926,9 @@ public abstract class FTPConnection {
             FTPFile file = (FTPFile)it.next();
             file.setPath(srcDir.toString());
             if (!file.isDirectory()) {
-                downloadFile(file, new FTPFile(dstDir.toString() + "/"
-                        + srcDir.getName(), file.getName()));
+                downloadFile(file, new FTPFile(dstDir.toString(), file.getName(), false));
             } else {
-                downloadDirectory(file, new FTPFile(dstDir.getPath(), srcDir
+                downloadDirectory(file, new FTPFile(dstDir.toString(), file
                         .getName(), true));
             }
         }
