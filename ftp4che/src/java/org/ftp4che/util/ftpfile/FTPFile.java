@@ -3,6 +3,7 @@ package org.ftp4che.util.ftpfile;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.StringTokenizer;
 
 import org.ftp4che.commands.Command;
 
@@ -57,6 +58,19 @@ public class FTPFile implements Comparable {
 
     public FTPFile(String path, String name) {
         this(path, name, false);
+    }
+    
+    public FTPFile(String path,boolean directory)
+    {
+    	StringTokenizer st = new StringTokenizer(path,"/");
+    	int count = st.countTokens();
+    	this.path = "/";
+    	for(int i = 0; i < count - 1 ; i++)
+    	{
+    		this.path = this.path + st.nextToken() + "/";
+    	}
+    	this.name = st.nextToken();
+    	this.directory = directory;
     }
 
     public FTPFile(File file) {
