@@ -1,8 +1,18 @@
-/*
- * Created on 11.06.2005
+/**                                                                         
+ *  This file is part of ftp4che.                                            
+ *  This library is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU Lesser General Public License as published
+ *  by the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
  *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
+ *  This library is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.ftp4che.examples;
 
@@ -30,15 +40,15 @@ public class SimpleFTPLogin {
         Logger log = Logger.getLogger("MAIN");
 
         Properties pt = new Properties();
-        pt.setProperty("connection.host", "127.0.0.1");
+        pt.setProperty("connection.host", "localhost");
         pt.setProperty("connection.port", "21");
         pt.setProperty("user.login", "ftpuser");
         pt.setProperty("user.password", "ftp4che");
-        pt.setProperty("connection.type", "AUTH_TLS_FTP_CONNECTION");
+        pt.setProperty("connection.type", "FTP_CONNECTION");
         pt.setProperty("connection.timeout", "10000");
         pt.setProperty("connection.passive", "true");
         // pt.setProperty("connection.downloadbw", "100000"); // 30KB/s
-        pt.setProperty("connection.uploadbw", "100000"); // 30KB/s
+//        pt.setProperty("connection.uploadbw", "100000"); // 30KB/s
         //        
         try {
             FTPConnection connection = FTPConnectionFactory.getInstance(pt);
