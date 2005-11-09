@@ -51,7 +51,7 @@ public class FTPFileFactory {
             return new WindowsFileParser(locale);
         }
         else if (system.indexOf(VMS_IDENTIFICATION) >= 0) {
-        	log.debug("Found VMS identifictionat, try to use VMS file parser");
+        	log.debug("Found VMS identification, try to use VMS file parser");
             return new VMSFileParser(locale);
         } else {
             log.warn("Unknown SYST '" + system + "', trying UnixFileParsers");
@@ -80,7 +80,7 @@ public class FTPFileFactory {
         			try
         			{
         				log.warn("Previous file parser couldn't parse listing. Trying a EPLF file parser");
-        				parser = new EPLFFileParser(locale);
+        				parser = new EPLFFileParser();
         				file = parser.parse(line, parentPath);
         			}catch (ParseException pe5)
         			{
@@ -113,12 +113,12 @@ public class FTPFileFactory {
     
     public static void main(String args[])
     {
-    	FTPFileFactory factory = new FTPFileFactory("WINDOWS");
+    	FTPFileFactory factory = new FTPFileFactory("VMS");
     	List<String> list = new ArrayList<String>();
-    	list.add("lrwxrwxrwx   1 root     root           11 Aug 18  2000 HEADER -> welcome.msg");
- 		list.add("drwxr-xr-x   2 root     wheel        4096 Nov 27  2000 bin");
- 		list.add("drwxr-xr-x   2 root     wheel        4096 Sep 18 20:00 pub");
- 		list.add("-rw-r--r--   1 root     root          312 Aug  1  1994 welcome msg");
+//    	list.add("lrwxrwxrwx   1 root     root           11 Aug 18  2000 HEADER -> welcome.msg");
+// 		list.add("drwxr-xr-x   2 root     wheel        4096 Nov 27  2000 bin");
+// 		list.add("drwxr-xr-x   2 root     wheel        4096 Sep 18 20:00 pub");
+// 		list.add("-rw-r--r--   1 root     root          312 Aug  1  1994 welcome msg");
 // 		list.add("d [R----F--] supervisor            512       Jan 16 18:53    login");
 // 		list.add("213-Status follows:");
 // 		list.add("total 28");
@@ -126,9 +126,9 @@ public class FTPFileFactory {
 // 		list.add("drwxr-xr-x    5 0        0            4096 Aug 22 09:16 ..");
 // 		list.add("-rw-------    1 503      503          2626 Aug 26 08:39 .bash_history");
 // 		list.add("213 End of status");
-//    	list.add("00README.TXT;1      2 30-DEC-1996 17:44 [SYSTEM] (RWED,RWED,RE,RE)");
-//    	list.add("CORE.DIR;1          1  8-SEP-1996 16:09 [SYSTEM] (RWE,RWE,RE,RE)");
-//    	list.add("CII-MANUAL.TEX;1  213/216  29-JAN-1996 03:33:12  [ANONYMOUS,ANONYMOUS]   (RWED,RWED,,)");
+    	list.add("00README.TXT;1      2 30-DEC-1996 17:44 [SYSTEM] (RWED,RWED,RE,RE)");
+    	list.add("CORE.DIR;1          1  8-SEP-1996 16:09 [SYSTEM] (RWE,RWE,RE,RE)");
+    	list.add("CII-MANUAL.TEX;1  213/216  29-JAN-1996 03:33:12  [ANONYMOUS,ANONYMOUS]   (RWED,RWED,,)");
 //    	list.add("02-13-01  08:02PM       <DIR>          bussys");
 //    	list.add("11-27-00  11:28AM                    456 dirmap.htm");
 //    	list.add("-------r--         326  1391972  1392298 Nov 22  1995 MegaPhone.sit");
