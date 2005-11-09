@@ -39,7 +39,7 @@ public class FTPFileFactory {
 	        if (system.indexOf(UNIX_IDENTIFICATION) >= 0)
 	        {
 	        	log.debug("Found UNIX identification, try to use UNIX file parser");
-	            return new UnixFileParser();
+	            return null;
 	        }
 	        else if (system.indexOf(WINDOWS_IDENTIFICATION) >= 0)
 	        {
@@ -48,10 +48,10 @@ public class FTPFileFactory {
 	        }
 	        else if (system.indexOf(VMS_IDENTIFICATION) >= 0) {
 	        	log.debug("Found VMS identifictionat, try to use VMS file parser");
-	            return new VMSFileParser();
+	            return null;
 	        } else {
 	            log.warn("Unknown SYST '" + system + "', trying UnixFileParsers");
-	            return new UnixFileParser();
+	            return null;
 	        }
 	    }
 
@@ -70,7 +70,7 @@ public class FTPFileFactory {
 	        		try
 	        		{
         			log.warn("Previous file parser couldn't parse listing. Trying a UNIX file parser");
-	        			parser = new UnixFileParser();
+	        			parser = null;
 	        			file = parser.parse(line, parentPath);
 	        		}catch (ParseException pe2)
 	        		{

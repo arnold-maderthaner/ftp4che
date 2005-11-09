@@ -30,11 +30,11 @@ public class SimpleFTPLogin {
         Logger log = Logger.getLogger("MAIN");
 
         Properties pt = new Properties();
-        pt.setProperty("connection.host", "127.0.0.1");
+        pt.setProperty("connection.host", "localhost");
         pt.setProperty("connection.port", "21");
         pt.setProperty("user.login", "ftpuser");
         pt.setProperty("user.password", "ftp4che");
-        pt.setProperty("connection.type", "AUTH_TLS_FTP_CONNECTION");
+        pt.setProperty("connection.type", "FTP_CONNECTION");
         pt.setProperty("connection.timeout", "10000");
         pt.setProperty("connection.passive", "true");
         // pt.setProperty("connection.downloadbw", "100000"); // 30KB/s

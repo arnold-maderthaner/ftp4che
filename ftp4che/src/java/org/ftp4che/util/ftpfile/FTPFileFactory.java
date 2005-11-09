@@ -38,7 +38,8 @@ public class FTPFileFactory {
         if (system.indexOf(UNIX_IDENTIFICATION) >= 0)
         {
         	log.debug("Found UNIX identification, try to use UNIX file parser");
-            return new UnixFileParser();
+        	//Rewrite the code
+            return null;
         }
         else if (system.indexOf(WINDOWS_IDENTIFICATION) >= 0)
         {
@@ -47,10 +48,10 @@ public class FTPFileFactory {
         }
         else if (system.indexOf(VMS_IDENTIFICATION) >= 0) {
         	log.debug("Found VMS identifictionat, try to use VMS file parser");
-            return new VMSFileParser();
+            return null;
         } else {
             log.warn("Unknown SYST '" + system + "', trying UnixFileParsers");
-            return new UnixFileParser();
+            return null;
         }
     }
 
@@ -68,7 +69,7 @@ public class FTPFileFactory {
         		try
         		{
         			log.warn("Previous file parser couldn't parse listing. Trying a UNIX file parser");
-        			parser = new UnixFileParser();
+        			parser = null;
         			file = parser.parse(line, parentPath);
         		}catch (ParseException pe2)
         		{
@@ -108,12 +109,12 @@ public class FTPFileFactory {
     
     public static void main(String args[])
     {
-    	FTPFileFactory factory = new FTPFileFactory("UNIX");
+    	FTPFileFactory factory = new FTPFileFactory("WINDOWS");
     	List<String> list = new ArrayList<String>();
-//    	list.add("lrwxrwxrwx   1 root     root           11 Aug 18  2000 HEADER -> welcome.msg");
-// 		list.add("drwxr-xr-x   2 root     wheel        4096 Nov 27  2000 bin");
-// 		list.add("drwxr-xr-x   2 root     wheel        4096 Sep 18 20:00 pub");
-// 		list.add("-rw-r--r--   1 root     root          312 Aug  1  1994 welcome.msg");
+    	list.add("lrwxrwxrwx   1 root     root           11 Aug 18  2000 HEADER -> welcome.msg");
+ 		list.add("drwxr-xr-x   2 root     wheel        4096 Nov 27  2000 bin");
+ 		list.add("drwxr-xr-x   2 root     wheel        4096 Sep 18 20:00 pub");
+ 		list.add("-rw-r--r--   1 root     root          312 Aug  1  1994 welcome msg");
 // 		list.add("d [R----F--] supervisor            512       Jan 16 18:53    login");
 // 		list.add("213-Status follows:");
 // 		list.add("total 28");
@@ -127,9 +128,13 @@ public class FTPFileFactory {
 //    	list.add("02-13-01  08:02PM       <DIR>          bussys");
 //    	list.add("11-27-00  11:28AM                    456 dirmap.htm");
 //    	list.add("-------r--         326  1391972  1392298 Nov 22  1995 MegaPhone.sit");
-    	list.add("+i8388621.48594,m825718503,r,s280,	djb.html");
-    	list.add("+i8388621.50690,m824255907,/,	514");
-    	list.add("+i8388621.48598,m824253270,r,s612,	514.html");
+//    	list.add("02-13-01  08:02PM       <DIR>          bussys box");
+//    	list.add("05-21-01  03:41PM       <DIR>          deskapps");
+//    	list.add("04-20-01  03:41PM       <DIR>          developr");
+//    	list.add("11-27-00  11:28AM                    0 dirmap.htm");
+//    	list.add("+i8388621.48594,m825718503,r,s280,	djb.html");
+//    	list.add("+i8388621.50690,m824255907,/,	514");
+//    	list.add("+i8388621.48598,m824253270,r,s612,	514.html");
  		List<FTPFile> files = new ArrayList<FTPFile>();
  		
  		files = factory.parse(list,"/tmp");
