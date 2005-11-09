@@ -13,9 +13,9 @@ public class EPLFFileParser implements FileParser {
 	private Locale locale;
 	public static final char EPLF_START_CHAR = '+';
 	
-	public EPLFFileParser()
+	public EPLFFileParser(Locale locale)
 	{
-		setLocale(Locale.getDefault());
+		this.locale = locale;
 	}
 	
 	public FTPFile parse(String serverString, String parentDirectory)

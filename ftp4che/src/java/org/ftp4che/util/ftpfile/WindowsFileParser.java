@@ -17,11 +17,7 @@ public class WindowsFileParser implements FileParser {
     
     private Locale locale;
     
-    public WindowsFileParser() {
-        setLocale(Locale.getDefault());
-    }
-
-    public void setLocale(Locale locale) {
+    public WindowsFileParser(Locale locale) {
         this.locale = locale;
     }
 
@@ -43,7 +39,7 @@ public class WindowsFileParser implements FileParser {
         {
         	formatter = new SimpleDateFormat(DATE_FORMAT_STRING1, Locale.ENGLISH);
         	date = formatter.parse(dateToken + " " + timeToken);
-        	setLocale(Locale.ENGLISH);
+        	this.locale = Locale.ENGLISH;
         }
         boolean directory = false;
         long size = -1;

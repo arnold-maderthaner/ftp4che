@@ -20,14 +20,18 @@ public class FTPFileFactory {
     private String system;
 
     private FileParser parser = null;
-
+    
+    public Locale locale;
+    
     public FTPFileFactory(String system) {
         this.system = system.toUpperCase();
+        this.locale = Locale.getDefault();
         parser = getParserInstance();
     }
-
-    public void generateDateParsers(Locale locale) {
-        parser.setLocale(locale);
+    public FTPFileFactory(String system,Locale locale) {
+        this.system = system.toUpperCase();
+        this.locale = locale;
+        parser = getParserInstance();
     }
 
     public String getSystem() {
@@ -44,11 +48,11 @@ public class FTPFileFactory {
         else if (system.indexOf(WINDOWS_IDENTIFICATION) >= 0)
         {
         	log.debug("Found WINDOWS identification, try to use WINDOWS file parser");
-            return new WindowsFileParser();
+            return new WindowsFileParser(locale);
         }
         else if (system.indexOf(VMS_IDENTIFICATION) >= 0) {
         	log.debug("Found VMS identifictionat, try to use VMS file parser");
-            return null;
+            return new VMSFileParser(locale);
         } else {
             log.warn("Unknown SYST '" + system + "', trying UnixFileParsers");
             return null;
@@ -76,19 +80,19 @@ public class FTPFileFactory {
         			try
         			{
         				log.warn("Previous file parser couldn't parse listing. Trying a EPLF file parser");
-        				parser = new EPLFFileParser();
+        				parser = new EPLFFileParser(locale);
         				file = parser.parse(line, parentPath);
         			}catch (ParseException pe5)
         			{
         			try
             		{
         				log.warn("Previous file parser couldn't parse listing. Trying a netware file parser");
-            			parser = new NetwareFileParser();
+            			parser = new NetwareFileParser(locale);
             			file = parser.parse(line, parentPath);
             		}catch (ParseException pe3)
             		{
             			log.warn("Last chance!!! calling LastChanceFileParser");
-            			parser = new LastChanceFileParser();
+            			parser = new LastChanceFileParser(locale);
             			try
             			{
             				file = parser.parse(line, parentPath);

@@ -18,9 +18,9 @@ public class NetwareFileParser implements FileParser {
     
     private Locale locale;
     
-    public NetwareFileParser()
+    public NetwareFileParser(Locale locale)
     {
-    	 setLocale(Locale.getDefault());
+    	 this.locale = locale;
     }
     
 	/**
