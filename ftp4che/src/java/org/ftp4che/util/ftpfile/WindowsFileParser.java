@@ -13,7 +13,7 @@ public class WindowsFileParser implements FileParser {
 
     private static final int MIN_COUNT = 4;
 
-    private static final String DATE_FORMAT_STRING1 = "MM-dd-yy hh:mma";
+    private static final String formatString[] = {"MM-dd-yy hh:mma"};
     
     private Locale locale;
     
@@ -31,15 +31,30 @@ public class WindowsFileParser implements FileParser {
         Date date = null;
         String dateToken = st.nextToken();
         String timeToken = st.nextToken();
-        try
+        boolean formatted = false;
+        for(int i = 0; i < formatString.length; i++)
         {
-        	formatter = new SimpleDateFormat(DATE_FORMAT_STRING1, locale);
-        	date = formatter.parse(dateToken + " " + timeToken);
-        }catch (ParseException pe)
-        {
-        	formatter = new SimpleDateFormat(DATE_FORMAT_STRING1, Locale.ENGLISH);
-        	date = formatter.parse(dateToken + " " + timeToken);
-        	this.locale = Locale.ENGLISH;
+        	try
+        	{
+        		formatter = new SimpleDateFormat(formatString[i], locale);
+        		date = formatter.parse(dateToken + " " + timeToken);
+        		formatted = true;
+        	}catch (ParseException pe)
+        	{
+        		try
+        		{
+        			formatter = new SimpleDateFormat(formatString[i], Locale.ENGLISH);
+        			date = formatter.parse(dateToken + " " + timeToken);
+        			this.locale = Locale.ENGLISH;
+        			formatted = true;
+        		}catch(ParseException pe2)
+				{
+					//Ignore this exception
+					formatted = false;
+				}
+        	}
+        	if(formatted)
+        		break;
         }
         boolean directory = false;
         long size = -1;

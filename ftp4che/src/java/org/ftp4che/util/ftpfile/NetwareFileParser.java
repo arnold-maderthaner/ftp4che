@@ -12,7 +12,7 @@ public class NetwareFileParser implements FileParser {
 
     private static final char NORMAL_DIRECTORY_IDENTIFICATION = 'd';
 
-    private static final String DATE_FORMAT_STRING1 = "MMM dd HH:mm";
+    private static final String formatString[] = {"MMM dd HH:mm"};
 
     private SimpleDateFormat formatter;
     
@@ -50,16 +50,30 @@ public class NetwareFileParser implements FileParser {
 		}
 		dateToken = dateToken.substring(1);
 		Date date = null;
-		try
+		boolean formatted = false;
+		for(int i = 0; i < formatString.length; i++)
 		{
-			formatter = new SimpleDateFormat(DATE_FORMAT_STRING1, locale);
-			date = formatter.parse(dateToken);
-		}catch (ParseException pe)
-		{
-			//Try other formatters here !
-			formatter = new SimpleDateFormat(DATE_FORMAT_STRING1, Locale.ENGLISH);
-			date = formatter.parse(dateToken);
-			setLocale(Locale.ENGLISH);
+			try
+			{
+				formatter = new SimpleDateFormat(formatString[i], locale);
+				date = formatter.parse(dateToken);
+				formatted = true;
+			}catch (ParseException pe)
+			{
+				try
+				{
+					formatter = new SimpleDateFormat(formatString[i], Locale.ENGLISH);
+					date = formatter.parse(dateToken);
+					locale = Locale.ENGLISH;
+					formatted = true;
+				}catch(ParseException pe2)
+				{
+					//Ignore this exception
+					formatted = false;
+				}
+			}
+			if(formatted)
+				break;
 		}
 		String file = st.nextToken();
 		FTPFile ftpFile = new FTPFile(FTPFile.NETWARE,parentDirectory,file,serverString);
@@ -68,12 +82,6 @@ public class NetwareFileParser implements FileParser {
 		ftpFile.setMode(modes);
 		ftpFile.setOwner(user);
 		return ftpFile;
-	}
-
-	public void setLocale(Locale locale) {
-		// TODO Auto-generated method stub
-		this.locale = locale;
-		
 	}
 
 }
