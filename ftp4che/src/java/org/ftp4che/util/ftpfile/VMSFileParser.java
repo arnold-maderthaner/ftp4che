@@ -51,7 +51,7 @@ public class VMSFileParser implements FileParser {
 		boolean directory = false;
 		if (name.endsWith("DIR")) {
 			directory = true;
-			name = name.substring(0,name.indexOf("DIR"));
+			name = name.substring(0,name.indexOf("DIR") - 1);
 		}
 		long size = -1;
 		String sizeString = st.nextToken();
