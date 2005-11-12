@@ -139,6 +139,10 @@ public class FTPFile implements Comparable {
     public String getName() {
         return name;
     }
+    
+    protected void setName(String name) {
+        this.name = name;
+    }
 
     public String getOwner() {
         return owner;
