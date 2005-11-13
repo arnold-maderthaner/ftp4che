@@ -21,14 +21,14 @@ import java.text.ParseException;
 import java.util.Locale;
 
 import org.apache.log4j.Logger;
-	
+
 public class LastChanceFileParser implements FileParser {
     public static Logger log = Logger.getLogger(LastChanceFileParser.class);
 	private Locale locale;
-
-	public LastChanceFileParser()
+	
+	public LastChanceFileParser(Locale locale)
 	{
-		setLocale(Locale.getDefault());
+		this.locale = locale;
 	}
 	
 	public FTPFile parse(String serverString, String parentDirectory)
@@ -37,10 +37,4 @@ public class LastChanceFileParser implements FileParser {
 		return new FTPFile("THIS SHOULD NEVER HAPPEN","THIS IS AN ERROR");
 		
 	}
-
-	public void setLocale(Locale locale) {
-		this.locale = locale;
-
-	}
-
 }

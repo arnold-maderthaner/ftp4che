@@ -19,20 +19,13 @@ package org.ftp4che.util.ftpfile;
 
 import java.text.ParseException;
 import java.util.Date;
-import java.util.Locale;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 
 public class EPLFFileParser implements FileParser {
 	private static final Logger log = Logger.getLogger(EPLFFileParser.class);
-	private Locale locale;
 	public static final char EPLF_START_CHAR = '+';
-	
-	public EPLFFileParser()
-	{
-		setLocale(Locale.getDefault());
-	}
 	
 	public FTPFile parse(String serverString, String parentDirectory)
 			throws ParseException {
@@ -74,11 +67,6 @@ public class EPLFFileParser implements FileParser {
 		file.setDirectory(directory);
 		file.setSize(size);
 		return file;
-	}
-
-	public void setLocale(Locale locale) {
-		this.locale = locale;
-
 	}
 
 }

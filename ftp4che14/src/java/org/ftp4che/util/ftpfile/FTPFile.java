@@ -71,6 +71,10 @@ public class FTPFile implements Comparable {
         this.path = path;
         this.directory = directory;
     }
+
+    public FTPFile(String path, String name) {
+        this(path, name, false);
+    }
     
     public FTPFile(String path,boolean directory)
     {
@@ -83,10 +87,6 @@ public class FTPFile implements Comparable {
     	}
     	this.name = st.nextToken();
     	this.directory = directory;
-    }
-    
-    public FTPFile(String path, String name) {
-        this(path, name, false);
     }
 
     public FTPFile(File file) {
@@ -138,6 +138,10 @@ public class FTPFile implements Comparable {
 
     public String getName() {
         return name;
+    }
+    
+    protected void setName(String name) {
+        this.name = name;
     }
 
     public String getOwner() {
