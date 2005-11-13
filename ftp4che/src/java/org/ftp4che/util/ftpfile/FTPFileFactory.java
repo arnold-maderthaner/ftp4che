@@ -58,8 +58,7 @@ public class FTPFileFactory {
         if (system.indexOf(UNIX_IDENTIFICATION) >= 0)
         {
         	log.debug("Found UNIX identification, try to use UNIX file parser");
-        	//Rewrite the code
-            return null;
+            return new UnixFileParser(locale);
         }
         else if (system.indexOf(WINDOWS_IDENTIFICATION) >= 0)
         {
@@ -89,7 +88,7 @@ public class FTPFileFactory {
         		try
         		{
         			log.warn("Previous file parser couldn't parse listing. Trying a UNIX file parser");
-        			parser = null;
+        			parser = new UnixFileParser(locale);
         			file = parser.parse(line, parentPath);
         		}catch (ParseException pe2)
         		{
