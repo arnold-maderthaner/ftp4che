@@ -67,9 +67,6 @@ public class UnixFileParser implements FileParser {
 			}
 		}
 		
-		// parse date / time
-		String tmpDate = tokens[5] + "-" + tokens[6] + "-";
-		
 		/* look which date format is used
 		 * 
 		 * 1. format: MMM dd hh:mm
