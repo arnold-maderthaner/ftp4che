@@ -79,7 +79,7 @@ public class FTPFileFactory {
     {
         List files = new ArrayList(serverLines.size());
                 
-        for (Iterator it = files.iterator(); it.hasNext();) {
+        for (Iterator it = serverLines.iterator(); it.hasNext();) {
         	FTPFile file = null;
             String line = (String) it.next();
             
