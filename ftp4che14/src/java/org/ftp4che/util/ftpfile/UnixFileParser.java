@@ -25,6 +25,13 @@ public class UnixFileParser implements FileParser {
 		if ( serverString == null )
 			throw new ParseException("Did not get a line - will skip parsing!", 0);
 		
+		// validate the given line 
+		char start = serverString.charAt(0);
+		if ( start != 'd' && start != 'l' && start != '-')
+			return null;
+		else if ( start == '+' )
+			throw new ParseException("Looks like this one is the wrong parser, but found EPLF format!", 0);
+		
 		FTPFile file = new FTPFile(FTPFile.UNIX, parentDirectory, null, serverString);
 		String[] tokens = serverString.split(" ++");
 		
@@ -32,16 +39,6 @@ public class UnixFileParser implements FileParser {
 		if ( tokens.length < 8 )
 			throw new ParseException("The given line is unparseable for UnixFileParser - there are too less tokens in, need at least 8 ones!", serverString.length());
 		
-		// validate the given line 
-		if ( !serverString.startsWith("-") &&
-			 !serverString.startsWith("d") &&
-			 !serverString.startsWith("l") ) {
-			
-			if ( serverString.startsWith("+") )
-				throw new ParseException("Looks like this one is the wrong parser, but found EPLF format!", 0);
-			throw new ParseException("Could not locate any file, directory or link in the parse line!", 0);
-		}
-
 		file.setMode( tokens[0] );
 		file.setDirectory( tokens[0].startsWith("d") );
 		file.setLink( tokens[0].startsWith("l") );
