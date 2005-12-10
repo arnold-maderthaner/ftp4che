@@ -81,6 +81,7 @@ public class FTPFileFactory {
         	FTPFile file = null;
         	try
         	{
+                log.debug("Trying to parse line: " + line);
         		file = parser.parse(line, parentPath);
         	}catch (ParseException pe)
         	{
