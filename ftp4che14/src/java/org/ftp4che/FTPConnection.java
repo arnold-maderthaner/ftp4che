@@ -304,6 +304,7 @@ public abstract class FTPConnection {
                     + ":" + getAddress().getPort(), ioe);
         }
         socketProvider = null;
+        this.setConnectionStatus(FTPConnection.DISCONNECTED);
     }
 
     /**
