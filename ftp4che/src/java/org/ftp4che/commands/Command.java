@@ -96,6 +96,8 @@ public class Command {
     
     public final static String MLSD = "MLSD";
     
+    public final static String PRET = "PRET";
+    
     String command;
 
     String[] parameter;

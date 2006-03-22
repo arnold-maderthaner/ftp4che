@@ -71,6 +71,8 @@ public class SecureFTPConnection extends FTPConnection {
 			for (String s : lines) {
 				if (s.indexOf(Command.SSCN) > -1) {
 					setConnectionSSCNType(FTPConnection.SSCN_ON);
+				}else if(s.indexOf(Command.PRET) > -1) {
+					setPretSupport(true);
 				}
 			}
 

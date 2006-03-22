@@ -188,6 +188,8 @@ public abstract class FTPConnection {
     private KeyManager[] keyManagers = {};
     
     private boolean tryResume = false;
+    
+    private boolean pretSupport = false;
 
     /**
      * @author arnold,kurt
@@ -1257,6 +1259,11 @@ public abstract class FTPConnection {
      */
     private SocketProvider initDataSocket(Command command, Reply commandReply)
             throws IOException, FtpIOException, FtpWorkflowException {
+    	if(isPretSupport())
+    	{
+    		Command pretCommand = new Command(Command.PRET,command.toString());
+    		sendCommand(pretCommand).dumpReply();
+    	}
         InetSocketAddress dataSocket = sendPassiveMode();
         SocketProvider provider = new SocketProvider(false);
         provider.connect(dataSocket, getProxy(), getDownloadBandwidth(),
@@ -1732,5 +1739,13 @@ public abstract class FTPConnection {
 		reply.dumpReply();
 		reply.validate();
 		return ReplyFormatter.parseXMD5Reply(reply);
+	}
+
+	public boolean isPretSupport() {
+		return pretSupport;
+	}
+
+	public void setPretSupport(boolean pretSupport) {
+		this.pretSupport = pretSupport;
 	}
 }

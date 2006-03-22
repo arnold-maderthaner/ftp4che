@@ -96,11 +96,13 @@ public class Command {
   
     public final static String MLSD = "MLSD";
 
-    private static final String[] nullString = {};
+    public final static String PRET = "PRET";
     
     String command;
 
     String[] parameter;
+    
+    private static final String[] nullString = {};
 
     public Command(String command) {
         this(command, nullString);

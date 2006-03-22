@@ -17,6 +17,9 @@
 package org.ftp4che.impl;
 
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 import org.ftp4che.FTPConnection;
 import org.ftp4che.commands.Command;
@@ -28,6 +31,7 @@ import org.ftp4che.exception.NotConnectedException;
 import org.ftp4che.io.ReplyWorker;
 import org.ftp4che.io.SocketProvider;
 import org.ftp4che.reply.Reply;
+import org.ftp4che.reply.ReplyCode;
 
 /**
  * @author arnold
@@ -76,6 +80,18 @@ public class NormalFTPConnection extends FTPConnection {
             reply.dumpReply();
             reply.validate();
         }
+        reply = sendCommand(new Command(Command.FEAT));
+        reply.dumpReply();
+		if (ReplyCode.isPositiveCompletionReply(reply)) {
+			List lines = reply.getLines();
+			for (Iterator it = lines.iterator(); it.hasNext(); ) {
+				String s = (String)it.next();
+				if (s.indexOf(Command.PRET) > -1) {
+					setPretSupport(true);
+				}
+			}
+
+		}
         this.setConnectionStatus(FTPConnection.CONNECTED);
         fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(),
                 null));
