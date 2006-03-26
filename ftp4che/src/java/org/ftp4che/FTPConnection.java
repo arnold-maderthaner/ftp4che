@@ -18,9 +18,12 @@ package org.ftp4che;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PipedInputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
@@ -894,7 +897,81 @@ public abstract class FTPConnection {
         fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(),
                 commandReply, fromFile, toFile));
     }
+    
+    public InputStream downloadStream(FTPFile fromFile) throws IOException, FtpWorkflowException, FtpIOException {
+        
+        PipedInputStream pis = new PipedInputStream();
+        
+        class DownStreamingThread extends Thread {
+            FTPConnection connection;
+            FTPFile fromFile;
+            PipedInputStream pis;
+            
+            public DownStreamingThread(FTPConnection connection, FTPFile fromFile, PipedInputStream pis) {
+                super();
+                this.connection = connection;
+                this.fromFile = fromFile;
+                this.pis = pis;
+            }
 
+            public void run() {
+                try {
+                    connection.streamFile(fromFile, pis);
+                }catch(Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        
+        (new DownStreamingThread(this, fromFile, pis)).start();
+        
+        try {
+            Thread.sleep(1000); // TODO: find better method to ensure that in/out pipes are connected already
+        }catch(Exception e) {}
+        
+        return pis;
+    }
+    
+    
+    private void streamFile(FTPFile fromFile, PipedInputStream pis) throws IOException, FtpWorkflowException, FtpIOException {
+        
+        setConnectionStatus(RECEIVING_FILE_STARTED);
+        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(), fromFile, null));
+        setConnectionStatus(RECEIVING_FILE);
+
+        RetrieveCommand command = new RetrieveCommand(Command.RETR, fromFile, pis);
+        SocketProvider provider = null;
+
+        if (getConnectionType() == FTPConnection.AUTH_SSL_FTP_CONNECTION
+                || getConnectionType() == FTPConnection.AUTH_TLS_FTP_CONNECTION) {
+            Command pbsz = new Command(Command.PBSZ, "0");
+            (sendCommand(pbsz)).dumpReply();
+            Command prot = new Command(Command.PROT, "P");
+            (sendCommand(prot)).dumpReply();
+        }
+        
+        // Send TYPE I
+        Command commandType = new Command(Command.TYPE_I);
+        (sendCommand(commandType)).dumpReply();
+        Reply commandReply = new Reply();
+        if (isPassiveMode()) {
+            provider = initDataSocket(command, commandReply);
+        } else {
+            provider = sendPortCommand(command, commandReply);
+        }
+
+        command.setDataSocket(provider);
+        // INFO response from ControllConnection is ignored
+        command.fetchDataConnectionReply(RetrieveCommand.STREAM_BASED);
+        if (commandReply.getLines().size() == 1) {
+            (ReplyWorker.readReply(socketProvider)).dumpReply();
+        }
+
+        setConnectionStatus(RECEIVING_FILE_ENDED);
+        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(),
+                commandReply, fromFile, null));
+    }
+    
     /**
      * This method is used to download a directory from the server to a specifed
      * local directory object

@@ -16,22 +16,31 @@
  */
 package org.ftp4che.commands;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PipedInputStream;
+import java.nio.ByteBuffer;
 
 import org.ftp4che.io.ReplyWorker;
 import org.ftp4che.reply.Reply;
 import org.ftp4che.util.ftpfile.FTPFile;
 
 public class RetrieveCommand extends DataConnectionCommand {
+    
+    public static final int FILE_BASED = 0;
+    public static final int STREAM_BASED = 1;
+    public static final int BYTEBUFFER_BASED = 2;
 
     private FTPFile fromFile;
 
     private FTPFile toFile;
     
+    private PipedInputStream inputPipe;
+    
+    private ByteBuffer byteBuffer;
+    
     private long resumePosition = -1;
-
+    
     // TODO: throw Exception if fromFile not Exists
 
     public RetrieveCommand(String command, FTPFile fromFile) {
@@ -44,10 +53,41 @@ public class RetrieveCommand extends DataConnectionCommand {
         setFromFile(fromFile);
         setToFile(toFile);
     }
-
+    
+    public RetrieveCommand(String command, FTPFile fromFile, PipedInputStream is) {
+        super(command, fromFile.toString());
+        setFromFile(fromFile);
+        setInputPipe(is);
+    }
+    
+    public RetrieveCommand(String command, FTPFile fromFile, ByteBuffer bb) {
+        super(command, fromFile.toString());
+        setFromFile(fromFile);
+        setByteBuffer(bb);
+    }
+ 
+    
     public Reply fetchDataConnectionReply() throws FileNotFoundException,
+    IOException {
+        return fetchDataConnectionReply(RetrieveCommand.FILE_BASED);
+    }
+
+    public Reply fetchDataConnectionReply(int method) throws FileNotFoundException,
             IOException {
-        ReplyWorker worker = new ReplyWorker(getDataSocket(), this);
+        ReplyWorker worker = null;
+        
+        switch ( method ) {
+            case RetrieveCommand.STREAM_BASED:
+                worker = new ReplyWorker(getDataSocket(), this, this.inputPipe, method);
+                break;
+            case RetrieveCommand.BYTEBUFFER_BASED:
+                worker = new ReplyWorker(getDataSocket(), this, this.byteBuffer, method);
+                break;
+            default:
+                worker = new ReplyWorker(getDataSocket(), this, null, RetrieveCommand.FILE_BASED);
+                break;
+        }
+        
         worker.start();
         while (worker.getStatus() == ReplyWorker.UNKNOWN) {
             try {
@@ -102,5 +142,19 @@ public class RetrieveCommand extends DataConnectionCommand {
 	public void setResumePosition(long resumePosition) {
 		this.resumePosition = resumePosition;
 	}
+
+    /**
+     * @param inputPipe The inputPipe to set.
+     */
+    public void setInputPipe(PipedInputStream inputPipe) {
+        this.inputPipe = inputPipe;
+    }
+
+    /**
+     * @param byteBuffer The byteBuffer to set.
+     */
+    public void setByteBuffer(ByteBuffer byteBuffer) {
+        this.byteBuffer = byteBuffer;
+    }
 
 }

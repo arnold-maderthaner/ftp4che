@@ -20,6 +20,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -53,7 +55,15 @@ public class ReplyWorker extends Thread {
     private Exception caughtException = null;
 
     private SocketProvider socketProvider;
-
+    
+    private PipedInputStream inputPipe;
+    
+    private PipedOutputStream outputPipe;
+    
+    private ByteBuffer downloadBuffer;
+    
+    private int downloadMethod = RetrieveCommand.FILE_BASED;
+    
     private Command command;
 
     private Charset charset = Charset.forName("ISO8859-1");
@@ -69,6 +79,27 @@ public class ReplyWorker extends Thread {
     public ReplyWorker(SocketProvider sc, Command command) {
         setSocketProvider(sc);
         setCommand(command);
+    }
+    
+    public ReplyWorker(SocketProvider sc, Command command, Object res, int method) throws IOException {
+        setSocketProvider(sc);
+        setCommand(command);
+        setDownloadMethod(method);
+        
+        switch ( getDownloadMethod() ) {
+            case RetrieveCommand.STREAM_BASED:
+                setInputPipe((PipedInputStream) res);
+                outputPipe = new PipedOutputStream();
+                inputPipe.connect(outputPipe);
+                break;
+            
+            case RetrieveCommand.BYTEBUFFER_BASED:
+                setDownloadBuffer((ByteBuffer) res);
+                break;
+                
+            default:
+                break;
+        }
     }
 
     public static Reply readReply(SocketProvider socketProvider) {
@@ -177,24 +208,30 @@ public class ReplyWorker extends Thread {
                 try {
                     log.debug("Download file: "
                             + retrieveCommand.getFromFile().toString());
-                    FileOutputStream out = new FileOutputStream(retrieveCommand
-                            .getToFile().getFile());
-                    FileChannel channel = out.getChannel();
-                    if(retrieveCommand.getResumePosition() != -1)
-                    {
-                    	try
-                    	{
-                    		channel.position(retrieveCommand.getResumePosition());
-                    	}catch (IOException ioe)
-                    	{
-                    		 setCaughtException(ioe);
-                             setStatus(ReplyWorker.ERROR_IO_EXCEPTION);
-                             try
-                     		 {
-                     			channel.close();
-                     		 }catch (IOException ioe2) {}
-                     		 return;
-                    	}
+                    FileOutputStream out = null;
+                    FileChannel channel = null;
+                    
+                    if (getDownloadMethod() == RetrieveCommand.FILE_BASED) {
+                        out = new FileOutputStream(retrieveCommand.getToFile().getFile());
+                        channel = out.getChannel();
+                        if(retrieveCommand.getResumePosition() != -1)
+                        {
+                        	try
+                        	{
+                        		channel.position(retrieveCommand.getResumePosition());
+                        	}catch (IOException ioe)
+                        	{
+                        		 setCaughtException(ioe);
+                                 setStatus(ReplyWorker.ERROR_IO_EXCEPTION);
+                                 try
+                         		 {
+                         			channel.close();
+                         		 }catch (IOException ioe2) {}
+                         		 return;
+                        	}
+                        }
+                    }else if (getDownloadMethod() == RetrieveCommand.BYTEBUFFER_BASED) {
+                        // TODO: byte buffer handling for resume
                     }
                     int amount;
                     try {
@@ -206,17 +243,42 @@ public class ReplyWorker extends Thread {
                                 }
                             }
                             buffer.flip();
-                            while (buffer.hasRemaining())
-                                channel.write(buffer);
+                            while (buffer.hasRemaining()) {
+                                if (getDownloadMethod() == RetrieveCommand.STREAM_BASED) {
+                                    int rem = buffer.remaining();
+                                    byte[] buf = new byte[rem];
+                                    buffer.get(buf, 0, rem);
+                                    this.outputPipe.write(buf, 0, rem);
+                                }else if (getDownloadMethod() == RetrieveCommand.BYTEBUFFER_BASED) {
+                                    // TODO: byte buffer handling for getting data
+                                }else {
+                                    channel.write(buffer);
+                                }
+                            }
 
                             buffer.clear();
                         }
                         buffer.flip();
-                        while (buffer.hasRemaining())
-                            channel.write(buffer);
+                        while (buffer.hasRemaining()) {
+                            if (getDownloadMethod() == RetrieveCommand.STREAM_BASED) {
+                                int rem = buffer.remaining();
+                                byte[] buf = new byte[rem];
+                                buffer.get(buf, 0, rem);
+                                this.outputPipe.write(buf, 0, rem);
+                            }else if (getDownloadMethod() == RetrieveCommand.BYTEBUFFER_BASED) {
+                                // TODO: byte buffer handling for getting data
+                            }else {
+                                channel.write(buffer);
+                            }
+                        }
                         buffer.clear();
                         setStatus(ReplyWorker.FINISHED);
-                        channel.close();
+                        
+                        if (channel != null)
+                            channel.close();
+                        if (this.outputPipe != null)
+                            this.outputPipe.close();
+                        
                         getSocketProvider().close();
                     } catch (IOException ioe) {
                         setCaughtException(ioe);
@@ -385,5 +447,33 @@ public class ReplyWorker extends Thread {
 
     public void setReply(Reply reply) {
         this.reply = reply;
+    }
+
+    /**
+     * @param inputPipe The inputPipe to set.
+     */
+    public void setInputPipe(PipedInputStream inputPipe) {
+        this.inputPipe = inputPipe;
+    }
+
+    /**
+     * @param downloadBuffer The downloadBuffer to set.
+     */
+    public void setDownloadBuffer(ByteBuffer downloadBuffer) {
+        this.downloadBuffer = downloadBuffer;
+    }
+
+    /**
+     * @return Returns the downloadMethod.
+     */
+    public int getDownloadMethod() {
+        return downloadMethod;
+    }
+
+    /**
+     * @param downloadMethod The downloadMethod to set.
+     */
+    public void setDownloadMethod(int downloadMethod) {
+        this.downloadMethod = downloadMethod;
     }
 }
