@@ -309,6 +309,7 @@ public abstract class FTPConnection {
         }
         socketProvider = null;
         this.setConnectionStatus(FTPConnection.DISCONNECTED);
+        fireConnectionStatusChanged(new FTPEvent(this,getConnectionStatus()));
     }
 
     /**
