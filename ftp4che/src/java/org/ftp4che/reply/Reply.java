@@ -68,6 +68,9 @@ public class Reply {
     }
 
     public void validate() throws FtpWorkflowException, FtpIOException {
+    	if (this.getLines().size() <= 0)
+    		throw new FtpIOException("000", "Did not receive any reply!");
+    		
         if (ReplyCode.isPermanentNegativeCompletionReply(this)) {
             if (getReplyCode().intern() == ReplyCode.REPLY_530.intern())
                 throw new NotConnectedException(getReplyMessage());
