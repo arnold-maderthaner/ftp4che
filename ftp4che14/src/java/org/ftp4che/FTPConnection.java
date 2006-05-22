@@ -338,8 +338,7 @@ public abstract class FTPConnection {
         try {
         	ReplyWorker.readReply(socketProvider);
         }catch(IOException ioe) {
-        	this.setConnectionStatus(FTPConnection.DISCONNECTED);
-        	fireConnectionStatusChanged(new FTPEvent(this,getConnectionStatus()));
+        	disconnect();
         	throw ioe;
         }
         
