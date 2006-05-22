@@ -1,11 +1,18 @@
-things todo for version 0.4 and 0.5:
-	add proxy support till 0.5
-	add junit tests
-	bugfixing
-	get other not implemented ftp rfc's and put them in doc/
-	improve user methods for userbility (chefxp,chefxp4jboss,...)
-	
-things todo for version 0.6:
-	new constructor with URL 
-	ssh ftp
+things todo for version 0.7:
+	- evergreens
+		* bugfixing
+		* get other not implemented ftp rfc's and put them in doc/
+		* improve user methods for userbility (chefxp,chefxp4jboss,...)
+
+	- new constructor with URL
+	- ssh ftp
+	- CPSV (look in forum "help" for details) ??
+	- client side encryption using FUSE ??
+	- add SOCKS5 proxy support
+	- Add handling for TYPE A (download / upload)
+	- downloadByteBuffer
+		* byte buffer handling for resume
+		* byte buffer handling for getting data
+	- uploadStream ??
+	- uploadByteBuffer ??
 	
