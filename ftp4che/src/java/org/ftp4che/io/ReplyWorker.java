@@ -102,89 +102,87 @@ public class ReplyWorker extends Thread {
         }
     }
 
-    public static Reply readReply(SocketProvider socketProvider) {
+    public static Reply readReply(SocketProvider socketProvider) throws IOException {
         return ReplyWorker.readReply(socketProvider, false);
     }
 
     public static Reply readReply(SocketProvider socketProvider,
-            boolean isListReply) {
+            boolean isListReply) throws IOException {
         List<String> lines = new ArrayList<String>();
         Charset charset = Charset.forName("ISO8859-1");
         CharsetDecoder charDecoder = charset.newDecoder();
         Logger log = Logger.getLogger(ReplyWorker.class.getName());
-        try {
-            String output = "";
-            String out = "";
-            ByteBuffer buf = null;
-            if (!isListReply)
-                buf = ByteBuffer.allocateDirect(1024);
-            else
-                buf = ByteBuffer.allocateDirect(16384);
-            int amount;
-            buf.clear();
-            socketProvider.socket().setKeepAlive(true);
-            boolean read = true;
-            while (read && (amount = socketProvider.read(buf)) >= 0) {
-                if (amount == 0) {
-                    try {
-                        sleep(50);
-                    } catch (InterruptedException ie) {
-                    }
-                    continue;
-                }
 
-                buf.flip();
-                out = charDecoder.decode(buf).toString();
-                
-                log.debug("Read data from server (String) -> " + out);
-                log.debug("Read data from server (bytes) -> " + Arrays.toString(out.getBytes()));
-                output += out;
-                buf.clear();
-                String[] tmp = output.split("\n");
+        String output = "";
+		String out = "";
+		ByteBuffer buf = null;
+		if (!isListReply)
+			buf = ByteBuffer.allocateDirect(1024);
+		else
+			buf = ByteBuffer.allocateDirect(16384);
+		int amount;
+		buf.clear();
+		socketProvider.socket().setKeepAlive(true);
+		boolean read = true;
+		while (read && (amount = socketProvider.read(buf)) >= 0) {
+			if (amount == 0) {
+				try {
+					sleep(50);
+				} catch (InterruptedException ie) {
+				}
+				continue;
+			}
 
-                if (!isListReply
-                        && tmp.length > 0
-                        && tmp[tmp.length - 1].length() > 3
-                        && tmp[tmp.length - 1].endsWith("\r")
-                        && tmp[tmp.length - 1].charAt(3) == ' '
-                        && Pattern.matches("[0-9]+", tmp[tmp.length - 1]
-                                .substring(0, 3))) {
-                    String[] stringLines = output.split("\n");
+			buf.flip();
+			out = charDecoder.decode(buf).toString();
 
-                    for (int i = 0; i < stringLines.length; i++)
-                    {
-                        log.debug("Adding line to result list -> " + stringLines[i]);
-                        lines.add(stringLines[i]);
-                    }
-                    read = false;
-                    output = "";
-                    buf.clear();
-                }
-                try {
-                    sleep(50);
-                } catch (InterruptedException ie) {
-                }
-            }
-            if (isListReply) {
-                String[] stringLines = output.split("\r\n");
+			log.debug("Read data from server (String) -> " + out);
+			log.debug("Read data from server (bytes) -> "
+					+ Arrays.toString(out.getBytes()));
+			output += out;
+			buf.clear();
+			String[] tmp = output.split("\n");
 
-                for (int i = 0; i < stringLines.length; i++) {
-                    // Empty lines cause NoSuchElementException in
-                    // FTPFile org.ftp4che.util.FTPFile.parseLine(String line)
-                    // (unsave use of StringTokenizer.nextToken
-                    if (stringLines[i].length() > 0) {
-                        log.debug("LIST Reply lines -> " + stringLines[i]);
-                        lines.add(stringLines[i]);
-                    }
-                }
-                output = "";
-                buf.clear();
-                socketProvider.close();
-            }
-        } catch (Exception e) {
-            log.error("Exception in reading Reply! Exception was: "
-                    + e.getMessage(), e);
-        }
+			if (!isListReply
+					&& tmp.length > 0
+					&& tmp[tmp.length - 1].length() > 3
+					&& tmp[tmp.length - 1].endsWith("\r")
+					&& tmp[tmp.length - 1].charAt(3) == ' '
+					&& Pattern.matches("[0-9]+", tmp[tmp.length - 1].substring(
+							0, 3))) {
+				String[] stringLines = output.split("\n");
+
+				for (int i = 0; i < stringLines.length; i++) {
+					log
+							.debug("Adding line to result list -> "
+									+ stringLines[i]);
+					lines.add(stringLines[i]);
+				}
+				read = false;
+				output = "";
+				buf.clear();
+			}
+			try {
+				sleep(50);
+			} catch (InterruptedException ie) {
+			}
+		}
+		if (isListReply) {
+			String[] stringLines = output.split("\r\n");
+
+			for (int i = 0; i < stringLines.length; i++) {
+				// Empty lines cause NoSuchElementException in
+				// FTPFile org.ftp4che.util.FTPFile.parseLine(String line)
+				// (unsave use of StringTokenizer.nextToken
+				if (stringLines[i].length() > 0) {
+					log.debug("LIST Reply lines -> " + stringLines[i]);
+					lines.add(stringLines[i]);
+				}
+			}
+			output = "";
+			buf.clear();
+			socketProvider.close();
+		}
 
         return new Reply(lines);
     }
@@ -196,8 +194,14 @@ public class ReplyWorker extends Thread {
             throw new IllegalArgumentException("Given connection is not open!");
 
         if (getCommand() instanceof ListCommand) {
-            setReply(ReplyWorker.readReply(getSocketProvider(), true));
-            setStatus(ReplyWorker.FINISHED);
+        	try {
+        		setReply(ReplyWorker.readReply(getSocketProvider(), true));
+                setStatus(ReplyWorker.FINISHED);
+        	}catch(IOException ioe) {
+        		setCaughtException(ioe);
+        		setStatus(ReplyWorker.ERROR_IO_EXCEPTION);
+        	}
+
             return;
         } else if (getCommand() instanceof RetrieveCommand) {
             RetrieveCommand retrieveCommand = (RetrieveCommand) getCommand();
