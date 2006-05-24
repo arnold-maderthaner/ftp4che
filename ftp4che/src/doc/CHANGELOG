@@ -1,3 +1,12 @@
+changes from 0.6.2 to 0.7:
+--------------------------
+added streaming methods
+fixed connection state DISCONNECTED
+
+changes from version 0.6 to 0.6.2:
+----------------------------------
+some little fixes
+
 changes from version 0.5 to 0.6:
 --------------------------------
 fixed/added implicit ssl and tls support
