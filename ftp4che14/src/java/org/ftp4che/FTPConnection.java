@@ -336,7 +336,7 @@ public abstract class FTPConnection {
         
         Reply reply = null;
         try {
-        	ReplyWorker.readReply(socketProvider);
+        	reply = ReplyWorker.readReply(socketProvider);
         }catch(IOException ioe) {
         	disconnect();
         	throw ioe;
