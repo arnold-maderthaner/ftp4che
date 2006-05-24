@@ -23,7 +23,6 @@ import java.io.PipedInputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
@@ -114,6 +113,8 @@ public abstract class FTPConnection {
     public static final int DISCONNECTED = 1002;
 
     public static final int IDLE = 1003;
+    
+    public static final int BUSY = 1010;
 
     public static final int RECEIVING_FILE = 1004;
 
@@ -122,6 +123,8 @@ public abstract class FTPConnection {
     public static final int FXP_FILE = 1006;
 
     public static final int UNKNOWN = 9999;
+    
+    public static final int ERROR = 1011;
 
     // download / upload / fxp stati
     public static final int RECEIVING_FILE_STARTED = 2001;
@@ -325,6 +328,9 @@ public abstract class FTPConnection {
      *                the server
      */
     public Reply sendCommand(Command cmd) throws IOException {
+        setConnectionStatus(BUSY);
+        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
+        
         controlBuffer.clear();
         log.debug("Sending command: "
                 + cmd.toString().substring(0, cmd.toString().length() - 2));
@@ -337,9 +343,14 @@ public abstract class FTPConnection {
         try {
         	reply = ReplyWorker.readReply(socketProvider);
         }catch(IOException ioe) {
+            setConnectionStatus(ERROR);
+            fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
         	disconnect();
         	throw ioe;
         }
+        
+        setConnectionStatus(IDLE);
+        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
         
         return reply;
     }
@@ -717,16 +728,18 @@ public abstract class FTPConnection {
         	 parsedList = factory.parse(command
                 .fetchDataConnectionReply().getLines(), workDirectory);
         }catch(IOException ioe) {
-        	setConnectionStatus(FTPConnection.DISCONNECTED);
-        	fireConnectionStatusChanged(new FTPEvent(this,getConnectionStatus()));
+            setConnectionStatus(ERROR);
+            fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
+            disconnect();
         	throw ioe;
         }
         if (commandReply.getLines().size() == 1) {
         	try {
         		(ReplyWorker.readReply(socketProvider)).dumpReply();
             }catch(IOException ioe) {
-            	this.setConnectionStatus(FTPConnection.DISCONNECTED);
-            	fireConnectionStatusChanged(new FTPEvent(this,getConnectionStatus()));
+                setConnectionStatus(ERROR);
+                fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
+                disconnect();
             	throw ioe;
             }
         }
@@ -914,16 +927,18 @@ public abstract class FTPConnection {
         try {
         	command.fetchDataConnectionReply();
         }catch(IOException ioe) {
-        	setConnectionStatus(FTPConnection.DISCONNECTED);
-        	fireConnectionStatusChanged(new FTPEvent(this,getConnectionStatus()));
+            setConnectionStatus(ERROR);
+            fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
+            disconnect();
         	throw ioe;
         }
         if (commandReply.getLines().size() == 1) {
         	try {
         		(ReplyWorker.readReply(socketProvider)).dumpReply();
             }catch(IOException ioe) {
-            	this.setConnectionStatus(FTPConnection.DISCONNECTED);
-            	fireConnectionStatusChanged(new FTPEvent(this,getConnectionStatus()));
+                setConnectionStatus(ERROR);
+                fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
+                disconnect();
             	throw ioe;
             }
         }
@@ -931,6 +946,9 @@ public abstract class FTPConnection {
         setConnectionStatus(RECEIVING_FILE_ENDED);
         fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(),
                 commandReply, fromFile, toFile));
+        
+        setConnectionStatus(IDLE);
+        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
     }
     
     public InputStream downloadStream(FTPFile fromFile) throws IOException, FtpWorkflowException, FtpIOException {
@@ -1000,16 +1018,18 @@ public abstract class FTPConnection {
         try {
         	command.fetchDataConnectionReply(RetrieveCommand.STREAM_BASED);
         }catch(IOException ioe) {
-        	setConnectionStatus(FTPConnection.DISCONNECTED);
-        	fireConnectionStatusChanged(new FTPEvent(this,getConnectionStatus()));
+            setConnectionStatus(ERROR);
+            fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
+            disconnect();
         	throw ioe;
         }
         if (commandReply.getLines().size() == 1) {
         	try {
         		(ReplyWorker.readReply(socketProvider)).dumpReply();
             }catch(IOException ioe) {
-            	this.setConnectionStatus(FTPConnection.DISCONNECTED);
-            	fireConnectionStatusChanged(new FTPEvent(this,getConnectionStatus()));
+                setConnectionStatus(ERROR);
+                fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
+                disconnect();
             	throw ioe;
             }
         }
@@ -1017,6 +1037,9 @@ public abstract class FTPConnection {
         setConnectionStatus(RECEIVING_FILE_ENDED);
         fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(),
                 commandReply, fromFile, null));
+        
+        setConnectionStatus(IDLE);
+        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
     }
     
     /**
@@ -1160,16 +1183,18 @@ public abstract class FTPConnection {
         try {
         	command.fetchDataConnectionReply();
         }catch(IOException ioe) {
-        	setConnectionStatus(FTPConnection.DISCONNECTED);
-        	fireConnectionStatusChanged(new FTPEvent(this,getConnectionStatus()));
+            setConnectionStatus(ERROR);
+            fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
+            disconnect();
         	throw ioe;
         }
         if (commandReply.getLines().size() == 1) {
             try {
             	(ReplyWorker.readReply(socketProvider)).dumpReply();
             }catch(IOException ioe) {
-            	this.setConnectionStatus(FTPConnection.DISCONNECTED);
-            	fireConnectionStatusChanged(new FTPEvent(this,getConnectionStatus()));
+                setConnectionStatus(ERROR);
+                fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
+                disconnect();
             	throw ioe;
             }
         }
@@ -1177,6 +1202,9 @@ public abstract class FTPConnection {
         setConnectionStatus(SENDING_FILE_ENDED);
         fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(),
                 commandReply, fromFile, toFile));
+        
+        setConnectionStatus(IDLE);
+        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
     }
 
     /**
@@ -1304,8 +1332,9 @@ public abstract class FTPConnection {
         	try {
         		(ReplyWorker.readReply(socketProvider)).dumpReply();
             }catch(IOException ioe) {
-            	this.setConnectionStatus(FTPConnection.DISCONNECTED);
-            	fireConnectionStatusChanged(new FTPEvent(this,getConnectionStatus()));
+                setConnectionStatus(ERROR);
+                fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
+                disconnect();
             	throw ioe;
             }
         }
@@ -1320,6 +1349,9 @@ public abstract class FTPConnection {
         setConnectionStatus(FXPING_FILE_ENDED);
         fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(),
                 fromFile, toFile));
+        
+        setConnectionStatus(IDLE);
+        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
     }
 
     /**
