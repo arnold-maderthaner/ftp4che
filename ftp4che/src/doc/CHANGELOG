@@ -2,6 +2,8 @@ changes from 0.6.2 to 0.7:
 --------------------------
 added streaming methods
 fixed connection state DISCONNECTED
+added connection states BUSY and ERROR
+implemented locking mechanism for connection states (handles by whom the connection state is set)
 
 changes from version 0.6 to 0.6.2:
 ----------------------------------
