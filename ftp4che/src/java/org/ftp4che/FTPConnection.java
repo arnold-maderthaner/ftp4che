@@ -747,6 +747,9 @@ public abstract class FTPConnection {
         
         setConnectionStatusLock(CSL_INDIRECT_CALL);
         
+        setConnectionStatus(FTPConnection.BUSY);
+        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
+        
         ListCommand command = new ListCommand(directory);
         SocketProvider provider = null;
         String workDirectory = getWorkDirectory();
@@ -787,6 +790,9 @@ public abstract class FTPConnection {
             }
         }
         
+        setConnectionStatus(FTPConnection.IDLE);
+        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
+        
         setConnectionStatusLock(CSL_DIRECT_CALL);
         
         return parsedList;
@@ -813,6 +819,9 @@ public abstract class FTPConnection {
             throws IOException, FtpWorkflowException, FtpIOException {
         
         setConnectionStatusLock(CSL_INDIRECT_CALL);
+        
+        setConnectionStatus(FTPConnection.BUSY);
+        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
         
         SocketProvider provider = null;
         
@@ -876,6 +885,9 @@ public abstract class FTPConnection {
                 || connectionType == FTPConnection.IMPLICIT_TLS_WITH_CRYPTED_DATA_FTP_CONNECTION)
             provider.negotiate(this.getTrustManagers(),this.getKeyManagers());
 
+        setConnectionStatus(FTPConnection.IDLE);
+        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
+        
         setConnectionStatusLock(CSL_DIRECT_CALL);
         
         return provider;
@@ -1510,6 +1522,9 @@ public abstract class FTPConnection {
         
         setConnectionStatusLock(CSL_INDIRECT_CALL);
         
+        setConnectionStatus(FTPConnection.BUSY);
+        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
+        
     	if(isPretSupport())
     	{
     		Command pretCommand = new Command(Command.PRET,command.toString());
@@ -1531,6 +1546,9 @@ public abstract class FTPConnection {
                 || connectionType == FTPConnection.IMPLICIT_TLS_WITH_CRYPTED_DATA_FTP_CONNECTION)
             provider.negotiate(this.getTrustManagers(),this.getKeyManagers());
 
+        setConnectionStatus(FTPConnection.IDLE);
+        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
+        
         setConnectionStatusLock(CSL_DIRECT_CALL);
         
         return provider;
@@ -1764,6 +1782,9 @@ public abstract class FTPConnection {
         
         setConnectionStatusLock(CSL_INDIRECT_CALL);
         
+        setConnectionStatus(FTPConnection.BUSY);
+        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
+        
         // send RNFR
         Command commandRenFr = new Command(Command.RNFR, fromName.getName());
         Reply replyRenFr = sendCommand(commandRenFr);
@@ -1775,6 +1796,9 @@ public abstract class FTPConnection {
         Reply replyRenTo = sendCommand(commandRenTo);
         replyRenTo.dumpReply();
         replyRenTo.validate();
+        
+        setConnectionStatus(FTPConnection.IDLE);
+        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
         
         setConnectionStatusLock(CSL_DIRECT_CALL);
     }
