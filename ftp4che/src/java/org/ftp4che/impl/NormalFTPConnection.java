@@ -50,6 +50,9 @@ public class NormalFTPConnection extends FTPConnection {
     public void connect() throws NotConnectedException, IOException,
             AuthenticationNotSupportedException, FtpIOException,
             FtpWorkflowException {
+        
+        setConnectionStatusLock(FTPConnection.CSL_INDIRECT_CALL);
+        
         socketProvider = new SocketProvider();
         // Only for logging
         String hostAndPort = getAddress().getHostName() + ":"
@@ -96,5 +99,7 @@ public class NormalFTPConnection extends FTPConnection {
         fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
 
         checkSystem();
+        
+        setConnectionStatusLock(FTPConnection.CSL_DIRECT_CALL);
     }
 }
