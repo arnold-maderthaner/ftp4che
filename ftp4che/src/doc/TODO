@@ -7,6 +7,7 @@ things todo for version 0.7:
 	- new constructor with URL
 	- ssh ftp
 	- connection states
+	- fireReplyMessageArrived has to be called !!
 	- CPSV (look in forum "help" for details) ??
 	- client side encryption using FUSE ??
 	- add SOCKS5 proxy support

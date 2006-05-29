@@ -4,6 +4,7 @@ added streaming methods
 fixed connection state DISCONNECTED
 added connection states BUSY and ERROR
 implemented locking mechanism for connection states (handles by whom the connection state is set)
+connection status events are sent automatically on setConnectionStatus(...) now
 
 changes from version 0.6 to 0.6.2:
 ----------------------------------
