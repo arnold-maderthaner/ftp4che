@@ -320,7 +320,6 @@ public abstract class FTPConnection {
         socketProvider = null;
         setConnectionStatusLock(FTPConnection.CSL_DIRECT_CALL);
         this.setConnectionStatus(FTPConnection.DISCONNECTED);
-        fireConnectionStatusChanged(new FTPEvent(this,getConnectionStatus()));
     }
 
     /**
@@ -339,7 +338,6 @@ public abstract class FTPConnection {
     public Reply sendCommand(Command cmd) throws IOException {
         if (getConnectionStatusLock() == CSL_DIRECT_CALL) {
             setConnectionStatus(BUSY);
-            fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
         }
         
         controlBuffer.clear();
@@ -355,14 +353,12 @@ public abstract class FTPConnection {
         	reply = ReplyWorker.readReply(socketProvider);
         }catch(IOException ioe) {
             setConnectionStatus(ERROR);
-            fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
         	disconnect();
         	throw ioe;
         }
         
         if (getConnectionStatusLock() == CSL_DIRECT_CALL) {
             setConnectionStatus(IDLE);
-            fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
         }
         
         return reply;
@@ -378,7 +374,6 @@ public abstract class FTPConnection {
      * @author arnold,kurt
      */
     public int getConnectionStatus() {
-        // TODO: IMPLEMENT / DO WE NEED THIS ???
         return connectionStatus;
     }
 
@@ -393,6 +388,21 @@ public abstract class FTPConnection {
      */
     protected void setConnectionStatus(int connectionStatus) {
         this.connectionStatus = connectionStatus;
+        fireConnectionStatusChanged(new FTPEvent(this,connectionStatus));
+    }
+    
+    /**
+     * 
+     * This method is used to set the status of your connection
+     * 
+     * @return status there are constants in FTPConnection (f.e. CONNECTED /
+     *         DISCONNECTED / IDLE ...) where you can identify the status of
+     *         your ftp connection
+     * @author arnold,kurt
+     */
+    protected void setConnectionStatus(int connectionStatus, FTPFile fromFile, FTPFile toFile) {
+        this.connectionStatus = connectionStatus;
+        fireConnectionStatusChanged(new FTPEvent(this,connectionStatus, fromFile, toFile));
     }
     
     /**
@@ -405,7 +415,6 @@ public abstract class FTPConnection {
      * @author arnold,kurt
      */
     public int getConnectionStatusLock() {
-        // TODO: IMPLEMENT / DO WE NEED THIS ???
         return connectionStatusLock;
     }
 
@@ -746,9 +755,7 @@ public abstract class FTPConnection {
             throws IOException, FtpWorkflowException, FtpIOException {
         
         setConnectionStatusLock(CSL_INDIRECT_CALL);
-        
         setConnectionStatus(FTPConnection.BUSY);
-        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
         
         ListCommand command = new ListCommand(directory);
         SocketProvider provider = null;
@@ -775,7 +782,6 @@ public abstract class FTPConnection {
                 .fetchDataConnectionReply().getLines(), workDirectory);
         }catch(IOException ioe) {
             setConnectionStatus(ERROR);
-            fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
             disconnect();
         	throw ioe;
         }
@@ -784,15 +790,12 @@ public abstract class FTPConnection {
         		(ReplyWorker.readReply(socketProvider)).dumpReply();
             }catch(IOException ioe) {
                 setConnectionStatus(ERROR);
-                fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
                 disconnect();
             	throw ioe;
             }
         }
         
         setConnectionStatus(FTPConnection.IDLE);
-        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
-        
         setConnectionStatusLock(CSL_DIRECT_CALL);
         
         return parsedList;
@@ -819,9 +822,7 @@ public abstract class FTPConnection {
             throws IOException, FtpWorkflowException, FtpIOException {
         
         setConnectionStatusLock(CSL_INDIRECT_CALL);
-        
         setConnectionStatus(FTPConnection.BUSY);
-        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
         
         SocketProvider provider = null;
         
@@ -886,8 +887,6 @@ public abstract class FTPConnection {
             provider.negotiate(this.getTrustManagers(),this.getKeyManagers());
 
         setConnectionStatus(FTPConnection.IDLE);
-        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
-        
         setConnectionStatusLock(CSL_DIRECT_CALL);
         
         return provider;
@@ -928,10 +927,7 @@ public abstract class FTPConnection {
             throws IOException, FtpWorkflowException, FtpIOException {
 
         setConnectionStatusLock(CSL_INDIRECT_CALL);
-        
-        setConnectionStatus(RECEIVING_FILE_STARTED);
-        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(),
-                fromFile, toFile));
+        setConnectionStatus(RECEIVING_FILE_STARTED, fromFile, toFile);
         setConnectionStatus(RECEIVING_FILE);
 
         RetrieveCommand command = new RetrieveCommand(Command.RETR, fromFile,
@@ -992,7 +988,6 @@ public abstract class FTPConnection {
         	command.fetchDataConnectionReply();
         }catch(IOException ioe) {
             setConnectionStatus(ERROR);
-            fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
             disconnect();
         	throw ioe;
         }
@@ -1001,19 +996,13 @@ public abstract class FTPConnection {
         		(ReplyWorker.readReply(socketProvider)).dumpReply();
             }catch(IOException ioe) {
                 setConnectionStatus(ERROR);
-                fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
                 disconnect();
             	throw ioe;
             }
         }
 
-        setConnectionStatus(RECEIVING_FILE_ENDED);
-        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(),
-                commandReply, fromFile, toFile));
-        
+        setConnectionStatus(RECEIVING_FILE_ENDED, fromFile, toFile);
         setConnectionStatus(IDLE);
-        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
-        
         setConnectionStatusLock(CSL_DIRECT_CALL);
     }
     
@@ -1055,9 +1044,7 @@ public abstract class FTPConnection {
     private void streamFile(FTPFile fromFile, PipedInputStream pis) throws IOException, FtpWorkflowException, FtpIOException {
         
         setConnectionStatusLock(CSL_INDIRECT_CALL);
-        
-        setConnectionStatus(RECEIVING_FILE_STARTED);
-        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(), fromFile, null));
+        setConnectionStatus(RECEIVING_FILE_STARTED, fromFile, null);
         setConnectionStatus(RECEIVING_FILE);
 
         RetrieveCommand command = new RetrieveCommand(Command.RETR, fromFile, pis);
@@ -1087,7 +1074,6 @@ public abstract class FTPConnection {
         	command.fetchDataConnectionReply(RetrieveCommand.STREAM_BASED);
         }catch(IOException ioe) {
             setConnectionStatus(ERROR);
-            fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
             disconnect();
         	throw ioe;
         }
@@ -1096,19 +1082,13 @@ public abstract class FTPConnection {
         		(ReplyWorker.readReply(socketProvider)).dumpReply();
             }catch(IOException ioe) {
                 setConnectionStatus(ERROR);
-                fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
                 disconnect();
             	throw ioe;
             }
         }
 
-        setConnectionStatus(RECEIVING_FILE_ENDED);
-        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(),
-                commandReply, fromFile, null));
-        
+        setConnectionStatus(RECEIVING_FILE_ENDED, fromFile, null);
         setConnectionStatus(IDLE);
-        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
-        
         setConnectionStatusLock(CSL_DIRECT_CALL);
     }
     
@@ -1193,10 +1173,7 @@ public abstract class FTPConnection {
             throws IOException, FtpWorkflowException, FtpIOException {
         
         setConnectionStatusLock(CSL_INDIRECT_CALL);
-        
-        setConnectionStatus(SENDING_FILE_STARTED);
-        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(),
-                fromFile, toFile));
+        setConnectionStatus(SENDING_FILE_STARTED, fromFile, toFile);
         setConnectionStatus(SENDING_FILE);
 
         StoreCommand command = new StoreCommand(Command.STOR, fromFile, toFile);
@@ -1257,7 +1234,6 @@ public abstract class FTPConnection {
         	command.fetchDataConnectionReply();
         }catch(IOException ioe) {
             setConnectionStatus(ERROR);
-            fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
             disconnect();
         	throw ioe;
         }
@@ -1266,19 +1242,13 @@ public abstract class FTPConnection {
             	(ReplyWorker.readReply(socketProvider)).dumpReply();
             }catch(IOException ioe) {
                 setConnectionStatus(ERROR);
-                fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
                 disconnect();
             	throw ioe;
             }
         }
 
-        setConnectionStatus(SENDING_FILE_ENDED);
-        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(),
-                commandReply, fromFile, toFile));
-        
+        setConnectionStatus(SENDING_FILE_ENDED, fromFile, toFile);
         setConnectionStatus(IDLE);
-        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
-        
         setConnectionStatusLock(CSL_DIRECT_CALL);
     }
 
@@ -1359,10 +1329,7 @@ public abstract class FTPConnection {
             FtpIOException {
         
         setConnectionStatusLock(CSL_INDIRECT_CALL);
-        
-        setConnectionStatus(FXPING_FILE_STARTED);
-        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(),
-                fromFile, toFile));
+        setConnectionStatus(FXPING_FILE_STARTED, fromFile, toFile);
         setConnectionStatus(FXP_FILE);
 
         if (!connectionSSCNActive
@@ -1411,7 +1378,6 @@ public abstract class FTPConnection {
         		(ReplyWorker.readReply(socketProvider)).dumpReply();
             }catch(IOException ioe) {
                 setConnectionStatus(ERROR);
-                fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
                 disconnect();
             	throw ioe;
             }
@@ -1424,13 +1390,8 @@ public abstract class FTPConnection {
             connectionSSCNActive = false;
         }
 
-        setConnectionStatus(FXPING_FILE_ENDED);
-        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus(),
-                fromFile, toFile));
-        
+        setConnectionStatus(FXPING_FILE_ENDED, fromFile, toFile);
         setConnectionStatus(IDLE);
-        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
-        
         setConnectionStatusLock(CSL_DIRECT_CALL);
     }
 
@@ -1521,9 +1482,7 @@ public abstract class FTPConnection {
             throws IOException, FtpIOException, FtpWorkflowException {
         
         setConnectionStatusLock(CSL_INDIRECT_CALL);
-        
         setConnectionStatus(FTPConnection.BUSY);
-        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
         
     	if(isPretSupport())
     	{
@@ -1547,8 +1506,6 @@ public abstract class FTPConnection {
             provider.negotiate(this.getTrustManagers(),this.getKeyManagers());
 
         setConnectionStatus(FTPConnection.IDLE);
-        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
-        
         setConnectionStatusLock(CSL_DIRECT_CALL);
         
         return provider;
@@ -1781,9 +1738,7 @@ public abstract class FTPConnection {
             FtpIOException, FtpWorkflowException {
         
         setConnectionStatusLock(CSL_INDIRECT_CALL);
-        
         setConnectionStatus(FTPConnection.BUSY);
-        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
         
         // send RNFR
         Command commandRenFr = new Command(Command.RNFR, fromName.getName());
@@ -1798,8 +1753,6 @@ public abstract class FTPConnection {
         replyRenTo.validate();
         
         setConnectionStatus(FTPConnection.IDLE);
-        fireConnectionStatusChanged(new FTPEvent(this, getConnectionStatus()));
-        
         setConnectionStatusLock(CSL_DIRECT_CALL);
     }
 
