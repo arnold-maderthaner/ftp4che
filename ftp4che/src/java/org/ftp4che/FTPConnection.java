@@ -336,9 +336,8 @@ public abstract class FTPConnection {
      *                the server
      */
     public Reply sendCommand(Command cmd) throws IOException {
-        if (getConnectionStatusLock() == CSL_DIRECT_CALL) {
+        if (getConnectionStatusLock() == CSL_DIRECT_CALL)
             setConnectionStatus(BUSY);
-        }
         
         controlBuffer.clear();
         log.debug("Sending command: "
@@ -357,10 +356,11 @@ public abstract class FTPConnection {
         	throw ioe;
         }
         
-        if (getConnectionStatusLock() == CSL_DIRECT_CALL) {
+        if (getConnectionStatusLock() == CSL_DIRECT_CALL)
             setConnectionStatus(IDLE);
-        }
         
+        if (reply != null)
+            fireReplyMessageArrived(new FTPEvent(this, getConnectionStatus(), reply));
         return reply;
     }
 
