@@ -1372,7 +1372,7 @@ public abstract class FTPConnection {
         retrReply.dumpReply();
         retrReply.validate();
 
-        // read the last control reply
+        // read the last control reply from source
         if (retrReply.getLines().size() == 1) {
         	try {
         		(ReplyWorker.readReply(socketProvider)).dumpReply();
@@ -1380,6 +1380,17 @@ public abstract class FTPConnection {
                 setConnectionStatus(ERROR);
                 disconnect();
             	throw ioe;
+            }
+        }
+        
+        // read the last control reply from destination
+        if (storeReply.getLines().size() == 1) {
+            try {
+                (ReplyWorker.readReply(destination.socketProvider)).dumpReply();
+            }catch(IOException ioe) {
+                destination.setConnectionStatus(ERROR);
+                destination.disconnect();
+                throw ioe;
             }
         }
 
