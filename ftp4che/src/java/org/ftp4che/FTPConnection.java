@@ -1033,8 +1033,10 @@ public abstract class FTPConnection {
         
         (new DownStreamingThread(this, fromFile, pis)).start();
         
+        // ensure that in/out pipes are connected already
         try {
-            Thread.sleep(1000); // TODO: find better method to ensure that in/out pipes are connected already
+        	for(int i=0; i<60 && pis.available() <= 0; i++)
+        		Thread.sleep(1000);
         }catch(Exception e) {}
         
         return pis;
