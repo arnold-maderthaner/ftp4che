@@ -420,7 +420,7 @@ public abstract class FTPConnection {
 
     /**
      * 
-     * This method is used to handle who sets the status
+     * This method is used to handle who sets the status. This should avoid sending too much events if they are not needed.
      *
      * @param  CSL_DIRECT_CALL (0)
      *         CSL_INDIRECT_CALL (1)
