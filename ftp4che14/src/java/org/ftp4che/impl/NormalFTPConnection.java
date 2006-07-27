@@ -83,18 +83,9 @@ public class NormalFTPConnection extends FTPConnection {
             reply.dumpReply();
             reply.validate();
         }
-        reply = sendCommand(new Command(Command.FEAT));
-        reply.dumpReply();
-		if (ReplyCode.isPositiveCompletionReply(reply)) {
-			List lines = reply.getLines();
-			for (Iterator it = lines.iterator(); it.hasNext(); ) {
-				String s = (String)it.next();
-				if (s.indexOf(Command.PRET) > -1) {
-					setPretSupport(true);
-				}
-			}
-
-		}
+      
+        checkFeatures();
+        
         this.setConnectionStatus(FTPConnection.CONNECTED);
         this.setConnectionStatus(FTPConnection.IDLE);
 

@@ -67,20 +67,8 @@ public class SecureFTPConnection extends FTPConnection {
             (ReplyWorker.readReply(socketProvider)).dumpReply();
             negotiateAndLogin(getAuthString());
         }
-        Reply reply = sendCommand(new Command(Command.FEAT));
-        reply.dumpReply();
-		if (ReplyCode.isPositiveCompletionReply(reply)) {
-			List lines = reply.getLines();
-			for (Iterator it = lines.iterator(); it.hasNext(); ) {
-				String s = (String)it.next();
-				if (s.indexOf(Command.SSCN) > -1) {
-					setConnectionSSCNType(FTPConnection.SSCN_ON);
-				}else if(s.indexOf(Command.PRET) > -1) {
-					setPretSupport(true);
-				}
-			}
-
-		}
+      
+        checkFeatures();
 
         this.setConnectionStatus(FTPConnection.CONNECTED);
         this.setConnectionStatus(FTPConnection.IDLE);

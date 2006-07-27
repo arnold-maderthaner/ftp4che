@@ -57,6 +57,7 @@ import org.ftp4che.io.ReplyWorker;
 import org.ftp4che.io.SocketProvider;
 import org.ftp4che.proxy.Proxy;
 import org.ftp4che.reply.Reply;
+import org.ftp4che.reply.ReplyCode;
 import org.ftp4che.util.ReplyFormatter;
 import org.ftp4che.util.ftpfile.FTPFile;
 import org.ftp4che.util.ftpfile.FTPFileFactory;
@@ -140,10 +141,6 @@ public abstract class FTPConnection {
 
     public static final int FXPING_FILE_ENDED = 2006;
 
-    public static final String SSCN_ON = "ON";
-
-    public static final String SSCN_OFF = "OFF";
-    
     public static final int CSL_DIRECT_CALL = 0;
     
     public static final int CSL_INDIRECT_CALL = 1;
@@ -158,9 +155,9 @@ public abstract class FTPConnection {
 
     private int connectionType = FTPConnection.FTP_CONNECTION;
 
-    private String connectionSSCNType = FTPConnection.SSCN_OFF;
+    private String secureFXPType = null;
 
-    private boolean connectionSSCNActive = false;
+    private boolean sscnActive = false;
 
     private InetSocketAddress address = null;
 
@@ -203,6 +200,10 @@ public abstract class FTPConnection {
     private boolean tryResume = false;
     
     private boolean pretSupport = false;
+    
+    private boolean cpsvSupport = false;
+    
+    private boolean sscnSupport = false;
 
     /**
      * @author arnold,kurt
@@ -1327,16 +1328,18 @@ public abstract class FTPConnection {
         setConnectionStatusLock(CSL_INDIRECT_CALL);
         setConnectionStatus(FXPING_FILE_STARTED, fromFile, toFile);
         setConnectionStatus(FXP_FILE);
-
-        if (!connectionSSCNActive
-                && getConnectionSSCNType() == FTPConnection.SSCN_ON) {
-
-            setSecuredFxp(true);
-            connectionSSCNActive = true;
+        Command pasvCommand = null;
+        if (getSecureFXPType() == Command.SSCN && !sscnActive) {
+            setSSCNFxp(true);
+            sscnActive = true;
+            pasvCommand = new Command(Command.PASV);
+        }
+        else if(getSecureFXPType() == Command.CPSV)
+        {
+        	pasvCommand = new Command(Command.CPSV);
         }
 
         // send PASV to source site
-        Command pasvCommand = new Command(Command.PASV);
         Reply pasvReply = sendCommand(pasvCommand);
         pasvReply.dumpReply();
         pasvReply.validate();
@@ -1390,11 +1393,10 @@ public abstract class FTPConnection {
             }
         }
 
-        if (connectionSSCNActive
-                && getConnectionSSCNType() == FTPConnection.SSCN_ON) {
+        if (getSecureFXPType() == Command.SSCN && sscnActive) {
 
-            setSecuredFxp(false);
-            connectionSSCNActive = false;
+            setSSCNFxp(false);
+            sscnActive = false;
         }
 
         setConnectionStatus(FXPING_FILE_ENDED, fromFile, toFile);
@@ -1434,12 +1436,11 @@ public abstract class FTPConnection {
                     + srcDir.getName()
                     + " is not possible, it's not a directory!");
 
-        if (!connectionSSCNActive
-                && getConnectionSSCNType() == FTPConnection.SSCN_ON) {
-            setSecuredFxp(true);
-            connectionSSCNActive = true;
+        if (getSecureFXPType() == Command.SSCN && !sscnActive) {
+            setSSCNFxp(true);
+            sscnActive = true;
         }
-
+   
         destination.makeDirectory(dstDir.toString());
 
         String listDir = srcDir.toString();
@@ -1461,10 +1462,9 @@ public abstract class FTPConnection {
             }
         }
 
-        if (connectionSSCNActive
-                && getConnectionSSCNType() == FTPConnection.SSCN_ON) {
-            setSecuredFxp(false);
-            connectionSSCNActive = false;
+        if (getSecureFXPType() == Command.SSCN && sscnActive) {
+            setSSCNFxp(false);
+            sscnActive = false;
         }
     }
 
@@ -1662,18 +1662,21 @@ public abstract class FTPConnection {
     }
 
     /**
-     * @return Returns the connectionSSCNType.
+     * @return Returns the secureFXPType.
      */
-    public String getConnectionSSCNType() {
-        return connectionSSCNType;
+    public String getSecureFXPType() {
+        return secureFXPType;
     }
 
     /**
-     * @param connectionSSCNType
-     *            The connectionSSCNType to set.
+     * @param secureFXPType
+     *            The secureFXPType to set.
+     *            Possible values:	null -> no secure fxp
+     *            					Command.SSCN -> SSCN fxp
+     *            					Command.CPSV -> CPSV fxp
      */
-    public void setConnectionSSCNType(String connectionSSCNType) {
-        this.connectionSSCNType = connectionSSCNType;
+    public void setSecureFXPType(String secureFXPType) {
+        this.secureFXPType = secureFXPType;
     }
 
     /**
@@ -1691,14 +1694,14 @@ public abstract class FTPConnection {
      *             will be thrown if there was a ftp reply class 4xx. this
      *             should indicate some secific problems on the server
      */
-    public void setSecuredFxp(boolean active) throws IOException,
+    public void setSSCNFxp(boolean active) throws IOException,
             FtpIOException, FtpWorkflowException {
         Command command = null;
 
         if (active)
-            command = new Command(Command.SSCN, FTPConnection.SSCN_ON);
+            command = new Command(Command.SSCN, Command.SSCN_ON);
         else
-            command = new Command(Command.SSCN, FTPConnection.SSCN_OFF);
+            command = new Command(Command.SSCN, Command.SSCN_OFF);
 
         Reply reply = sendCommand(command);
         reply.dumpReply();
@@ -1983,5 +1986,42 @@ public abstract class FTPConnection {
 
 	public void setPretSupport(boolean pretSupport) {
 		this.pretSupport = pretSupport;
+	}
+	
+	public void checkFeatures() throws IOException
+	{
+		Reply reply = sendCommand(new Command(Command.FEAT));
+		reply.dumpReply();
+		if (ReplyCode.isPositiveCompletionReply(reply)) {
+			List lines = reply.getLines();
+			for (Iterator it = lines.iterator(); it.hasNext(); ) {
+				String s = (String)it.next();
+				if (s.indexOf(Command.SSCN) > -1) {
+					setSscnSupport(true);
+				} else if (s.indexOf(Command.PRET) > -1) {
+					setPretSupport(true);
+				} else if (s.indexOf(Command.CPSV) > -1)
+				{
+					setCpsvSupport(true);
+				}
+			}
+
+		}
+	}
+
+	public boolean isCpsvSupport() {
+		return cpsvSupport;
+	}
+
+	public void setCpsvSupport(boolean cpsvSupport) {
+		this.cpsvSupport = cpsvSupport;
+	}
+
+	public boolean isSscnSupport() {
+		return sscnSupport;
+	}
+
+	public void setSscnSupport(boolean sscnSupport) {
+		this.sscnSupport = sscnSupport;
 	}
 }

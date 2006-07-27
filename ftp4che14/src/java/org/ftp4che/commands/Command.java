@@ -98,9 +98,15 @@ public class Command {
 
     public final static String PRET = "PRET";
     
+    public final static String CPSV = "CPSV";
+    
     String command;
 
     String[] parameter;
+
+	public static final String SSCN_ON = "ON";
+
+	public static final String SSCN_OFF = "OFF";
     
     private static final String[] nullString = {};
 
