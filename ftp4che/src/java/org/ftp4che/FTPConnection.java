@@ -1334,7 +1334,7 @@ public abstract class FTPConnection {
         setConnectionStatusLock(CSL_INDIRECT_CALL);
         setConnectionStatus(FXPING_FILE_STARTED, fromFile, toFile);
         setConnectionStatus(FXP_FILE);
-        Command pasvCommand = null;
+        Command pasvCommand = new Command(Command.PASV);;
         if (getSecureFXPType() == Command.SSCN && !sscnActive) {
             setSSCNFxp(true);
             sscnActive = true;
@@ -1344,7 +1344,7 @@ public abstract class FTPConnection {
         {
         	pasvCommand = new Command(Command.CPSV);
         }
-
+  
         // send PASV to source site
         Reply pasvReply = sendCommand(pasvCommand);
         pasvReply.dumpReply();
@@ -1359,6 +1359,19 @@ public abstract class FTPConnection {
         String line = lines.get(0);
         line = line.substring(line.indexOf('(') + 1, line.lastIndexOf(')'));
 
+        // send PROT P to source and destination, needed for CPSV only
+        if (getSecureFXPType() == Command.CPSV) {
+            // destination
+            Command protCommand = new Command(Command.PROT, "P");
+            Reply protReply = destination.sendCommand(protCommand);
+            protReply.dumpReply();
+            protReply.validate();
+
+            // source
+            Reply srcProtReply = sendCommand(protCommand);
+            srcProtReply.dumpReply();
+            srcProtReply.validate();
+        }
         // send PORT to destination site
         Command portCommand = new Command(Command.PORT, line);
         Reply portReply = destination.sendCommand(portCommand);
