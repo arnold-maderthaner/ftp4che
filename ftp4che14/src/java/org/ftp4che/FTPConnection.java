@@ -1362,9 +1362,9 @@ public abstract class FTPConnection {
             protReply.validate();
 
             // source
-            Reply srcProtReply = sendCommand(protCommand);
-            srcProtReply.dumpReply();
-            srcProtReply.validate();
+            protReply = sendCommand(protCommand);
+            protReply.dumpReply();
+            protReply.validate();
         }
         
         // send PORT to destination site
@@ -1406,7 +1406,18 @@ public abstract class FTPConnection {
                 throw ioe;
             }
         }
+        if (getSecureFXPType() == Command.CPSV) {
+            // destination
+            Command protCommand = new Command(Command.PROT, "O");
+            Reply protReply = destination.sendCommand(protCommand);
+            protReply.dumpReply();
+            protReply.validate();
 
+            // source
+            protReply = sendCommand(protCommand);
+            protReply.dumpReply();
+            protReply.validate();
+        }
         if (getSecureFXPType() == Command.SSCN && sscnActive) {
 
             setSSCNFxp(false);
