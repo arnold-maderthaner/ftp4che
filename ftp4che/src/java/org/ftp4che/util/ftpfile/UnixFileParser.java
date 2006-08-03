@@ -116,9 +116,8 @@ public class UnixFileParser implements FileParser {
 		if ( !file.isLink() ) {
 			file.setName(name);
 		}else { // be care of the -> in the string
-			StringTokenizer st = new StringTokenizer(name, "->");
-			file.setName(st.nextToken().trim());
-			file.setLinkedName(st.nextToken().trim());
+			file.setName(name.split("->")[0].trim());
+			file.setLinkedName(name.split("->")[1].trim());
 		}
 		
 		return file;

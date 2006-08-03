@@ -206,7 +206,6 @@ public abstract class FTPConnection {
     private boolean sscnSupport = false;
 
     /**
-     * @author arnold,kurt
      * @param address
      *            Set method for the address the FTPConnection will connect to
      *            if connect() is called
@@ -2023,11 +2022,13 @@ public abstract class FTPConnection {
 				String s = (String)it.next();
 				if (s.indexOf(Command.SSCN) > -1) {
 					setSscnSupport(true);
+					setSecureFXPType(Command.CPSV);
 				} else if (s.indexOf(Command.PRET) > -1) {
 					setPretSupport(true);
 				} else if (s.indexOf(Command.CPSV) > -1)
 				{
 					setCpsvSupport(true);
+					setSecureFXPType(Command.CPSV);
 				}
 			}
 

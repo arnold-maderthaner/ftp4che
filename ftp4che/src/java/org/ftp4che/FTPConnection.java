@@ -2039,11 +2039,13 @@ public abstract class FTPConnection {
 			for (String s : lines) {
 				if (s.indexOf(Command.SSCN) > -1) {
 					setSscnSupport(true);
+					setSecureFXPType(Command.SSCN);
 				} else if (s.indexOf(Command.PRET) > -1) {
 					setPretSupport(true);
 				} else if (s.indexOf(Command.CPSV) > -1)
 				{
 					setCpsvSupport(true);
+					setSecureFXPType(Command.CPSV);
 				}
 			}
 
