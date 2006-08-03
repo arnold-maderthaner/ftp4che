@@ -1334,6 +1334,21 @@ public abstract class FTPConnection {
         setConnectionStatusLock(CSL_INDIRECT_CALL);
         setConnectionStatus(FXPING_FILE_STARTED, fromFile, toFile);
         setConnectionStatus(FXP_FILE);
+        // Need to send PRET (RETR/STOR) before PASV
+        if (isPretSupport()) {
+			Command pretCommand = new Command(Command.PRET, Command.RETR,
+					fromFile.toString());
+			Reply pretReply = sendCommand(pretCommand);
+			pretReply.dumpReply();
+			pretReply.validate();
+		}
+		if (destination.isPretSupport()) {
+			Command pretDestCommand = new Command(Command.PRET, Command.STOR,
+					fromFile.toString());
+			Reply pretDestReply = destination.sendCommand(pretDestCommand);
+			pretDestReply.dumpReply();
+			pretDestReply.validate();
+		}
         Command pasvCommand = new Command(Command.PASV);;
         if (getSecureFXPType() == Command.SSCN && !sscnActive) {
             setSSCNFxp(true);
