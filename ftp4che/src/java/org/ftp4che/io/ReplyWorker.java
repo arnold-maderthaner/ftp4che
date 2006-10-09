@@ -310,10 +310,9 @@ public class ReplyWorker extends Thread {
             if (storeCommand.getToFile().getTransferType().intern() == Command.TYPE_I
                     || storeCommand.getToFile().getTransferType().intern() == Command.TYPE_A) {
                 try {
-                    log.debug("Upload file: "
-                            + storeCommand.getFromFile().toString());
-                    FileInputStream in = new FileInputStream(storeCommand
-                            .getFromFile().getFile());
+                    log.debug("Upload file: " + storeCommand.getFromFile());
+                    
+                    FileInputStream in = (FileInputStream) storeCommand.getStream(); 
                     FileChannel channel = in.getChannel();
                     if(storeCommand.getResumePosition() != -1)
                     {

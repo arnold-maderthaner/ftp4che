@@ -1169,17 +1169,34 @@ public abstract class FTPConnection {
      */
     public void uploadFile(FTPFile fromFile, FTPFile toFile)
     throws IOException, FtpWorkflowException, FtpIOException {
-    	uploadFile(fromFile,toFile,false);
+    	uploadFile(fromFile, toFile, false);
     }
     
-    public void uploadFile(FTPFile fromFile, FTPFile toFile,boolean resume)
+    public void uploadFile(FTPFile fromFile, FTPFile toFile, boolean resume)
+    throws IOException, FtpWorkflowException, FtpIOException {
+        uploadFile(fromFile, toFile, resume);
+    }
+    
+    public void uploadStream(InputStream upStream, FTPFile toFile) throws IOException, FtpWorkflowException, FtpIOException {
+        upload(upStream, toFile, false);
+    }
+    
+    private void upload(Object upSrc, FTPFile toFile, boolean resume)
             throws IOException, FtpWorkflowException, FtpIOException {
+
+        FTPFile srcInfo = null;
+        if (upSrc instanceof FTPFile)
+            srcInfo = (FTPFile) upSrc;
+        else if (upSrc instanceof InputStream && resume) {
+            resume = false;
+            log.warn("No resume possible on uploadStream");
+        }
         
         setConnectionStatusLock(CSL_INDIRECT_CALL);
-        setConnectionStatus(SENDING_FILE_STARTED, fromFile, toFile);
+        setConnectionStatus(SENDING_FILE_STARTED, srcInfo, toFile);
         setConnectionStatus(SENDING_FILE);
 
-        StoreCommand command = new StoreCommand(Command.STOR, fromFile, toFile);
+        StoreCommand command = new StoreCommand(Command.STOR, upSrc, toFile);
         SocketProvider provider = null;
 
         if (getConnectionType() == FTPConnection.AUTH_SSL_FTP_CONNECTION
@@ -1200,7 +1217,7 @@ public abstract class FTPConnection {
         				toFile.setSize(file.getSize());
         		}
         	}
-        	if(fromFile.getSize() != toFile.getSize())
+        	if(srcInfo.getSize() != toFile.getSize())
         	{
         		command.setResumePosition(toFile.getSize());
         		Command resumeCommand = new Command(Command.REST,""+toFile.getSize());
@@ -1250,11 +1267,11 @@ public abstract class FTPConnection {
             }
         }
 
-        setConnectionStatus(SENDING_FILE_ENDED, fromFile, toFile);
+        setConnectionStatus(SENDING_FILE_ENDED, srcInfo, toFile);
         setConnectionStatus(IDLE);
         setConnectionStatusLock(CSL_DIRECT_CALL);
     }
-
+    
     /**
      * This method is used to upload a local directory to the server to a
      * specifed remote directory
