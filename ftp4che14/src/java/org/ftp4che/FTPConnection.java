@@ -687,6 +687,22 @@ public abstract class FTPConnection {
             FtpWorkflowException, FtpIOException {
         return getDirectoryListing(getWorkDirectory());
     }
+    
+    /**
+     * This method is used to get a directory listing from the current working
+     * directory via STAT -LA command
+     * 
+     * @return List of FTPFiles
+     * @throws IOException
+     *             will be thrown if there was a communication problem with the
+     *             server
+     * @throws FtpWorkflowException
+     *             will be thrown if there was a ftp reply class 5xx. in most
+     *             cases wrong commands where send
+     * @throws FtpIOException
+     *             will be thrown if there was a ftp reply class 4xx. this
+     *             should indicate some secific problems on the server
+     */
 
     public List getFastDirectoryListing() throws IOException,
             FtpWorkflowException, FtpIOException {
@@ -1156,94 +1172,108 @@ public abstract class FTPConnection {
      *             will be thrown if the specified fromFile is not found on the
      *             local computer
      */
+    
+    
     public void uploadFile(FTPFile fromFile, FTPFile toFile)
     throws IOException, FtpWorkflowException, FtpIOException {
     	uploadFile(fromFile,toFile,false);
     }
     
-    public void uploadFile(FTPFile fromFile, FTPFile toFile,boolean resume)
-            throws IOException, FtpWorkflowException, FtpIOException {
-        
-        setConnectionStatusLock(CSL_INDIRECT_CALL);
-        setConnectionStatus(SENDING_FILE_STARTED, fromFile, toFile);
-        setConnectionStatus(SENDING_FILE);
-
-        StoreCommand command = new StoreCommand(Command.STOR, fromFile, toFile);
-        SocketProvider provider = null;
-
-        if (getConnectionType() == FTPConnection.AUTH_SSL_FTP_CONNECTION
-                || getConnectionType() == FTPConnection.AUTH_TLS_FTP_CONNECTION) {
-            Command pbsz = new Command(Command.PBSZ, "0");
-            (sendCommand(pbsz)).dumpReply();
-            Command prot = new Command(Command.PROT, "P");
-            (sendCommand(prot)).dumpReply();
-        }
-        if(resume || tryResume)
-        {
-        	if(toFile.getSize() <= 0)
-        	{
-        		List list = getDirectoryListing(toFile.getPath());
-        		for(Iterator it = list.iterator(); it.hasNext();)
-        		{
-        			FTPFile file = (FTPFile)it.next();
-        			if(file.getName().equals(toFile.getName()))
-        				toFile.setSize(file.getSize());
-        		}
-        	}
-        	if(fromFile.getSize() != toFile.getSize())
-        	{
-        		command.setResumePosition(toFile.getSize());
-        		Command resumeCommand = new Command(Command.REST,""+toFile.getSize());
-        		Reply resumeReply = sendCommand(resumeCommand);
-        		resumeReply.dumpReply();
-        		try
-        		{
-        			resumeReply.validate();
-        		}catch(FtpWorkflowException fwe)
-        		{
-        			log.error("Couldn't resume file, error was: " + fwe.getMessage());
-        		}
-        		catch(FtpIOException fioe)
-        		{
-        			log.error("Couldn't resume file, error was: " + fioe.getMessage());
-        		}
-        	}else
-                return;
-        }
-        //Send TYPE I
-        Command commandType = new Command(Command.TYPE_I);
-        (sendCommand(commandType)).dumpReply();
-
-        Reply commandReply = new Reply();
-        if (isPassiveMode()) {
-            provider = initDataSocket(command, commandReply);
-        } else {
-            provider = sendPortCommand(command, commandReply);
-        }
-
-        command.setDataSocket(provider);
-        // INFO response from ControllConnection is ignored
-        try {
-        	command.fetchDataConnectionReply();
-        }catch(IOException ioe) {
-            setConnectionStatus(ERROR);
-            disconnect();
-        	throw ioe;
-        }
-        if (commandReply.getLines().size() == 1) {
-        	try {
-        		(ReplyWorker.readReply(socketProvider)).dumpReply();
-            }catch(IOException ioe) {
-                setConnectionStatus(ERROR);
-                disconnect();
-            	throw ioe;
-            }
-        }
-
-        setConnectionStatus(SENDING_FILE_ENDED, fromFile, toFile);
-        setConnectionStatus(IDLE);
-        setConnectionStatusLock(CSL_DIRECT_CALL);
+    public void uploadFile(FTPFile fromFile, FTPFile toFile, boolean resume)
+    throws IOException, FtpWorkflowException, FtpIOException {
+        uploadFile(fromFile, toFile, resume);
     }
+    
+    public void uploadStream(InputStream upStream, FTPFile toFile) throws IOException, FtpWorkflowException, FtpIOException {
+        upload(upStream, toFile, false);
+    }
+    private void upload(Object upSrc, FTPFile toFile, boolean resume)
+			throws IOException, FtpWorkflowException, FtpIOException {
+
+		FTPFile srcInfo = null;
+		if (upSrc instanceof FTPFile)
+			srcInfo = (FTPFile) upSrc;
+		else if (upSrc instanceof InputStream && resume) {
+			resume = false;
+			log.warn("No resume possible on uploadStream");
+		}
+
+		setConnectionStatusLock(CSL_INDIRECT_CALL);
+		setConnectionStatus(SENDING_FILE_STARTED, srcInfo, toFile);
+		setConnectionStatus(SENDING_FILE);
+
+		StoreCommand command = new StoreCommand(Command.STOR, upSrc, toFile);
+		SocketProvider provider = null;
+
+		if (getConnectionType() == FTPConnection.AUTH_SSL_FTP_CONNECTION
+				|| getConnectionType() == FTPConnection.AUTH_TLS_FTP_CONNECTION) {
+			Command pbsz = new Command(Command.PBSZ, "0");
+			(sendCommand(pbsz)).dumpReply();
+			Command prot = new Command(Command.PROT, "P");
+			(sendCommand(prot)).dumpReply();
+		}
+		if (resume || tryResume) {
+			if (toFile.getSize() <= 0) {
+				List list = getDirectoryListing(toFile.getPath());
+
+				for (Iterator it = list.iterator(); it.hasNext();) {
+					FTPFile file = (FTPFile) it.next();
+					if (file.getName().equals(toFile.getName()))
+						toFile.setSize(file.getSize());
+				}
+			}
+			if (srcInfo.getSize() != toFile.getSize()) {
+				command.setResumePosition(toFile.getSize());
+				Command resumeCommand = new Command(Command.REST, ""
+						+ toFile.getSize());
+				Reply resumeReply = sendCommand(resumeCommand);
+				resumeReply.dumpReply();
+				try {
+					resumeReply.validate();
+				} catch (FtpWorkflowException fwe) {
+					log.error("Couldn't resume file, error was: "
+							+ fwe.getMessage());
+				} catch (FtpIOException fioe) {
+					log.error("Couldn't resume file, error was: "
+							+ fioe.getMessage());
+				}
+			} else
+				return;
+		}
+		// Send TYPE I
+		Command commandType = new Command(Command.TYPE_I);
+		(sendCommand(commandType)).dumpReply();
+
+		Reply commandReply = new Reply();
+		if (isPassiveMode()) {
+			provider = initDataSocket(command, commandReply);
+		} else {
+			provider = sendPortCommand(command, commandReply);
+		}
+
+		command.setDataSocket(provider);
+		// INFO response from ControllConnection is ignored
+		try {
+			command.fetchDataConnectionReply();
+		} catch (IOException ioe) {
+			setConnectionStatus(ERROR);
+			disconnect();
+			throw ioe;
+		}
+		if (commandReply.getLines().size() == 1) {
+			try {
+				(ReplyWorker.readReply(socketProvider)).dumpReply();
+			} catch (IOException ioe) {
+				setConnectionStatus(ERROR);
+				disconnect();
+				throw ioe;
+			}
+		}
+
+		setConnectionStatus(SENDING_FILE_ENDED, srcInfo, toFile);
+		setConnectionStatus(IDLE);
+		setConnectionStatusLock(CSL_DIRECT_CALL);
+	}
 
     /**
      * This method is used to upload a local directory to the server to a
@@ -1531,6 +1561,10 @@ public abstract class FTPConnection {
      */
     private SocketProvider initDataSocket(Command command, Reply commandReply)
             throws IOException, FtpIOException, FtpWorkflowException {
+    	 
+    	setConnectionStatusLock(CSL_INDIRECT_CALL);
+         setConnectionStatus(FTPConnection.BUSY);
+    	
     	if(isPretSupport())
     	{
     		Command pretCommand = new Command(Command.PRET,command.toString());
@@ -1551,7 +1585,10 @@ public abstract class FTPConnection {
                 || connectionType == FTPConnection.IMPLICIT_SSL_WITH_CRYPTED_DATA_FTP_CONNECTION
                 || connectionType == FTPConnection.IMPLICIT_TLS_WITH_CRYPTED_DATA_FTP_CONNECTION)
             provider.negotiate(this.getTrustManagers(),this.getKeyManagers());
-
+        
+        setConnectionStatus(FTPConnection.IDLE);
+        setConnectionStatusLock(CSL_DIRECT_CALL);
+        
         return provider;
     }
 
@@ -2041,7 +2078,7 @@ public abstract class FTPConnection {
 				String s = (String)it.next();
 				if (s.indexOf(Command.SSCN) > -1) {
 					setSscnSupport(true);
-					setSecureFXPType(Command.CPSV);
+					setSecureFXPType(Command.SSCN);
 				} else if (s.indexOf(Command.PRET) > -1) {
 					setPretSupport(true);
 				} else if (s.indexOf(Command.CPSV) > -1)

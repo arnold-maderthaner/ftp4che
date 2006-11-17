@@ -33,7 +33,7 @@ public class LastChanceFileParser implements FileParser {
 	
 	public FTPFile parse(String serverString, String parentDirectory)
 			throws ParseException {
-        log.info("LIST reply line -> " + serverString + " parentDirectory -> " + parentDirectory);
+        log.fatal("LIST reply line -> " + serverString + " parentDirectory -> " + parentDirectory);
 		return new FTPFile("THIS SHOULD NEVER HAPPEN","THIS IS AN ERROR");
 		
 	}
