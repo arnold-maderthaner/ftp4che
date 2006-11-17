@@ -88,9 +88,9 @@ public class UltimateBugFinder {
 				conn.downloadFile(new FTPFile(conn.getWorkDirectory(), "1mb", false), new FTPFile(new File(homeDirectory.getFile(), "downloaded_1mb")));
 				conn.downloadFile(new FTPFile(conn.getWorkDirectory(), "5mb", false), new FTPFile(new File(homeDirectory.getFile(), "downloaded_5mb")));
 				conn.downloadFile(new FTPFile(conn.getWorkDirectory(), "10mb", false), new FTPFile(new File(homeDirectory.getFile(), "downloaded_10mb")));
-				conn.renameFile(new FTPFile(conn.getWorkDirectory(), "1mb", false), "1mb_renamed");
-				conn.renameFile(new FTPFile(conn.getWorkDirectory(), "5mb", false), "5mb_renamed");
-				conn.renameFile(new FTPFile(conn.getWorkDirectory(), "10mb", false), "10mb_renamed");
+				conn.renameFile(new FTPFile(conn.getWorkDirectory(), "1mb", false), new FTPFile(conn.getWorkDirectory(),"1mb_renamed",false));
+				conn.renameFile(new FTPFile(conn.getWorkDirectory(), "5mb", false), new FTPFile(conn.getWorkDirectory(),"5mb_renamed",false));
+				conn.renameFile(new FTPFile(conn.getWorkDirectory(), "10mb", false), new FTPFile(conn.getWorkDirectory(),"10mb_renamed",false));
 				conn.deleteFile(new FTPFile(conn.getWorkDirectory(), "1mb_renamed", false));
 				conn.deleteFile(new FTPFile(conn.getWorkDirectory(), "5mb_renamed", false));
 				conn.deleteFile(new FTPFile(conn.getWorkDirectory(), "10mb_renamed", false));

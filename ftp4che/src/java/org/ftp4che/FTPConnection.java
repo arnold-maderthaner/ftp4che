@@ -1808,20 +1808,20 @@ public abstract class FTPConnection {
      * @throws FtpIOException
      * @throws FtpWorkflowException
      */
-    public void renameFile(FTPFile fromName, String toName) throws IOException,
+    public void renameFile(FTPFile fromName, FTPFile toName) throws IOException,
             FtpIOException, FtpWorkflowException {
         
         setConnectionStatusLock(CSL_INDIRECT_CALL);
         setConnectionStatus(FTPConnection.BUSY);
         
         // send RNFR
-        Command commandRenFr = new Command(Command.RNFR, fromName.getName());
+        Command commandRenFr = new Command(Command.RNFR, fromName.toString());
         Reply replyRenFr = sendCommand(commandRenFr);
         replyRenFr.dumpReply();
         replyRenFr.validate();
 
         // send RNTO
-        Command commandRenTo = new Command(Command.RNTO, toName);
+        Command commandRenTo = new Command(Command.RNTO, toName.toString());
         Reply replyRenTo = sendCommand(commandRenTo);
         replyRenTo.dumpReply();
         replyRenTo.validate();
@@ -2101,5 +2101,10 @@ public abstract class FTPConnection {
 
 	public void setSscnSupport(boolean sscnSupport) {
 		this.sscnSupport = sscnSupport;
+	}
+	
+	public void moveFile(FTPFile fromFile,FTPFile toFile) throws FtpWorkflowException,FtpIOException,IOException
+	{
+		renameFile(fromFile, toFile);
 	}
 }
