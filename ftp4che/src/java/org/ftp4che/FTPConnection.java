@@ -203,6 +203,8 @@ public abstract class FTPConnection {
     private boolean cpsvSupport = false;
     
     private boolean sscnSupport = false;
+    
+    private String connectionTransferType = Command.TYPE_I;
 
     /**
      * @author arnold,kurt
@@ -974,7 +976,7 @@ public abstract class FTPConnection {
                 return;
         }
         //Send TYPE I
-        Command commandType = new Command(Command.TYPE_I);
+        Command commandType = new Command(connectionTransferType);
         (sendCommand(commandType)).dumpReply();
         Reply commandReply = new Reply();
         if (isPassiveMode()) {
@@ -1062,7 +1064,7 @@ public abstract class FTPConnection {
         }
         
         // Send TYPE I
-        Command commandType = new Command(Command.TYPE_I);
+        Command commandType = new Command(connectionTransferType);
         (sendCommand(commandType)).dumpReply();
         Reply commandReply = new Reply();
         if (isPassiveMode()) {
@@ -1238,7 +1240,7 @@ public abstract class FTPConnection {
                 return;
         }
         //Send TYPE I
-        Command commandType = new Command(Command.TYPE_I);
+        Command commandType = new Command(connectionTransferType);
         (sendCommand(commandType)).dumpReply();
 
         Reply commandReply = new Reply();
@@ -1915,7 +1917,8 @@ public abstract class FTPConnection {
      */
     public void setTransferType(boolean type) throws IOException,
             FtpIOException, FtpWorkflowException {
-        Command command = new Command((type ? Command.TYPE_I : Command.TYPE_A));
+    	connectionTransferType = (type ? Command.TYPE_I : Command.TYPE_A);
+        Command command = new Command(connectionTransferType);
         Reply reply = sendCommand(command);
         reply.dumpReply();
         reply.validate();
