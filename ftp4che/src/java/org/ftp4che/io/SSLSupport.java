@@ -81,7 +81,7 @@ public class SSLSupport {
         if(trustManagers == null || trustManagers.length == 0)
             trustManagers = new TrustManager[] { new EasyX509TrustManager(
                 null) };
-        context.init(null, trustManagers, null);
+        context.init(keyManagers, trustManagers, null);
         SSLSocketFactory sslFact = context.getSocketFactory();
         sslSocket = (SSLSocket) sslFact.createSocket(socket, socket
                 .getInetAddress().getHostAddress(), socket.getPort(), true);
