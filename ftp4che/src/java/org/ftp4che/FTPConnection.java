@@ -1171,12 +1171,12 @@ public abstract class FTPConnection {
      */
     public void uploadFile(FTPFile fromFile, FTPFile toFile)
     throws IOException, FtpWorkflowException, FtpIOException {
-    	upload(fromFile, toFile, false);
+    	uploadFile(fromFile, toFile, false);
     }
     
     public void uploadFile(FTPFile fromFile, FTPFile toFile, boolean resume)
     throws IOException, FtpWorkflowException, FtpIOException {
-        uploadFile(fromFile, toFile, resume);
+        upload(fromFile, toFile, resume);
     }
     
     public void uploadStream(InputStream upStream, FTPFile toFile) throws IOException, FtpWorkflowException, FtpIOException {
