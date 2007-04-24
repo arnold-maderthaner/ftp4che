@@ -20,6 +20,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 
@@ -311,66 +312,108 @@ public class ReplyWorker extends Thread {
                     || storeCommand.getToFile().getTransferType().intern() == Command.TYPE_A) {
                 try {
                     log.debug("Upload file: " + storeCommand.getFromFile());
-                    
-                    FileInputStream in = (FileInputStream) storeCommand.getStream(); 
-                    FileChannel channel = in.getChannel();
-                    if(storeCommand.getResumePosition() != -1)
-                    {
-                    	try
+                    InputStream in = storeCommand.getStream();
+                	int amount;
+                	int socketWrite;
+                	int socketAmount = 0;
+                	
+                    if(in instanceof FileInputStream)
+                    {                  
+                    	FileChannel channel = ((FileInputStream)in).getChannel();
+                    	if(storeCommand.getResumePosition() != -1)
                     	{
-                    		channel.position(storeCommand.getResumePosition());
-                    	}catch (IOException ioe)
-                    	{
-                    		 setCaughtException(ioe);
-                             setStatus(ReplyWorker.ERROR_IO_EXCEPTION);
-                             try
-                     		 {
-                     			channel.close();
-                     		 }catch (IOException ioe2) {}
-                     		 return;
+                    		try
+                    		{
+                    			channel.position(storeCommand.getResumePosition());
+                    		}catch (IOException ioe)
+                    		{
+                    			setCaughtException(ioe);
+                    			setStatus(ReplyWorker.ERROR_IO_EXCEPTION);
+                    			try
+                    			{
+                    				channel.close();
+                    			}catch (IOException ioe2) {}
+                    			return;
+                    		}
                     	}
-                    }
-                    int amount;
-                    int socketWrite;
-                    int socketAmount = 0;
-                    try {
-                        while ((amount = channel.read(buffer)) != -1) {
-                            buffer.flip();
-                            socketWrite = 0;
-                            while ((socketWrite = getSocketProvider().write(
-                                    buffer)) != -1) {
-                                socketAmount += socketWrite;
-                                if (amount <= socketAmount) {
-                                    break;
-                                }
-                                if (socketWrite == 0) {
-                                    try {
-                                        Thread.sleep(4);
-                                    } catch (InterruptedException e) {
-                                    }
-                                }
-                            }
-                            if (socketWrite == -1) {
-                                break;
-                            }
-                            socketAmount = 0;
-                            buffer.clear();
-                        }
-                        setStatus(ReplyWorker.FINISHED);
-                        channel.close();
-                        getSocketProvider().close();
-                    } catch (IOException ioe) {
-                        setCaughtException(ioe);
-                        setStatus(ReplyWorker.ERROR_IO_EXCEPTION);
-                    }finally
-                    {
-                    	try
-                    	{
+                    	try {
+                    		while ((amount = channel.read(buffer)) != -1) {
+                    			buffer.flip();
+                    			socketWrite = 0;
+                    			while ((socketWrite = getSocketProvider().write(
+                    					buffer)) != -1) {
+                    				socketAmount += socketWrite;
+                    				if (amount <= socketAmount) {
+                    					break;
+                    				}
+                    				if (socketWrite == 0) {
+                    					try {
+                    						Thread.sleep(4);
+                    					} catch (InterruptedException e) {
+                    				}	
+                    				}
+                    			}
+                    			if (socketWrite == -1) {
+                            		break;
+                            	}
+                            	socketAmount = 0;
+                            	buffer.clear();
+                    		}
+                    		setStatus(ReplyWorker.FINISHED);
                     		channel.close();
-                            getSocketProvider().close();
-                    	}catch (Exception e) {}
+                    		getSocketProvider().close();
+                    		} catch (IOException ioe) {
+                    			setCaughtException(ioe);
+                    			setStatus(ReplyWorker.ERROR_IO_EXCEPTION);
+                    		}finally
+                    		{
+                    			try
+                    			{
+                    				channel.close();
+                    				getSocketProvider().close();
+                    			}catch (Exception e) {}
+                    		}
                     }
-
+                    else
+                    {
+                    	try { 
+                    			while ((amount = in.read(buffer.array())) != -1) { 
+                    					buffer.flip(); 
+                    					buffer.limit(amount); 
+                    					socketWrite = 0; 
+                    					while ((socketWrite = getSocketProvider().write(buffer)) != -1) { 
+                    							socketAmount = socketWrite; 
+                    							if (amount <= socketAmount) { 
+                    								break; 
+                    							} 
+                    							if (socketWrite == 0) { 
+                    								try { 
+                    									Thread.sleep(4); 
+                    								} catch (InterruptedException e) { 
+                    								} 
+                    							} 
+                    					} 
+                    					if (socketWrite == -1) { 
+                    						break; 
+                    					} 
+                    					socketAmount = 0; 
+                    					buffer.clear(); 
+                    			} 
+                    			setStatus(ReplyWorker.FINISHED); 
+                    			in.close(); 
+                    			getSocketProvider().close(); 
+                    		 	} catch (IOException ioe) { 
+                    		 		setCaughtException(ioe); 
+                    		 		setStatus(ReplyWorker.ERROR_IO_EXCEPTION); 
+                    		 	}finally 
+                    		 	{ 
+                    		 		try 
+                    		 		{ 
+                    		 			in.close(); 
+                    		 			getSocketProvider().close(); 
+                    		 		}catch (Exception e) {} 
+                    		 } 
+                    }
                 } catch (FileNotFoundException fnfe) {
                     setCaughtException(fnfe);
                     setStatus(ReplyWorker.ERROR_FILE_NOT_FOUND);
