@@ -109,7 +109,7 @@ public class Socks4 implements Proxy {
         try {
             isa = new InetSocketAddress(InetAddress.getByName(host), port);
         } catch (IOException ioe) {
-            throw new ProxyConnectionException(-2, "SOCK4 - IOException: "
+            throw new ProxyConnectionException(-2, "SOCKS4 - IOException: "
                     + ioe.getMessage());
         }
 
@@ -229,7 +229,7 @@ public class Socks4 implements Proxy {
             out.write(requestPacket, 0, 9 + getUser().getBytes().length);
             in.read(response, 0, 8);
         } catch (IOException ioe) {
-            throw new ProxyConnectionException(-2, "SOCK4 - IOException: "
+            throw new ProxyConnectionException(-2, "SOCKS4 - IOException: "
                     + ioe.getMessage());
         }
 
