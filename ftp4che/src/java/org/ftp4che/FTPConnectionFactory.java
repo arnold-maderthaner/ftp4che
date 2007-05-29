@@ -23,9 +23,7 @@ import org.ftp4che.exception.ConfigurationException;
 import org.ftp4che.impl.SecureFTPConnection;
 import org.ftp4che.impl.NormalFTPConnection;
 import org.ftp4che.proxy.Proxy;
-import org.ftp4che.proxy.Socks4;
-import org.ftp4che.proxy.Socks5;
-
+import org.ftp4che.proxy.ProxyConnectionFactory;
 
 /**
  * @author arnold
@@ -245,17 +243,8 @@ public class FTPConnectionFactory {
         connection.setDownloadBandwidth(maxDownloadBandwidth);
         connection.setUploadBandwidth(maxUploadBandwidth);
         connection.setTryResume(tryResume);
-        
-        Proxy proxy = null;
-        if (proxyType != null) {
-            if (proxyType.equalsIgnoreCase("SOCKS4")) {
-                proxy = new Socks4(proxyHost, proxyPort, proxyTimeout,
-                        proxyUser);
-            } else if (proxyType.equalsIgnoreCase("SOCKS5")) {
-                proxy = new Socks5(proxyHost, proxyPort, proxyUser, proxyPass);
-            }
-        }
 
+        Proxy proxy = ProxyConnectionFactory.getInstance(proxyHost, proxyPort, proxyUser, proxyPass, proxyType);
         connection.setProxy(proxy);
 
         return connection;

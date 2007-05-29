@@ -321,7 +321,7 @@ public class Socks4 implements Proxy {
      * @return Returns the user.
      */
     public String getUser() {
-        return user;
+        return user != null ? user : "";
     }
 
     /**

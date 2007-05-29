@@ -34,6 +34,8 @@ public class ProxyConnectionFactory {
             String pass, String type) throws ConfigurationException {
         if (type.equalsIgnoreCase(SOCKS4))
             return new Socks4(host, port, user);
+        else if (type.equalsIgnoreCase(SOCKS5))
+        	return new Socks5(host, port, user, pass);
 
         throw new ConfigurationException("Unkown proxy type.");
     }
