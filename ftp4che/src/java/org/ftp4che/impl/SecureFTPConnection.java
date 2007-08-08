@@ -64,7 +64,11 @@ public class SecureFTPConnection extends FTPConnection {
                 || this.getConnectionType() == FTPConnection.IMPLICIT_TLS_WITH_CRYPTED_DATA_FTP_CONNECTION) {
             negotiateAndLogin(null);
         } else {
-            (ReplyWorker.readReply(socketProvider)).dumpReply();
+        	Reply connectReply = ReplyWorker.readReply(this.socketProvider);
+            if (connectReply != null)
+                this.fireReplyMessageArrived(new FTPEvent(this, this.getConnectionStatus(), connectReply));
+            connectReply.dumpReply();
+            
             negotiateAndLogin(getAuthString());
         }
         checkFeatures();
@@ -92,7 +96,10 @@ public class SecureFTPConnection extends FTPConnection {
                 socketProvider.negotiate(this.getTrustManagers(),this.getKeyManagers());
                 if (authCommand == null) {
                     // We are in implicit mode and must read the initial reply
-                    (ReplyWorker.readReply(socketProvider)).dumpReply();
+                	Reply connectReply = ReplyWorker.readReply(this.socketProvider);
+                    if (connectReply != null)
+                        this.fireReplyMessageArrived(new FTPEvent(this, this.getConnectionStatus(), connectReply));
+                    connectReply.dumpReply();
                 }
             } catch (Exception e) {
                 log.error(e, e);

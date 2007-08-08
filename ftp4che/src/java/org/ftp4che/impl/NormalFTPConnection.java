@@ -68,7 +68,12 @@ public class NormalFTPConnection extends FTPConnection {
             log.error(error, ioe);
             throw new NotConnectedException(error);
         }
-        (ReplyWorker.readReply(socketProvider)).dumpReply();
+        
+        Reply connectReply = ReplyWorker.readReply(this.socketProvider);
+        if (connectReply != null)
+            this.fireReplyMessageArrived(new FTPEvent(this, this.getConnectionStatus(), connectReply));        
+        connectReply.dumpReply();
+        
         Reply reply = sendCommand(new Command(Command.USER, getUser()));
         reply.dumpReply();
         reply.validate();
