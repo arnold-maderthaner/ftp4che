@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -159,6 +160,8 @@ public abstract class FTPConnection {
     private boolean sscnActive = false;
 
     private InetSocketAddress address = null;
+    
+    private InetAddress overridePassiveAddress = null;
 
     private String user = "";
 
@@ -636,7 +639,16 @@ public abstract class FTPConnection {
             Reply reply = sendCommand(command);
             reply.dumpReply();
             reply.validate();
-            return ReplyFormatter.parsePASVCommand(reply);
+            InetSocketAddress passiveAddress = ReplyFormatter.parsePASVCommand(reply);
+            
+            if(overridePassiveAddress != null)
+            {
+            	return new InetSocketAddress(overridePassiveAddress, passiveAddress.getPort());
+            }
+            else
+            {
+            	return passiveAddress;
+            }
         } catch (UnkownReplyStateException urse) {
             log.error("The state of the reply from pasv command is unknown!",
                     urse);
@@ -776,6 +788,9 @@ public abstract class FTPConnection {
         } else {
             provider = sendPortCommand(command, commandReply);
         }
+        
+        this.setConnectionStatusLock(FTPConnection.CSL_INDIRECT_CALL);
+        this.setConnectionStatus(FTPConnection.BUSY);
 
         command.setDataSocket(provider);
         // INFO response from ControllConnection is ignored
@@ -985,6 +1000,9 @@ public abstract class FTPConnection {
             provider = sendPortCommand(command, commandReply);
         }
 
+        this.setConnectionStatusLock(FTPConnection.CSL_INDIRECT_CALL);
+        this.setConnectionStatus(FTPConnection.RECEIVING_FILE);
+        
         command.setDataSocket(provider);
         // INFO response from ControllConnection is ignored
         try {
@@ -1072,6 +1090,9 @@ public abstract class FTPConnection {
         } else {
             provider = sendPortCommand(command, commandReply);
         }
+        
+        this.setConnectionStatusLock(FTPConnection.CSL_INDIRECT_CALL);
+        this.setConnectionStatus(FTPConnection.RECEIVING_FILE);
 
         command.setDataSocket(provider);
         // INFO response from ControllConnection is ignored
@@ -1221,6 +1242,8 @@ public abstract class FTPConnection {
         	}
         	if(srcInfo.getSize() != toFile.getSize())
         	{
+        		// change command from STOR to APPE, Apache ftpserver did not append with REST+STOR
+                command.setCommand(Command.APPE);
         		command.setResumePosition(toFile.getSize());
         		Command resumeCommand = new Command(Command.REST,""+toFile.getSize());
         		Reply resumeReply = sendCommand(resumeCommand);
@@ -1249,6 +1272,9 @@ public abstract class FTPConnection {
         } else {
             provider = sendPortCommand(command, commandReply);
         }
+        
+        this.setConnectionStatusLock(FTPConnection.CSL_INDIRECT_CALL);
+        this.setConnectionStatus(FTPConnection.SENDING_FILE);
 
         command.setDataSocket(provider);
         // INFO response from ControllConnection is ignored
@@ -1612,9 +1638,9 @@ public abstract class FTPConnection {
      *             will be thrown if there was a ftp reply class 4xx. this
      *             should indicate some secific problems on the server
      */
-    public void sendSiteCommand(String commandParameter) throws IOException,
+    public void sendSiteCommand(String... commandParameters) throws IOException,
             FtpIOException, FtpWorkflowException {
-        Command command = new Command(Command.SITE, commandParameter);
+    	final Command command = new Command(Command.SITE, commandParameters);
         Reply reply = sendCommand(command);
         reply.dumpReply();
         reply.validate();
@@ -2107,4 +2133,29 @@ public abstract class FTPConnection {
 	{
 		renameFile(fromFile, toFile);
 	}
+	
+	/**
+     * Method to set a custom Charset, default is ISO-8859-1.
+     * 
+     * @param charsetName charset name e.g.: ISO-8859-1, UTF-8
+     */
+	public void setCharset(final String charsetName)
+    {
+        this.charset = Charset.forName(charsetName);
+        this.encoder = this.charset.newEncoder();
+        
+        // internal: set decoder for the replies to same charset
+        ReplyWorker.setCharset(charset);
+    }
+    
+	/**
+	 * Method to set an address which will e used to override the address returned by the server on PASV commands.
+	 * This helps to solve issues in NAT environments.
+	 * 
+	 * @param overridePassiveAddress
+	 */
+    public void setOverrideHostForPassiveConnections(InetAddress overridePassiveAddress)
+    {
+    	this.overridePassiveAddress = overridePassiveAddress;
+    }
 }

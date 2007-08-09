@@ -23,12 +23,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -67,7 +65,7 @@ public class ReplyWorker extends Thread {
     
     private Command command;
 
-    private Charset charset = Charset.forName("ISO8859-1");
+    private static Charset charset = Charset.forName("ISO8859-1");
 
     private CharsetDecoder charDecoder = charset.newDecoder();
 
@@ -110,10 +108,10 @@ public class ReplyWorker extends Thread {
     public static Reply readReply(SocketProvider socketProvider,
             boolean isListReply) throws IOException {
         List<String> lines = new ArrayList<String>();
-        Charset charset = Charset.forName("ISO8859-1");
-        CharsetDecoder charDecoder = charset.newDecoder();
+        
         Logger log = Logger.getLogger(ReplyWorker.class.getName());
-
+        final CharsetDecoder charDecoder = ReplyWorker.charset.newDecoder();
+        
         String output = "";
 		String out = "";
 		ByteBuffer buf = null;
@@ -521,5 +519,15 @@ public class ReplyWorker extends Thread {
      */
     public void setDownloadMethod(int downloadMethod) {
         this.downloadMethod = downloadMethod;
+    }
+    
+    /**
+     * Added method to set a custom Charset, default is ISO-8859-1.
+     * 
+     * @param charset e.g.: ISO-8859-1, UTF-8
+     */
+    public static void setCharset(final Charset charSet)
+    {
+        ReplyWorker.charset = charSet;
     }
 }
