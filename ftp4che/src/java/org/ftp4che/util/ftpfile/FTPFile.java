@@ -212,12 +212,11 @@ public class FTPFile implements Comparable {
     public int compareTo(Object o) {
         FTPFile to = (FTPFile) o;
 
-        if (this.isDirectory() && to.isDirectory())
+        if (this.isDirectory() && to.isDirectory()) {
             return this.getName().compareTo(to.getName());
-        else if (this.isDirectory() && to.isDirectory())
-            return this.getName().compareTo(to.getName());
-        else if (this.isDirectory())
+        } else if (this.isDirectory()) {
             return 1;
+        }
 
         return 0;
     }
