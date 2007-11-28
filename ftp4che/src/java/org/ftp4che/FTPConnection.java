@@ -1156,7 +1156,7 @@ public abstract class FTPConnection {
         List<FTPFile> files = getDirectoryListing(listDir);
 //        List<FTPFile> files = getDirectoryListing(srcDir.toString());
 
-        Collections.sort(files);
+        Collections.<FTPFile>sort(files);
 
         for (FTPFile file : files) {
             file.setPath(srcDir.toString());

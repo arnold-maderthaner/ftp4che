@@ -23,7 +23,7 @@ import java.util.StringTokenizer;
 
 import org.ftp4che.commands.Command;
 
-public class FTPFile implements Comparable {
+public class FTPFile implements Comparable<FTPFile> {
 
     public static final int UNKNOWN = -1;
 
@@ -209,9 +209,7 @@ public class FTPFile implements Comparable {
         return name;
     }
 
-    public int compareTo(Object o) {
-        FTPFile to = (FTPFile) o;
-
+    public int compareTo(FTPFile to) {
         if (this.isDirectory() && to.isDirectory()) {
             return this.getName().compareTo(to.getName());
         } else if (this.isDirectory()) {
