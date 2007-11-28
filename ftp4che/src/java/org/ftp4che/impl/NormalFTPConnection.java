@@ -58,10 +58,10 @@ public class NormalFTPConnection extends FTPConnection {
         String hostAndPort = getAddress().getHostName() + ":"
                 + getAddress().getPort();
         try {
+            socketProvider.socket().setSoTimeout(getTimeout());
             socketProvider.connect(getAddress(), getProxy(),
                     getDownloadBandwidth(), getUploadBandwidth());
-            log.debug("connected to:" + hostAndPort);
-            socketProvider.socket().setSoTimeout(getTimeout());
+            log.debug("connected to:" + hostAndPort);     
             socketProvider.socket().setKeepAlive(true);
         } catch (IOException ioe) {
             String error = "Error connection to:" + hostAndPort;
