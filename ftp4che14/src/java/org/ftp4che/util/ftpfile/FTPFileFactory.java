@@ -32,7 +32,7 @@ public class FTPFileFactory {
 
     public static final String WINDOWS_IDENTIFICATION = "WINDOWS";
 
-    public static final String VMS_IDENTIFICATION = "VMS";
+    public static final String VMS_IDENTIFICATION = "VMS";            public static final String MVS_IDENTIFICATION = "MVS";
 
     private String system;
 
@@ -69,7 +69,7 @@ public class FTPFileFactory {
         else if (system.indexOf(VMS_IDENTIFICATION) >= 0) {
         	log.debug("Found VMS identification, try to use VMS file parser");
             return new VMSFileParser(locale);
-        } else {
+        } else if (system.indexOf(MVS_IDENTIFICATION) >= 0 ) {                        log.debug("Found MVS identification, try to use MVS file parser");                        return new MVSFileParser(locale);                    } else {
             log.warn("Unknown SYST '" + system + "', trying UnixFileParsers");
             return null;
         }

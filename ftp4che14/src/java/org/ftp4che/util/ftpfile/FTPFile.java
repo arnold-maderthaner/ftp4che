@@ -33,7 +33,7 @@ public class FTPFile implements Comparable {
 
     public final static int VMS = 2;
     
-    public final static int NETWARE = 3;
+    public final static int NETWARE = 3;        public final static int MVS = 4;
 
     private int fileType;
 

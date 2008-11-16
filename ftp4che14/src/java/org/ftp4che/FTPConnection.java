@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -514,6 +515,10 @@ public abstract class FTPConnection {
             reply.dumpReply();
             reply.validate();
             workingDirectory = ReplyFormatter.parsePWDReply(reply);
+            //this is required for some OS like MVS
+            if(!workingDirectory.startsWith("/")) {
+                workingDirectory = "/" + workingDirectory;
+            }
         }
         return workingDirectory;
     }
@@ -1577,8 +1582,18 @@ public abstract class FTPConnection {
     	}
         InetSocketAddress dataSocket = sendPassiveMode();
         SocketProvider provider = new SocketProvider(false);
-        provider.connect(dataSocket, getProxy(), getDownloadBandwidth(),
-                getUploadBandwidth());
+        try {
+            provider.connect(dataSocket, getProxy(), getDownloadBandwidth(), getUploadBandwidth());
+        } catch (ConnectException e) {
+            log.debug("Substituting connection address " 
+                    + getAddress().getAddress().getHostAddress()  
+                    + " for private address " + dataSocket.getHostName() + " from PASV");
+            
+            InetSocketAddress newDataSocket = new InetSocketAddress(getAddress().getAddress().getHostAddress(),
+                    dataSocket.getPort());
+            provider = new SocketProvider();
+            provider.connect(newDataSocket, getProxy(), getDownloadBandwidth(), getUploadBandwidth());
+        }
         provider.setSSLMode(getConnectionType());
 
         commandReply.setLines(sendCommand(command).getLines());
