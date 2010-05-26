@@ -43,17 +43,16 @@ public class SecureFTPConnection extends FTPConnection {
         setConnectionStatusLock(FTPConnection.CSL_INDIRECT_CALL);
         
         socketProvider = new SocketProvider();
-        // Only for logging
-        String hostAndPort = getAddress().getHostName() + ":"
-                + getAddress().getPort();
         try {
             socketProvider.socket().setSoTimeout(getTimeout());
             socketProvider.connect(getAddress(), getProxy(),
                     getDownloadBandwidth(), getUploadBandwidth());
-            log.debug("connected to:" + hostAndPort);       
+            log.debug("connected to:" + getAddress().getHostName() + ":"
+                    + getAddress().getPort());       
             socketProvider.socket().setKeepAlive(true);
         } catch (IOException ioe) {
-            String error = "Error connection to:" + hostAndPort;
+            String error = "Error connection to:" + getAddress().getHostName() + ":"
+            + getAddress().getPort();
             log.error(error, ioe);
             throw new NotConnectedException(error);
         }
