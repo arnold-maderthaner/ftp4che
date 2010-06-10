@@ -346,7 +346,7 @@ public abstract class FTPConnection {
             setConnectionStatus(BUSY);
         
         controlBuffer.clear();
-        log.debug("Sending command: "
+        log.info("Sending command: "
                 + cmd.toString().substring(0, cmd.toString().length() - 2));
         controlBuffer.put(cmd.toString());
         controlBuffer.flip();
@@ -1394,7 +1394,7 @@ public abstract class FTPConnection {
 			pretDestReply.dumpReply();
 			pretDestReply.validate();
 		}
-        Command pasvCommand = new Command(Command.PASV);;
+        Command pasvCommand = new Command(Command.PASV);
         if (getSecureFXPType() == Command.SSCN && !sscnActive) {
             setSSCNFxp(true);
             sscnActive = true;
@@ -1420,7 +1420,7 @@ public abstract class FTPConnection {
         line = line.substring(line.indexOf('(') + 1, line.lastIndexOf(')'));
 
         // send PROT P to source and destination, needed for CPSV only
-        if (getSecureFXPType() == Command.CPSV) {
+        if (getSecureFXPType() == Command.CPSV || getSecureFXPType() == Command.SSCN) {
             // destination
             Command protCommand = new Command(Command.PROT, "P");
             Reply protReply = destination.sendCommand(protCommand);
@@ -2100,19 +2100,23 @@ public abstract class FTPConnection {
 		reply.dumpReply();
 		if (ReplyCode.isPositiveCompletionReply(reply)) {
 			List<String> lines = reply.getLines();
+			
 			for (String s : lines) {
 				if (s.indexOf(Command.SSCN) > -1) {
 					setSscnSupport(true);
-					setSecureFXPType(Command.SSCN);
 				} else if (s.indexOf(Command.PRET) > -1) {
 					setPretSupport(true);
 				} else if (s.indexOf(Command.CPSV) > -1)
 				{
 					setCpsvSupport(true);
-					setSecureFXPType(Command.CPSV);
 				}
 			}
-
+			if(sscnSupport == true)
+				setSecureFXPType(Command.SSCN);
+			else if(cpsvSupport == true)
+				setSecureFXPType(Command.CPSV);
+			else 
+				setSecureFXPType(null);
 		}
 	}
 
