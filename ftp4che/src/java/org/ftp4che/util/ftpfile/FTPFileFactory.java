@@ -32,6 +32,8 @@ public class FTPFileFactory {
     public static final String WINDOWS_IDENTIFICATION = "WINDOWS";
 
     public static final String VMS_IDENTIFICATION = "VMS";
+    
+    public static final String NETWARE_IDENTIFICATION = "NETWARE";
 
     private String system;
 
@@ -68,7 +70,12 @@ public class FTPFileFactory {
         else if (system.indexOf(VMS_IDENTIFICATION) >= 0) {
         	log.debug("Found VMS identification, try to use VMS file parser");
             return new VMSFileParser(locale);
-        } else {
+        }
+        else if (system.indexOf(NETWARE_IDENTIFICATION) >= 0) {
+        	log.debug("Found NETWARE identification, try to use NETWARE file parser");
+            return new NetwareFileParser(locale);
+        }
+        else {
             log.warn("Unknown SYST '" + system + "', trying UnixFileParsers");
             return null;
         }
@@ -129,8 +136,10 @@ public class FTPFileFactory {
     
     public static void main(String args[])
     {
-    	FTPFileFactory factory = new FTPFileFactory("VMS");
+    	FTPFileFactory factory = new FTPFileFactory("NETWARE Type: L8");
     	List<String> list = new ArrayList<String>();
+      	list.add("d [R----F--] supervisor            512       Jan 16 18:53    login");
+	    list.add("- [R----F--] rhesus             214059       Oct 20 15:27    cx.ex");
 //    	list.add("lrwxrwxrwx   1 root     root           11 Aug 18  2000 HEADER -> welcome.msg");
 // 		list.add("drwxr-xr-x   2 root     wheel        4096 Nov 27  2000 bin");
 // 		list.add("drwxr-xr-x   2 root     wheel        4096 Sep 18 20:00 pub");
@@ -142,9 +151,9 @@ public class FTPFileFactory {
 // 		list.add("drwxr-xr-x    5 0        0            4096 Aug 22 09:16 ..");
 // 		list.add("-rw-------    1 503      503          2626 Aug 26 08:39 .bash_history");
 // 		list.add("213 End of status");
-    	list.add("00README.TXT;1      2 30-DEC-1996 17:44 [SYSTEM] (RWED,RWED,RE,RE)");
-    	list.add("CORE.DIR;1          1  8-SEP-1996 16:09 [SYSTEM] (RWE,RWE,RE,RE)");
-    	list.add("CII-MANUAL.TEX;1  213/216  29-JAN-1996 03:33:12  [ANONYMOUS,ANONYMOUS]   (RWED,RWED,,)");
+//    	list.add("00README.TXT;1      2 30-DEC-1996 17:44 [SYSTEM] (RWED,RWED,RE,RE)");
+//    	list.add("CORE.DIR;1          1  8-SEP-1996 16:09 [SYSTEM] (RWE,RWE,RE,RE)");
+//    	list.add("CII-MANUAL.TEX;1  213/216  29-JAN-1996 03:33:12  [ANONYMOUS,ANONYMOUS]   (RWED,RWED,,)");
 //    	list.add("02-13-01  08:02PM       <DIR>          bussys");
 //    	list.add("11-27-00  11:28AM                    456 dirmap.htm");
 //    	list.add("-------r--         326  1391972  1392298 Nov 22  1995 MegaPhone.sit");
