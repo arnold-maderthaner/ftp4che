@@ -1014,7 +1014,9 @@ public abstract class FTPConnection {
         }
         if (commandReply.getLines().size() == 1) {
         	try {
-        		(ReplyWorker.readReply(socketProvider)).dumpReply();
+        		Reply fileReply = ReplyWorker.readReply(socketProvider);
+        		fileReply.dumpReply();
+        		fileReply.validate();  
             }catch(IOException ioe) {
                 setConnectionStatus(ERROR);
                 disconnect();
@@ -1035,6 +1037,7 @@ public abstract class FTPConnection {
             FTPConnection connection;
             FTPFile fromFile;
             PipedInputStream pis;
+            Exception caughtException;
             
             public DownStreamingThread(FTPConnection connection, FTPFile fromFile, PipedInputStream pis) {
                 super();
@@ -1042,18 +1045,35 @@ public abstract class FTPConnection {
                 this.fromFile = fromFile;
                 this.pis = pis;
             }
+            
+            /**
+             * @return Returns the caughtException.
+             */
+            public Exception getCaughtException() {
+                return caughtException;
+            }
+            
+            /**
+             * @param caughtException
+             *            The caughtException to set.
+             */
+            public void setCaughtException(Exception caughtException) {
+                this.caughtException = caughtException;
+            }
+
 
             public void run() {
                 try {
                     connection.streamFile(fromFile, pis);
                 }catch(Exception e) {
-                    e.printStackTrace();
+                	setCaughtException(e);
                 }
             }
         }
         
-        (new DownStreamingThread(this, fromFile, pis)).start();
-        
+        DownStreamingThread downStreamingThread = new DownStreamingThread(this, fromFile, pis);
+        downStreamingThread.start();
+
         // ensure that in/out pipes are connected already
         try {
         	for(int i=0; i<60 && pis.available() <= 0; i++)
@@ -1105,7 +1125,9 @@ public abstract class FTPConnection {
         }
         if (commandReply.getLines().size() == 1) {
         	try {
-        		(ReplyWorker.readReply(socketProvider)).dumpReply();
+        		Reply streamReply = ReplyWorker.readReply(socketProvider);
+        		streamReply.dumpReply();
+        		streamReply.validate();
             }catch(IOException ioe) {
                 setConnectionStatus(ERROR);
                 disconnect();
