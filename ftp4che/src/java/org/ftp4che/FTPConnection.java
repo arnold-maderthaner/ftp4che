@@ -1080,6 +1080,19 @@ public abstract class FTPConnection {
         		Thread.sleep(1000);
         }catch(Exception e) {}
         
+        //Check if in the Downloadthread a Exception occured
+        if (downStreamingThread.getCaughtException()!=null){
+            if (downStreamingThread.getCaughtException() instanceof IOException)
+                throw (IOException)downStreamingThread.getCaughtException();
+            if (downStreamingThread.getCaughtException() instanceof FtpWorkflowException)
+                throw (FtpWorkflowException)downStreamingThread.getCaughtException();
+            if (downStreamingThread.getCaughtException() instanceof FtpIOException)
+                throw (FtpIOException)downStreamingThread.getCaughtException();
+            //if other Exception occured.. should be ignored because then every LibraryUser has to modify
+            //their source to catch other Exception types
+            //so here only a printstacktrace
+            downStreamingThread.getCaughtException().printStackTrace();
+        }        
         return pis;
     }
     
