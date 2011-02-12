@@ -346,8 +346,17 @@ public abstract class FTPConnection {
             setConnectionStatus(BUSY);
         
         controlBuffer.clear();
-        log.info("Sending command: "
-                + cmd.toString().substring(0, cmd.toString().length() - 2));
+        //for the command PASS hide the password in created logfile 
+        if (cmd.getCommand().equals(Command.PASS)){
+            String value = Command.PASS;
+            for(int i = 0; i < cmd.getParameter().length; i++)
+            	//replace the characters of the password with Xs 
+            	value += " " + ((cmd.getParameter()[i]==null)?cmd.getParameter():cmd.getParameter()[i].replaceAll(".", "X"));
+            log.debug("Sending command: "+value.trim());
+        }else
+            log.debug("Sending command: "
+            + cmd.toString().substring(0, cmd.toString().length() - 2));
+        
         controlBuffer.put(cmd.toString());
         controlBuffer.flip();
         socketProvider.write(encoder.encode(controlBuffer));
