@@ -180,7 +180,7 @@ public class FTPConnectionFactory {
             String password, String account, int timeout, int connectionType,
             boolean passiveMode) throws ConfigurationException {
         return FTPConnectionFactory.getInstance(host, port, user, password,
-                null, 10000, connectionType, passiveMode,
+                null, timeout, connectionType, passiveMode,
                 FTPConnection.MAX_DOWNLOAD_BANDWIDTH,
                 FTPConnection.MAX_UPLOAD_BANDWIDTH, null, null, -1, null, null,
                 -1,false);
