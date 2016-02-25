@@ -7,4 +7,5 @@ The Java 1.4 is not maintained anymore and only provided as is.
 Examine the provided samples in the org.ftp4che.examples package or inspect the following websites:
 
 http://www.brudvik.org/projects/development/ftp4che-examples/
+
 https://blogs.oracle.com/trev/entry/ftp_client
