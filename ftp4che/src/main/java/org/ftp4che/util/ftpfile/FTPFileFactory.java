@@ -77,7 +77,7 @@ public class FTPFileFactory {
         }
         else {
             log.warn("Unknown SYST '" + system + "', trying UnixFileParsers");
-            return null;
+            return new UnixFileParser(locale);
         }
     }
 
