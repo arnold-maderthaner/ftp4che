@@ -158,7 +158,7 @@ public abstract class FTPConnection {
     private String secureFXPType = null;
 
     private boolean sscnActive = false;
-
+    
     private InetSocketAddress address = null;
     
     private InetAddress overridePassiveAddress = null;
@@ -1520,15 +1520,15 @@ public abstract class FTPConnection {
         }
         if (getSecureFXPType() == Command.CPSV) {
             // destination
-            Command protCommand = new Command(Command.PROT, "O");
-            Reply protReply = destination.sendCommand(protCommand);
-            protReply.dumpReply();
-            protReply.validate();
+        	Command pbszCommand = new Command(Command.PBSZ, "O");
+        	Reply pbszReply = destination.sendCommand(pbszCommand);
+        	pbszReply.dumpReply();
+        	pbszReply.validate();
 
             // source
-            protReply = sendCommand(protCommand);
-            protReply.dumpReply();
-            protReply.validate();
+        	pbszReply = sendCommand(pbszCommand);
+        	pbszReply.dumpReply();
+        	pbszReply.validate();
         }
         if (getSecureFXPType() == Command.SSCN && sscnActive) {
 
