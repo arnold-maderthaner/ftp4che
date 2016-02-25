@@ -1055,6 +1055,10 @@ public abstract class FTPConnection {
                 this.pis = pis;
             }
             
+            public boolean hasError() {
+            	return caughtException != null;
+            }
+            
             /**
              * @return Returns the caughtException.
              */
@@ -1085,7 +1089,7 @@ public abstract class FTPConnection {
 
         // ensure that in/out pipes are connected already
         try {
-        	for(int i=0; i<60 && pis.available() <= 0; i++)
+        	for(int i=0; i<60 && pis.available() <= 0 && !downStreamingThread.hasError(); i++)
         		Thread.sleep(1000);
         }catch(Exception e) {}
         
