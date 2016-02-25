@@ -40,7 +40,7 @@ public class SecureFTPConnection extends FTPConnection {
             AuthenticationNotSupportedException, FtpIOException,
             FtpWorkflowException {
         
-        setConnectionStatusLock(FTPConnection.CSL_INDIRECT_CALL);
+        setConnectionStatusLock(ConnectionStatus.CSL_INDIRECT_CALL);
         
         socketProvider = new SocketProvider();
         try {
@@ -72,12 +72,12 @@ public class SecureFTPConnection extends FTPConnection {
         }
         checkFeatures();
 
-        this.setConnectionStatus(FTPConnection.CONNECTED);
-        this.setConnectionStatus(FTPConnection.IDLE);
+        this.setConnectionStatus(ConnectionStatus.CONNECTED);
+        this.setConnectionStatus(ConnectionStatus.IDLE);
      
         checkSystem();
         
-        setConnectionStatusLock(FTPConnection.CSL_DIRECT_CALL);
+        setConnectionStatusLock(ConnectionStatus.CSL_DIRECT_CALL);
     }
 
     private void negotiateAndLogin(String authCommand) throws IOException,

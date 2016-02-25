@@ -73,7 +73,7 @@ public class AbstractFtpConnectionTest {
 			fail("Failed connecting to ftp server (" + e.getClass() + ")");
 		}
 		
-		assertEquals(ftpConnection.getConnectionStatus(), FTPConnection.IDLE);
+		assertEquals(ftpConnection.getConnectionStatus(), FTPConnection.ConnectionStatus.IDLE);
 	}
 	
 	protected void disconnect() {
@@ -83,6 +83,6 @@ public class AbstractFtpConnectionTest {
 			fail("Failed disconnecting from ftp server (" + e.getClass() + ")");
 		}
 		
-		assertEquals(ftpConnection.getConnectionStatus(), FTPConnection.DISCONNECTED);
+		assertEquals(ftpConnection.getConnectionStatus(), FTPConnection.ConnectionStatus.DISCONNECTED);
 	}
 }

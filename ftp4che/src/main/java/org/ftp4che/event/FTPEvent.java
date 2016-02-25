@@ -18,6 +18,7 @@ package org.ftp4che.event;
 
 import java.util.EventObject;
 
+import org.ftp4che.FTPConnection;
 import org.ftp4che.reply.Reply;
 import org.ftp4che.util.ftpfile.FTPFile;
 
@@ -26,7 +27,7 @@ public class FTPEvent extends EventObject {
     private static final long serialVersionUID = 1L;
 
     /** use status constants from class FTPConnection */
-    private int connectionStatus;
+    private FTPConnection.ConnectionStatus connectionStatus;
 
     private Reply reply;
 
@@ -34,18 +35,18 @@ public class FTPEvent extends EventObject {
 
     private FTPFile toFile;
 
-    public FTPEvent(Object source, int connectionStatus) {
+    public FTPEvent(Object source, FTPConnection.ConnectionStatus connectionStatus) {
         super(source);
         setConnectionStatus(connectionStatus);
     }
 
-    public FTPEvent(Object source, int connectionStatus, Reply reply) {
+    public FTPEvent(Object source, FTPConnection.ConnectionStatus connectionStatus, Reply reply) {
         super(source);
         setConnectionStatus(connectionStatus);
         setReply(reply);
     }
 
-    public FTPEvent(Object source, int connectionStatus, FTPFile fromFile,
+    public FTPEvent(Object source, FTPConnection.ConnectionStatus connectionStatus, FTPFile fromFile,
             FTPFile toFile) {
         super(source);
         setConnectionStatus(connectionStatus);
@@ -53,7 +54,7 @@ public class FTPEvent extends EventObject {
         setToFile(toFile);
     }
 
-    public FTPEvent(Object source, int connectionStatus, Reply reply,
+    public FTPEvent(Object source, FTPConnection.ConnectionStatus connectionStatus, Reply reply,
             FTPFile fromFile, FTPFile toFile) {
         super(source);
         setConnectionStatus(connectionStatus);
@@ -62,11 +63,11 @@ public class FTPEvent extends EventObject {
         setToFile(toFile);
     }
 
-    public int getConnectionStatus() {
+    public FTPConnection.ConnectionStatus getConnectionStatus() {
         return connectionStatus;
     }
 
-    public void setConnectionStatus(int connectionStatus) {
+    public void setConnectionStatus(FTPConnection.ConnectionStatus connectionStatus) {
         this.connectionStatus = connectionStatus;
     }
 
