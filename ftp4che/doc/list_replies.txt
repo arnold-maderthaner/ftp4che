@@ -69,8 +69,7 @@ STAT -LA
   
   
   
-  
-dir scheiss
+Sample:  
 ------------
 drwxr-xr-x  2 7        21            512 Nov 21  1988 .forward
 -rw-rw-r--  1 7        11              0 Jun 23  1988 .hushlogin
