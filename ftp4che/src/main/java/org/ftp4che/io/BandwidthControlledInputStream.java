@@ -62,17 +62,13 @@ public class BandwidthControlledInputStream extends InputStream {
         sum += newBytes;
         if (newBytes == -1) {
             try {
-                Thread.sleep(1000 * CHECKS / (bandwidth / lastSum));
+                Thread.sleep(SLEEP_TIME * CHECKS / (bandwidth / lastSum));
             } catch (InterruptedException ie) {
             }
             return -1;
         }
         bytesRead += bytes2read;
 
-        // System.out.println("bytes2read: " + bytes2read);
-        // System.out.println("bytesRead: " + bytesRead);
-        // System.out.println("sum: " + sum);
-        // System.out.println("newBytes: " + newBytes);
         sleep();
         lastSum = sum;
         return sum;
@@ -88,9 +84,9 @@ public class BandwidthControlledInputStream extends InputStream {
     private void sleep() {
         if (bytesRead >= bandwidth) {
             long duration = System.currentTimeMillis() - startTime;
-            if (duration < 1000 / CHECKS) {
+            if (duration < SLEEP_TIME / CHECKS) {
                 try {
-                    Thread.sleep(1000 / CHECKS - duration);
+                    Thread.sleep(SLEEP_TIME / CHECKS - duration);
                 } catch (InterruptedException ignore) {
                 }
             }

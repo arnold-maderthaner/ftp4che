@@ -65,7 +65,6 @@ public class BandwidthControlledOutputStream extends OutputStream {
     private void sleep() {
         if (bytesWritten >= bandwidth) {
             try {
-                // System.out.println("sleeping");
                 Thread.sleep(SLEEP_TIME);
                 bytesWritten = 0;
             } catch (InterruptedException ie) {

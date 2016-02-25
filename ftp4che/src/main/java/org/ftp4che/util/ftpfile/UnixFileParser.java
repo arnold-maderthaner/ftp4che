@@ -4,12 +4,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
-import java.util.StringTokenizer;
-
-import org.apache.log4j.Logger;
 
 public class UnixFileParser implements FileParser {
-    private static final Logger log = Logger.getLogger(UnixFileParser.class);
     
     private Locale locale;
     

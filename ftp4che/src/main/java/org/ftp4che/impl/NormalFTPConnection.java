@@ -17,7 +17,6 @@
 package org.ftp4che.impl;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.ftp4che.FTPConnection;
@@ -30,7 +29,6 @@ import org.ftp4che.exception.NotConnectedException;
 import org.ftp4che.io.ReplyWorker;
 import org.ftp4che.io.SocketProvider;
 import org.ftp4che.reply.Reply;
-import org.ftp4che.reply.ReplyCode;
 
 /**
  * @author arnold

@@ -17,7 +17,6 @@
 package org.ftp4che.util.ftpfile;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.StringTokenizer;
 
@@ -38,9 +37,6 @@ public class FTPFile implements Comparable<FTPFile> {
     private int fileType;
 
     private String transferType = Command.TYPE_I;
-
-    private final static SimpleDateFormat formatter = new SimpleDateFormat(
-            "dd-MM-yyyy HH:mm");
 
     protected boolean isLink = false;
 

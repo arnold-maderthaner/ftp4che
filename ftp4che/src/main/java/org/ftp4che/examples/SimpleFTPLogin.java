@@ -16,7 +16,6 @@
  */
 package org.ftp4che.examples;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;

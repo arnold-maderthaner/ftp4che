@@ -17,7 +17,6 @@
 package org.ftp4che.impl;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.ftp4che.FTPConnection;

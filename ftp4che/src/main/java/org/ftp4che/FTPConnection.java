@@ -1700,18 +1700,6 @@ public abstract class FTPConnection {
         this.uploadBandwidth = maxUploadBandwidth;
     }
 
-    // listenerList methods
-    private boolean isListener(Class c, FTPListener f) {
-        boolean isListener = false;
-        Object[] listeners = listenerList.getListenerList();
-        for (int i = listeners.length - 2; i >= 0; i -= 2) {
-            if (listeners[i] == c && listeners[i + 1] == f) {
-                isListener = true;
-            }
-        }
-        return isListener;
-    }
-
     /**
      * Adds a <code>FTPStatusListener</code> to the connection.
      * 
