@@ -1512,10 +1512,9 @@ public abstract class FTPConnection {
         // read the last control reply from destination
         if (storeReply.getLines().size() == 1) {
             try {
-            	int originalTimeout = destination.socketProvider.socket().getSoTimeout();
-            	destination.socketProvider.socket().setSoTimeout(0);
-                (ReplyWorker.readReply(destination.socketProvider)).dumpReply();
-                destination.socketProvider.socket().setSoTimeout(originalTimeout);
+            	 Reply lastDestinationReply = ReplyWorker.readReply(destination.socketProvider);
+                 lastDestinationReply.dumpReply();
+                 lastDestinationReply.validate();
             }catch(IOException ioe) {
                 destination.setConnectionStatus(ERROR);
                 destination.disconnect();
