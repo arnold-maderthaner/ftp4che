@@ -757,7 +757,9 @@ public abstract class FTPConnection {
         
         ListCommand command = new ListCommand(directory);
         SocketProvider provider = null;
+        // Resolve given directory against the current working directory
         String workDirectory = getWorkDirectory();
+        String parentPath = new File(workDirectory, directory).getPath();
         if (getConnectionType() == FTPConnection.AUTH_SSL_FTP_CONNECTION
                 || getConnectionType() == FTPConnection.AUTH_TLS_FTP_CONNECTION) {
             Command pbsz = new Command(Command.PBSZ, "0");
@@ -780,7 +782,7 @@ public abstract class FTPConnection {
         List<FTPFile> parsedList = null;
         try {
         	 parsedList = factory.parse(command
-                .fetchDataConnectionReply().getLines(), workDirectory);
+                .fetchDataConnectionReply().getLines(), parentPath);
         }catch(IOException ioe) {
             setConnectionStatus(ConnectionStatus.ERROR);
             disconnect();
