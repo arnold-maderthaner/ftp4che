@@ -4,7 +4,7 @@
   <groupId>org.ftp4che</groupId>
   <artifactId>ftp4che</artifactId>
   <packaging>jar</packaging>
-  <version>1.0</version>
+  <version>1.0.1</version>
   <name>ftp4che</name>
   <url>http://maven.apache.org</url>
   <dependencies>
